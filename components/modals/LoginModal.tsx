@@ -7,11 +7,12 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogClose,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/lib/context/auth";
+import Image from "next/image";
+import { Google } from "../svgs";
 
 export function LoginModal() {
   const { user, loginWithGoogle, loginWithEmail, logout } = useAuth();
@@ -66,10 +67,10 @@ export function LoginModal() {
 
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Login</DialogTitle>
+          <DialogTitle className="text-center text-3xl pt-2">Login</DialogTitle>
         </DialogHeader>
 
-        <div className="flex flex-col gap-4 mt-4">
+        <div className="flex flex-col gap-4">
           {error && <p className="text-red-500">{error}</p>}
 
           <Input
@@ -98,16 +99,12 @@ export function LoginModal() {
             variant="outline"
             onClick={handleGoogleLogin}
             disabled={loading}
+            className="bg-black text-white"
           >
+            <Google />
             {loading ? "Processing..." : "Login with Google"}
           </Button>
         </div>
-
-        <DialogClose asChild>
-          <Button variant="ghost" className="mt-4 w-full">
-            Close
-          </Button>
-        </DialogClose>
       </DialogContent>
     </Dialog>
   );

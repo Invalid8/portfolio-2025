@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Bebas_Neue, Geist, Geist_Mono } from "next/font/google";
+import { Bungee, Geist, Geist_Mono,  } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/lib/context/auth";
 import { SurpriseUIProvider } from "@/lib/context/suprise-props";
@@ -9,7 +9,7 @@ const geistSans = Geist({
   subsets: ["latin"],
 });
 
-const bebasNeue = Bebas_Neue({
+const bebasNeue = Bungee({
   variable: "--font-bebas-neue",
   subsets: ["latin"],
   weight: ["400"],
@@ -33,7 +33,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${bebasNeue.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${bebasNeue.variable} antialiased dark`}
       >
         <AuthProvider>
           <SurpriseUIProvider>{children}</SurpriseUIProvider>
