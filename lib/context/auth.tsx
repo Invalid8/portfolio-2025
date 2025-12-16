@@ -15,6 +15,7 @@ import {
   User,
 } from "firebase/auth";
 import { setCookie, deleteCookie } from "cookies-next";
+import { LoginModal } from "@/components/modals/LoginModal";
 
 interface AuthContextType {
   user: User | null;
@@ -88,6 +89,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         toggleEdit,
       }}
     >
+       <LoginModal />
       {children}
     </AuthContext.Provider>
   );
