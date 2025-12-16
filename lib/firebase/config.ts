@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection } from "firebase/firestore";
+import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
 const clientCredentials = {
@@ -15,19 +16,8 @@ const clientCredentials = {
 const app = initializeApp(clientCredentials);
 
 const db = getFirestore(app);
+const auth = getAuth(app);
 const storage = getStorage(app);
+const googleProvider = new GoogleAuthProvider();
 
-const projectsCollection = collection(db, "projects");
-const experiencesCollection = collection(db, "experiences");
-const blogsCollection = collection(db, "blogs");
-const meCollection = collection(db, "me");
-
-export {
-  app,
-  db,
-  storage,
-  projectsCollection,
-  experiencesCollection,
-  blogsCollection,
-  meCollection,
-};
+export { app, db, storage, auth, googleProvider };
