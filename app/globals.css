@@ -42,10 +42,14 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  --height-dch: calc(100svh - var(--nav-h));
+  --min-height-dch: calc(100svh - var(--nav-h));
+  --max-height-dch: calc(100svh - var(--nav-h));
 }
 
 :root {
   --radius: 0.625rem;
+  --nav-h: 90px;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -86,7 +90,7 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(61.11% 0.19834 38.29);
+  --primary: oklch(64.66% 0.19548 40.184);
   --primary-foreground: oklch(100% 0.00011 271.152);
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
@@ -123,9 +127,12 @@
   }
 
   h1,
-  h2,
+  h2 {
+    @apply font-bebas tracking-widest;
+  }
+
   h3,
   h4 {
-    @apply font-bebas font-bold tracking-widest;
+    @apply font-bebas tracking-widest;
   }
 }

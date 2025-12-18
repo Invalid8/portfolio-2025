@@ -11,11 +11,19 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/lib/context/auth";
-import Image from "next/image";
 import { Google } from "../svgs";
+import { LogOutIcon, UserIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export function LoginModal() {
-  const { user, loginWithGoogle, loginWithEmail, logout } = useAuth();
+  const {
+    user,
+    loginWithGoogle,
+    loginWithEmail,
+    logout,
+    isEditing,
+    toggleEdit,
+  } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -53,21 +61,35 @@ export function LoginModal() {
 
   if (user) {
     return (
-      <Button variant="destructive" onClick={handleLogout}>
-        Logout
-      </Button>
+      <div className="flex flex-col gap-4 right-8 top-60 fixed z-9999 ">
+        <button
+          className={cn(
+            "cursor-pointer rounded-full border border-white px-3 py-1 bg-white/10 text-white",
+            isEditing && "bg-primary text-white border-primary"
+          )}
+          onClick={toggleEdit}
+        >
+          Edit
+        </button>
+
+        <button className="flex items-center gap-2 text-red-500 cursor-pointer" onClick={handleLogout}>
+          XO <LogOutIcon />
+        </button>
+      </div>
     );
   }
 
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button>Login</Button>
+        <button className="right-8 bottom-60 fixed z-9999 cursor-pointer">
+          <UserIcon />
+        </button>
       </DialogTrigger>
 
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle className="text-center text-3xl pt-2">Login</DialogTitle>
+          <DialogTitle className="text-center text-2xl pb-2">Login</DialogTitle>
         </DialogHeader>
 
         <div className="flex flex-col gap-4">
