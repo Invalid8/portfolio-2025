@@ -23,15 +23,18 @@ const AngledMarquee: React.FC<AngledMarqueeProps> = ({
   bgColor = "transparent",
   zIndex = 1,
 }) => {
+  const diagonal = "calc(100vw + 100vh)";
   return (
     <div
       className={`absolute overflow-hidden ${className}`}
       style={{
-        transform: `rotate(${angle}deg)`,
+        top: "60%",
+        left: "60%",
+        width: diagonal,
+        transform: `translate(-40%, -60%) rotate(${angle}deg)`,
         backgroundColor: bgColor,
         zIndex,
-
-        width: "150%",
+        overflow: "visible",
       }}
     >
       <Marquee

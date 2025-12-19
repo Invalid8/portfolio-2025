@@ -34,7 +34,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${bebasNeue.variable} antialiased dark overflow-hidden`}
+        className={`${geistSans.variable} ${geistMono.variable} ${bebasNeue.variable} antialiased dark overflow-x-hidden min-h-svh`}
       >
         <AuthProvider>
           <PageProvider>

@@ -31,10 +31,6 @@ export default function EditableImage({
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleClick = () => {
-    if (isEditing) inputRef.current?.click();
-  };
-
   const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -71,9 +67,9 @@ export default function EditableImage({
   };
 
   return (
-    <div
+    <label
+      htmlFor={`${sectionKey}-${fieldKey}`}
       className={`relative ${className} cursor-pointer`}
-      onClick={handleClick}
     >
       <img
         src={preview}
@@ -104,10 +100,11 @@ export default function EditableImage({
       <input
         type="file"
         ref={inputRef}
-        className="hidden"
+        className="size-full absolute top-0 left-0 bottom-0 right-0 opacity-0"
+        name={`${sectionKey}-${fieldKey}`}
         accept="image/*"
         onChange={handleChange}
       />
-    </div>
+    </label>
   );
 }
