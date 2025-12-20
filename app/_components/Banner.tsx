@@ -36,7 +36,7 @@ function Banner() {
             fieldKey="titleLine"
             className="font-bold"
           >
-            Frontend ~~br~~ ^^Developer^^
+            {"Frontend~~br~~^^Developer^^"}
           </ContentSpan>
         </h1>
 
@@ -44,11 +44,10 @@ function Banner() {
           <ContentSpan
             sectionKey="banner"
             fieldKey="subtitle"
-            className="space-y-4"
+            className="space-y-0"
           >
             A Nigerian based **^^Frontend Developer^^** passionate about
-            building accessible and user friendly **^^websites^^**. ~~br~~
-            ^^__**[My
+            building accessible and user friendly **^^websites^^**.~~br~~~~br~~^^__**[My
             Resume](https://drive.google.com/file/d/1qcK4NgDfuG4QN_wR7XXxQHqhknuy04Ho/view)**__^^
           </ContentSpan>
         </p>

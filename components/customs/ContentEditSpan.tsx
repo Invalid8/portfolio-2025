@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useCallback } from "react";
+import React, { useMemo, useCallback, useState } from "react";
 import {
   createEditor,
   BaseEditor,
@@ -27,7 +27,7 @@ interface ContentSpanProps {
 
 interface ParagraphElement extends SlateElement {
   type: "paragraph";
-  children: Text[];
+  children: CustomText[];
 }
 
 type CustomText = Text & {
@@ -40,100 +40,134 @@ type CustomText = Text & {
   link?: string;
 };
 
-function parseSpecialString(rawText: string): CustomText[] {
-  const result: CustomText[] = [];
-  let remaining = rawText;
+const PATTERNS = [
+  { regex: /^\*\*(.+?)\*\*/, mark: "bold" },
+  { regex: /^\*(.+?)\*/, mark: "italic" },
+  { regex: /^~~br~~/, mark: "break" },
+  { regex: /^~~(.+?)~~/, mark: "strike" },
+  { regex: /^\^\^(.+?)\^\^/, mark: "primary" },
+  { regex: /^__(.+?)__/, mark: "underline" },
+  {
+    regex: /^\[(.+?)\]\((https?:\/\/[^\s)]+)\)/,
+    mark: "link",
+    isLink: true,
+  },
+] as const;
 
-  const patterns: {
-    regex: RegExp;
-    mark: keyof CustomText;
-    isLink?: boolean;
-  }[] = [
-    { regex: /^\*\*(.+?)\*\*/, mark: "bold" },
-    { regex: /^\*(.+?)\*/, mark: "italic" },
-    { regex: /^~~br~~/, mark: "break" },
-    { regex: /^~~(.+?)~~/, mark: "strike" },
-    { regex: /^\^\^(.+?)\^\^/, mark: "primary" },
-    { regex: /^__(.+?)__/, mark: "underline" },
-    {
-      regex: /^\[(.+?)\]\((https?:\/\/[^\s)]+)\)/,
-      mark: "link",
-      isLink: true,
-    },
-  ];
+function parseSpecialString(input: string): CustomText[] {
+  const out: CustomText[] = [];
+  let text = input;
 
-  while (remaining.length) {
+  while (text.length) {
     let matched = false;
 
-    for (const p of patterns) {
-      const match = p.regex.exec(remaining);
-      if (match) {
-        matched = true;
+    for (const p of PATTERNS) {
+      const m = p.regex.exec(text);
+      if (!m) continue;
 
-        if (p.isLink) {
-          result.push({ text: match[1], link: match[2] });
-        } else if (p.mark === "break") {
-          result.push({ text: "", break: true });
-        } else {
-          const children = parseSpecialString(match[1]);
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          children.forEach((c: any) => (c[p.mark] = true));
-          result.push(...children);
-        }
+      matched = true;
 
-        remaining = remaining.slice(match[0].length);
-        break;
+      if (p.mark === "break") {
+        out.push({ text: "", break: true });
+      } else if ("isLink" in p) {
+        out.push({ text: m[1], link: m[2] });
+      } else {
+        const inner = parseSpecialString(m[1]);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        inner.forEach((n) => ((n as any)[p.mark] = true));
+        out.push(...inner);
       }
+
+      text = text.slice(m[0].length);
+      break;
     }
 
     if (!matched) {
-      result.push({ text: remaining[0] });
-      remaining = remaining.slice(1);
+      out.push({ text: text[0] });
+      text = text.slice(1);
     }
   }
 
-  return result;
+  return out;
 }
 
-function createInitialValue(rawText: string): Descendant[] {
+function createInitialValue(raw: string): Descendant[] {
   return [
     {
       type: "paragraph",
-      children: parseSpecialString(rawText),
+      children: parseSpecialString(raw),
     } as ParagraphElement,
   ];
 }
 
-const renderLeaf = (props: RenderLeafProps) => {
-  let { children } = props;
-  const leaf = props.leaf as CustomText;
+function serialize(nodes: Descendant[]): string {
+  return nodes
+    .map((n) => {
+      if (!("children" in n)) return "";
+      return (
+        n.children
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .map((l: any) => {
+            if (l.break) return "~~br~~";
+            let t = l.text;
+            if (l.link) t = `[${t}](${l.link})`;
+            if (l.underline) t = `__${t}__`;
+            if (l.primary) t = `^^${t}^^`;
+            if (l.strike) t = `~~${t}~~`;
+            if (l.italic) t = `*${t}*`;
+            if (l.bold) t = `**${t}**`;
+            return t;
+          })
+          .join("")
+      );
+    })
+    .join("\n");
+}
 
-  if (leaf.break) return <br {...props.attributes} />;
+const renderLeaf = ({ leaf, attributes, children }: RenderLeafProps) => {
+  const l = leaf as CustomText;
 
-  if (leaf.bold) children = <strong>{children}</strong>;
-  if (leaf.italic) children = <em>{children}</em>;
-  if (leaf.strike) children = <s>{children}</s>;
+  if (l.break) return <br {...attributes} />;
 
-  if (leaf.primary || leaf.underline) {
-    children = (
+  let el = children;
+
+  if (l.bold) el = <strong>{el}</strong>;
+  if (l.italic) el = <em>{el}</em>;
+  if (l.strike) el = <s>{el}</s>;
+
+  if (l.primary || l.underline) {
+    el = (
       <span
-        className={leaf.primary ? "text-primary" : undefined}
-        style={leaf.underline ? { textDecoration: "underline" } : undefined}
+        style={{
+          color: l.primary ? "var(--color-primary)" : undefined,
+          textDecoration: l.underline ? "underline" : undefined,
+        }}
       >
-        {children}
+        {el}
       </span>
     );
   }
 
-  if (leaf.link) {
-    children = (
-      <a href={leaf.link} target="_blank" rel="noopener noreferrer">
-        {children}
+  if (l.link) {
+    el = (
+      <a href={l.link} target="_blank" rel="noopener noreferrer">
+        {el}
       </a>
     );
   }
 
-  return <span {...props.attributes}>{children}</span>;
+  return (
+    <span
+      {...attributes}
+      style={{
+        display: "inline",
+        padding: 0,
+        margin: 0,
+      }}
+    >
+      {el}
+    </span>
+  );
 };
 
 function RenderStatic({ raw }: { raw: string }) {
@@ -141,52 +175,36 @@ function RenderStatic({ raw }: { raw: string }) {
 
   return (
     <>
-      {nodes.map((leaf, i) => {
-        if (leaf.break) return <br key={i} />;
+      {nodes.map((l, i) => {
+        if (l.break) return <br key={i} />;
+        let el: React.ReactNode = l.text;
 
-        const parts = leaf.text.split("\n");
+        if (l.bold) el = <strong>{el}</strong>;
+        if (l.italic) el = <em>{el}</em>;
+        if (l.strike) el = <s>{el}</s>;
 
-        return (
-          <React.Fragment key={i}>
-            {parts.map((part, j) => {
-              let el: React.ReactNode = part;
+        if (l.primary || l.underline) {
+          el = (
+            <span
+              style={{
+                color: l.primary ? "var(--color-primary)" : undefined,
+                textDecoration: l.underline ? "underline" : undefined,
+              }}
+            >
+              {el}
+            </span>
+          );
+        }
 
-              if (leaf.bold) el = <strong>{el}</strong>;
-              if (leaf.italic) el = <em>{el}</em>;
-              if (leaf.strike) el = <s>{el}</s>;
+        if (l.link) {
+          el = (
+            <a href={l.link} target="_blank" rel="noopener noreferrer">
+              {el}
+            </a>
+          );
+        }
 
-              if (leaf.primary || leaf.underline) {
-                el = (
-                  <span
-                    className={leaf.primary ? "text-primary" : undefined}
-                    style={
-                      leaf.underline
-                        ? { textDecoration: "underline" }
-                        : undefined
-                    }
-                  >
-                    {el}
-                  </span>
-                );
-              }
-
-              if (leaf.link) {
-                el = (
-                  <a href={leaf.link} target="_blank" rel="noopener noreferrer">
-                    {el}
-                  </a>
-                );
-              }
-
-              return (
-                <React.Fragment key={j}>
-                  {el}
-                  {j < parts.length - 1 && <br />}
-                </React.Fragment>
-              );
-            })}
-          </React.Fragment>
-        );
+        return <React.Fragment key={i}>{el}</React.Fragment>;
       })}
     </>
   );
@@ -201,64 +219,34 @@ export default function ContentSpan({
   const { sections, editField, saveSection } = usePageContext();
   const { isEditing } = useAuth();
 
-  const savedRaw =
+  const raw =
     sections[sectionKey]?.[fieldKey] ??
-    (typeof children === "string" ? children : null);
+    (typeof children === "string" ? children : "");
 
   const editor = useMemo(
     () => withReact(createEditor() as BaseEditor & ReactEditor),
     []
   );
 
-  const initialValue = useMemo(
-    () => (savedRaw ? createInitialValue(savedRaw) : undefined),
-    [savedRaw]
-  );
-
-  const handleValueChange = useCallback(
-    (value: Descendant[]) => {
-      const text = value
-        .map((node) => {
-          if ("children" in node) {
-            return node.children
-              .map((child) => ("text" in child ? child.text : ""))
-              .join("");
-          }
-          return "";
-        })
-        .join("\n");
-
-      editField(sectionKey, fieldKey, text);
-    },
-    [sectionKey, fieldKey, editField]
-  );
+  const [value, setValue] = useState<Descendant[]>(createInitialValue(raw));
 
   const handleBlur = useCallback(async () => {
+    const serialized = serialize(value);
+    editField(sectionKey, fieldKey, serialized);
     await saveSection(sectionKey);
-  }, [sectionKey, saveSection]);
+  }, [value, sectionKey, fieldKey, editField, saveSection]);
 
   if (!isEditing) {
-    if (savedRaw) {
-      return (
-        <span className={className}>
-          <RenderStatic raw={savedRaw} />
-        </span>
-      );
-    }
-    return <span className={className}>{children}</span>;
+    return (
+      <span className={className}>
+        <RenderStatic raw={raw} />
+      </span>
+    );
   }
 
-  if (!initialValue) return <span className={className}>{children}</span>;
-
   return (
-    <Slate
-      editor={editor}
-      initialValue={initialValue}
-      onValueChange={handleValueChange}
-    >
+    <Slate editor={editor} initialValue={value} onChange={setValue}>
       <Editable
-        suppressHydrationWarning
-        readOnly={!isEditing}
         renderLeaf={renderLeaf}
         onBlur={handleBlur}
         className={className}
@@ -267,6 +255,10 @@ export default function ContentSpan({
           padding: 0,
           margin: 0,
           outline: "none",
+          fontFamily: "inherit",
+          fontSize: "inherit",
+          lineHeight: "inherit",
+          whiteSpace: "pre-wrap",
           cursor: "text",
         }}
       />

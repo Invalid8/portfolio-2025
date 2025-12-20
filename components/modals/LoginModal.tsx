@@ -13,17 +13,9 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/lib/context/auth";
 import { Google } from "../svgs";
 import { LogOutIcon, UserIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 export function LoginModal() {
-  const {
-    user,
-    loginWithGoogle,
-    loginWithEmail,
-    logout,
-    isEditing,
-    toggleEdit,
-  } = useAuth();
+  const { user, loginWithGoogle, loginWithEmail, logout } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -63,17 +55,10 @@ export function LoginModal() {
     return (
       <div className="flex flex-col gap-4 right-8 top-60 fixed z-9999 ">
         <button
-          className={cn(
-            "cursor-pointer rounded-full border border-white px-3 py-1 bg-white/10 text-white",
-            isEditing && "bg-primary text-white border-primary"
-          )}
-          onClick={toggleEdit}
+          className="flex items-center gap-2 text-red-500 cursor-pointer"
+          onClick={handleLogout}
         >
-          Edit
-        </button>
-
-        <button className="flex items-center gap-2 text-red-500 cursor-pointer" onClick={handleLogout}>
-          XO <LogOutIcon />
+          <LogOutIcon />
         </button>
       </div>
     );

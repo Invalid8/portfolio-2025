@@ -1,13 +1,15 @@
 import Banner from "./Banner";
 import About from "./About";
-import Viynl from "./Viynl";
+import Projects from "./Projects";
+import Experience from "./Experience";
 
 function Home() {
   return (
     <div>
       <Banner />
       <About />
-      <Viynl />
+      <Projects/>
+      <Experience/>
     </div>
   );
 }

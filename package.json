@@ -21,6 +21,7 @@
     "firebase-admin": "^13.6.0",
     "gsap": "^3.14.1",
     "lucide-react": "^0.556.0",
+    "modern-screenshot": "^4.6.7",
     "next": "^16.0.10",
     "react": "19.2.1",
     "react-dom": "19.2.1",
