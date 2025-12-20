@@ -23,7 +23,7 @@ const AngledMarquee: React.FC<AngledMarqueeProps> = ({
   bgColor = "transparent",
   zIndex = 1,
 }) => {
-  const diagonal = "calc(100vw + 100vh)";
+  const diagonal = "calc(150vw + 100vh)";
   return (
     <div
       className={`absolute overflow-hidden ${className}`}

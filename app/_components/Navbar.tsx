@@ -96,7 +96,7 @@ function Navbar() {
           </div>
         </nav>
       </header>
-      <aside className="fixed top-0 bottom-0 left-0 hidden md:flex items-center justify-center z-998">
+      <aside className="fixed top-0 bottom-0 left-0 hidden lg:flex items-center justify-center z-998">
         <nav className="flex flex-col items-center justify-center gap-30">
           {["About", "Project", "Experience"].map((x, i) => (
             <Link

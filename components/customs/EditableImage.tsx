@@ -6,6 +6,7 @@ import { CameraIcon } from "lucide-react";
 import { useAuth } from "@/lib/context/auth";
 import { uploadFileToFirebase } from "@/lib/firebase/storage";
 import { usePageContext } from "@/lib/context/PageContent";
+import { cn } from "@/lib/utils";
 
 interface EditableImageProps {
   sectionKey: string;
@@ -24,7 +25,7 @@ export default function EditableImage({
   docId,
   className,
 }: EditableImageProps) {
-  const { isEditing } = useAuth();
+  const { isEditing, isAdmin } = useAuth();
   const { editField } = usePageContext();
   const [preview, setPreview] = useState(src);
   const [loading, setLoading] = useState(false);
@@ -40,29 +41,31 @@ export default function EditableImage({
     setPreview(localUrl);
     editField(sectionKey, fieldKey, localUrl);
 
-    setLoading(true);
-    try {
-      const storagePath = `sections/${sectionKey}/${fieldKey}-${Date.now()}`;
-      const uploadedUrl = await uploadFileToFirebase(file, storagePath);
+    if (isAdmin) {
+      setLoading(true);
+      try {
+        const storagePath = `sections/${sectionKey}/${fieldKey}-${Date.now()}`;
+        const uploadedUrl = await uploadFileToFirebase(file, storagePath);
 
-      editField(sectionKey, fieldKey, uploadedUrl);
-      await fetch(`/api/admin/firebase/${collection}/${docId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          [fieldKey]: uploadedUrl,
-          updatedAt: new Date(),
-        }),
-      });
-      setPreview(uploadedUrl);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      console.error(err);
-      setError("Failed to upload image.");
-      setPreview(src);
-      editField(sectionKey, fieldKey, src);
-    } finally {
-      setLoading(false);
+        editField(sectionKey, fieldKey, uploadedUrl);
+        await fetch(`/api/admin/firebase/${collection}/${docId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            [fieldKey]: uploadedUrl,
+            updatedAt: new Date(),
+          }),
+        });
+        setPreview(uploadedUrl);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (err: any) {
+        console.error(err);
+        setError("Failed to upload image.");
+        setPreview(src);
+        editField(sectionKey, fieldKey, src);
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -100,7 +103,10 @@ export default function EditableImage({
       <input
         type="file"
         ref={inputRef}
-        className="size-full absolute top-0 left-0 bottom-0 right-0 opacity-0"
+        className={cn(
+          "size-full absolute top-0 left-0 bottom-0 right-0 opacity-0",
+          !isEditing && "hidden"
+        )}
         name={`${sectionKey}-${fieldKey}`}
         accept="image/*"
         onChange={handleChange}

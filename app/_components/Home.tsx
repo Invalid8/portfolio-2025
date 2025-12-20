@@ -1,22 +1,13 @@
-import EditableImage from "@/components/customs/EditableImage";
 import Banner from "./Banner";
+import About from "./About";
+import Viynl from "./Viynl";
 
 function Home() {
   return (
     <div>
       <Banner />
-      <br />
-      <br />
-      <div className="next-section min-h-svh items-center justify-center flex">
-        <EditableImage
-          sectionKey={"ment"}
-          fieldKey={"mention"}
-          src={"/images/mine.png"}
-          collection={"mentee"}
-          docId={"mentax"}
-          className="max-w-sm"
-        />
-      </div>
+      <About />
+      <Viynl />
     </div>
   );
 }
