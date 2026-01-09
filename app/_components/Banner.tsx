@@ -48,7 +48,7 @@ function Banner() {
           >
             A Nigerian based **^^Frontend Developer^^** passionate about
             building accessible and user friendly **^^websites^^**.~~br~~~~br~~^^__**[My
-            Resume](https://drive.google.com/file/d/1qcK4NgDfuG4QN_wR7XXxQHqhknuy04Ho/view)**__^^
+            Resume](https://drive.google.com/file/d/1ixmuBYgzXQdXrTn1n9aoz4SWYRU715h-/view)**__^^
           </ContentSpan>
         </p>
       </div>

@@ -11,17 +11,17 @@ const links = [
   {
     name: "Github",
     label: "GH",
-    link: "",
+    link: "https://github.com/Invalid8",
   },
   {
     name: "LinkedIn",
     label: "LI",
-    link: "",
+    link: "https://www.linkedin.com/in/daniel-fadamitan-a08052247",
   },
   {
-    name: "Instagram",
-    label: "IG",
-    link: "",
+    name: "Twitter",
+    label: "X",
+    link: "https://x.com/D_Invalid1",
   },
 ];
 

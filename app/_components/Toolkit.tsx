@@ -29,6 +29,10 @@ function Toolkit() {
           padding: "0",
           overflow: "hidden",
         },
+        features: {
+          restoreScrollPosition: true,
+          fixSvgXmlDecode: true,
+        },
       });
 
       if (toolbarRef.current) {
