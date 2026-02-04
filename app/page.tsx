@@ -3,23 +3,23 @@ import Home from "./_components/Home";
 import { fetchCollectionServer } from "@/lib/firebase/server/services";
 import type { Project, Experience, Skill } from "@/types";
 
-function serializeTimestamps<T extends Record<string, any>>(obj: T): T {
-  const serialized: Record<string, any> = {};
-  for (const key in obj) {
-    const value = obj[key];
-    if (value && typeof value === "object") {
-      if ("_seconds" in value && "_nanoseconds" in value) {
-        serialized[key] = new Date(
-          value._seconds * 1000 + value._nanoseconds / 1e6,
-        ).toISOString();
-      } else {
-        serialized[key] = serializeTimestamps(value);
-      }
-    } else {
-      serialized[key] = value;
+function serializeFirestoreData(data: any): any {
+  if (Array.isArray(data)) {
+    return data.map(serializeFirestoreData);
+  } else if (data && typeof data === "object") {
+    if ("_seconds" in data && "_nanoseconds" in data) {
+      return new Date(
+        data._seconds * 1000 + data._nanoseconds / 1e6,
+      ).toISOString();
     }
+    const serialized: Record<string, any> = {};
+    for (const key in data) {
+      serialized[key] = serializeFirestoreData(data[key]);
+    }
+    return serialized;
+  } else {
+    return data;
   }
-  return serialized as T;
 }
 
 export default async function Page() {
@@ -34,9 +34,9 @@ export default async function Page() {
       fetchCollectionServer<Skill>("skills"),
     ]);
 
-    projects = projects.map(serializeTimestamps);
-    experiences = experiences.map(serializeTimestamps);
-    skills = skills.map(serializeTimestamps);
+    projects = serializeFirestoreData(projects);
+    experiences = serializeFirestoreData(experiences);
+    skills = serializeFirestoreData(skills);
 
     experiences.sort((a, b) => {
       const getYear = (duration: string) => {

@@ -1,8 +1,8 @@
-import Banner from "./Banner";
-import About from "./About";
-import Projects from "./Projects";
-import Experience from "./Experience";
-import Contact from "./Contact";
+import Banner from "./sections/Banner";
+import About from "./sections/About";
+import Projects from "./sections/Projects";
+import Experience from "./sections/Experience";
+import Contact from "./sections/Contact";
 import type { Project, Experience as ExperienceType, Skill } from "@/types";
 
 interface HomeProps {

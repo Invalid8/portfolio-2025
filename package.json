@@ -29,6 +29,8 @@
     "react": "19.2.1",
     "react-dom": "19.2.1",
     "react-fast-marquee": "^1.6.5",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
     "slate": "^0.120.0",
     "slate-history": "^0.113.1",
     "slate-react": "^0.120.0",
@@ -36,6 +38,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@tailwindcss/typography": "^0.5.19",
     "@types/firebase": "^2.4.32",
     "@types/node": "^20",
     "@types/react": "^19",
