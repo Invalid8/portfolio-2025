@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import React, {
+
+import {
   createContext,
   useContext,
   useState,
@@ -16,6 +17,7 @@ interface Section {
 
 interface PageContextType {
   sections: Record<string, Section>;
+  hasUnsavedChanges: boolean;
   setSection: (key: string, section: Section) => void;
   editField: (sectionKey: string, fieldKey: string, value: any) => void;
   saveSection: (sectionKey: string) => Promise<void>;
@@ -26,6 +28,7 @@ const PageContext = createContext<PageContextType | undefined>(undefined);
 
 export const PageProvider = ({ children }: { children: ReactNode }) => {
   const [sections, setSections] = useState<Record<string, Section>>({});
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   const setSection = useCallback((key: string, section: Section) => {
     setSections((prev) => ({ ...prev, [key]: section }));
@@ -37,6 +40,7 @@ export const PageProvider = ({ children }: { children: ReactNode }) => {
         ...prev,
         [sectionKey]: { ...prev[sectionKey], [fieldKey]: value },
       }));
+      setHasUnsavedChanges(true);
     },
     [],
   );
@@ -50,37 +54,50 @@ export const PageProvider = ({ children }: { children: ReactNode }) => {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(section),
-      }).catch((err) => {
-        console.error(`Failed to save section ${sectionKey}`, err);
-      });
+      })
+        .then(() => {
+          setHasUnsavedChanges(false);
+        })
+        .catch((err) => {
+          console.error(`Failed to save section ${sectionKey}`, err);
+        });
 
       return currentSections;
     });
   }, []);
 
   const saveAll = useCallback(async () => {
-    setSections((currentSections) => {
-      const keys = Object.keys(currentSections);
-      keys.forEach((key) => {
-        const section = currentSections[key];
-        if (!section?.id || !section?.collection) return;
+    const keys = Object.keys(sections);
+    const promises = keys.map((key) => {
+      const section = sections[key];
+      if (!section?.id || !section?.collection) return Promise.resolve();
 
-        fetch(`/api/admin/firebase/${section.collection}/${section.id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(section),
-        }).catch((err) => {
-          console.error(`Failed to save section ${key}`, err);
-        });
+      return fetch(`/api/admin/firebase/${section.collection}/${section.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(section),
       });
-
-      return currentSections;
     });
-  }, []);
+
+    try {
+      await Promise.all(promises);
+      setHasUnsavedChanges(false);
+    } catch (err) {
+      console.error("Failed to save all sections", err);
+      throw err;
+    }
+  }, [sections]);
 
   return (
     <PageContext.Provider
-      value={{ sections, setSection, editField, saveSection, saveAll }}
+      value={{
+        sections,
+        hasUnsavedChanges,
+        setSection,
+        editField,
+        saveSection,
+        saveAll,
+      }}
     >
       {children}
     </PageContext.Provider>

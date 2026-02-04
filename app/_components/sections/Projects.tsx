@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -153,12 +152,11 @@ export default function Projects({ initialProjects = [] }: ProjectsProps) {
       {selectedProject && (
         <ProjectModal
           project={selectedProject}
+          projects={projects}
           onClose={() => setSelectedProject(null)}
+          onNavigate={(project) => setSelectedProject(project)}
         />
       )}
     </>
   );
 }
-
-
-

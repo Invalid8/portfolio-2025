@@ -15,7 +15,7 @@ import {
   User,
 } from "firebase/auth";
 import { setCookie, deleteCookie } from "cookies-next";
-import { LoginModal } from "@/components/modals/LoginModal";
+import { LogOutIcon } from "lucide-react";
 
 interface AuthContextType {
   user: User | null;
@@ -72,6 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await signOut(auth);
     setUser(null);
     setIsAdmin(false);
+    setIsEditing(false);
     deleteCookie("adminToken", { path: "/" });
   };
 
@@ -89,7 +90,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         toggleEdit,
       }}
     >
-       <LoginModal />
+      {user && (
+        <button
+          className="flex items-center gap-2 text-red-500 cursor-pointer fixed right-8 top-24 z-9999 p-3 bg-neutral-800/50 backdrop-blur rounded-full hover:bg-neutral-800 transition-colors"
+          onClick={logout}
+          title="Logout"
+        >
+          <LogOutIcon />
+        </button>
+      )}
       {children}
     </AuthContext.Provider>
   );

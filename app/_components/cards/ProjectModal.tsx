@@ -1,7 +1,13 @@
 import ContentSpan from "@/components/customs/ContentEditSpan";
 import EditableImage from "@/components/customs/EditableImage";
 import { Project } from "@/types";
-import { ExternalLinkIcon, GithubIcon, XIcon } from "lucide-react";
+import {
+  ExternalLinkIcon,
+  GithubIcon,
+  XIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+} from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 import ReactMarkdown from "react-markdown";
@@ -10,12 +16,19 @@ import gsap from "gsap";
 
 export function ProjectModal({
   project,
+  projects,
   onClose,
+  onNavigate,
 }: {
   project: Project;
+  projects: Project[];
   onClose: () => void;
+  onNavigate: (project: Project) => void;
 }) {
   const modalRef = useRef<HTMLDivElement>(null);
+  const currentIndex = projects.findIndex((p) => p.id === project.id);
+  const hasPrevious = currentIndex > 0;
+  const hasNext = currentIndex < projects.length - 1;
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -30,6 +43,12 @@ export function ProjectModal({
 
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
+      if (e.key === "ArrowLeft" && hasPrevious) {
+        onNavigate(projects[currentIndex - 1]);
+      }
+      if (e.key === "ArrowRight" && hasNext) {
+        onNavigate(projects[currentIndex + 1]);
+      }
     };
 
     document.addEventListener("keydown", handleEscape);
@@ -38,27 +57,59 @@ export function ProjectModal({
       document.body.style.overflow = "";
       document.removeEventListener("keydown", handleEscape);
     };
-  }, [onClose]);
+  }, [onClose, currentIndex, hasPrevious, hasNext, projects, onNavigate]);
+
+  const handlePrevious = () => {
+    if (hasPrevious) {
+      onNavigate(projects[currentIndex - 1]);
+    }
+  };
+
+  const handleNext = () => {
+    if (hasNext) {
+      onNavigate(projects[currentIndex + 1]);
+    }
+  };
 
   return (
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 md:p-8 bg-black/90 backdrop-blur-sm"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 md:p-8 bg-black/80 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
         ref={modalRef}
-        className="relative w-full max-w-6xl max-h-[90vh] overflow-y-auto bg-neutral-900 rounded-2xl border border-neutral-700 shadow-2xl"
+        className="relative w-full max-w-7xl max-h-[90vh] overflow-y-auto bg-neutral-900 rounded-2xl border border-neutral-700 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <button
           onClick={onClose}
-          className="sticky top-4 right-4 float-right z-10 p-3 bg-neutral-800/80 backdrop-blur rounded-full hover:bg-neutral-700 transition-colors"
+          className="absolute top-4 right-4 z-10 p-3 bg-neutral-800/80 backdrop-blur rounded-full hover:bg-neutral-700 transition-colors"
         >
           <XIcon className="w-6 h-6" />
         </button>
 
-        <div className="p-8 lg:p-12">
-          <div className="aspect-video rounded-xl overflow-hidden bg-neutral-800 mb-8">
+        {hasPrevious && (
+          <button
+            onClick={handlePrevious}
+            className="absolute top-1/2 -translate-y-1/2 left-4 z-10 p-3 bg-neutral-800/80 backdrop-blur rounded-full hover:bg-neutral-700 transition-colors hidden lg:flex"
+            title="Previous Project"
+          >
+            <ChevronLeftIcon className="w-6 h-6" />
+          </button>
+        )}
+
+        {hasNext && (
+          <button
+            onClick={handleNext}
+            className="absolute top-1/2 -translate-y-1/2 right-4 z-10 p-3 bg-neutral-800/80 backdrop-blur rounded-full hover:bg-neutral-700 transition-colors hidden lg:flex"
+            title="Next Project"
+          >
+            <ChevronRightIcon className="w-6 h-6" />
+          </button>
+        )}
+
+        <div className="grid lg:grid-cols-2 gap-0">
+          <div className="lg:sticky lg:top-0 lg:h-[90vh] bg-neutral-800">
             <EditableImage
               sectionKey={`project-${project.id}`}
               fieldKey="thumbnail"
@@ -69,7 +120,7 @@ export function ProjectModal({
             />
           </div>
 
-          <div className="space-y-6">
+          <div className="p-8 lg:p-12 space-y-6">
             <div>
               <span className="inline-block px-4 py-1.5 bg-primary/10 text-primary rounded-full text-sm font-medium uppercase tracking-wider mb-6">
                 <ContentSpan
@@ -149,6 +200,25 @@ export function ProjectModal({
                   View Code
                 </Link>
               )}
+            </div>
+
+            <div className="flex lg:hidden gap-4 pt-4">
+              <button
+                onClick={handlePrevious}
+                disabled={!hasPrevious}
+                className="flex-1 px-6 py-3 bg-neutral-800/50 rounded-lg hover:bg-neutral-800 transition-colors flex items-center justify-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                <ChevronLeftIcon className="w-5 h-5" />
+                Previous
+              </button>
+              <button
+                onClick={handleNext}
+                disabled={!hasNext}
+                className="flex-1 px-6 py-3 bg-neutral-800/50 rounded-lg hover:bg-neutral-800 transition-colors flex items-center justify-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                Next
+                <ChevronRightIcon className="w-5 h-5" />
+              </button>
             </div>
           </div>
         </div>

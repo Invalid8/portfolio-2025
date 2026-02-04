@@ -2,6 +2,7 @@ import Banner from "./sections/Banner";
 import About from "./sections/About";
 import Projects from "./sections/Projects";
 import Experience from "./sections/Experience";
+import Skills from "./sections/Skills";
 import Contact from "./sections/Contact";
 import type { Project, Experience as ExperienceType, Skill } from "@/types";
 
@@ -21,10 +22,8 @@ export default function Home({
       <Banner initialSkills={initialSkills} />
       <About />
       <Projects initialProjects={initialProjects} />
-      <Experience
-        initialExperiences={initialExperiences}
-        initialSkills={initialSkills}
-      />
+      <Experience initialExperiences={initialExperiences} />
+      <Skills initialSkills={initialSkills} />
       <Contact />
     </div>
   );

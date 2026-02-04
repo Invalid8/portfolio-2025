@@ -1,13 +1,25 @@
 "use client";
+
 import { useAuth } from "@/lib/context/auth";
+import { usePageContext } from "@/lib/context/PageContent";
 import { cn } from "@/lib/utils";
-import { CameraIcon, EditIcon, Loader2Icon } from "lucide-react";
+import {
+  CameraIcon,
+  EditIcon,
+  Loader2Icon,
+  SaveIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+} from "lucide-react";
 import { useState, useRef } from "react";
 import { domToPng } from "modern-screenshot";
 
 function Toolkit() {
-  const { isEditing, toggleEdit } = useAuth();
+  const { isEditing, toggleEdit, isAdmin } = useAuth();
+  const { hasUnsavedChanges, saveAll } = usePageContext();
   const [isCapturing, setIsCapturing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(false);
   const toolbarRef = useRef<HTMLElement>(null);
 
   async function takeScreenShot() {
@@ -55,45 +67,108 @@ function Toolkit() {
     }
   }
 
+  async function handleSave() {
+    setIsSaving(true);
+    try {
+      await saveAll();
+    } catch (error) {
+      console.error("Save failed:", error);
+      alert("Failed to save changes");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
   return (
     <menu
       ref={toolbarRef}
-      className="flex justify-center items-center fixed bottom-8 left-0 right-0 z-999"
+      className={cn(
+        "flex justify-center items-center fixed bottom-8 z-999 transition-all duration-300",
+        isMinimized ? "left-0" : "left-0 right-0",
+      )}
     >
-      <nav className="h-16 rounded-full bg-white/3 backdrop-blur-lg border-2 border-primary px-2 py-4 max-w-sms flex items-center gap-3 justify-center">
+      {isMinimized ? (
         <button
-          onClick={toggleEdit}
-          title="Edit Portfolio"
-          aria-label="Edit Portfolio"
-          disabled={isCapturing}
-          className={cn(
-            "p-3 text-primary cursor-pointer hover:bg-white/4 transition-colors rounded-full size-12 min-w-8 fij",
-            isEditing && "bg-primary text-white",
-            isCapturing && "opacity-50 cursor-not-allowed"
-          )}
+          onClick={() => setIsMinimized(false)}
+          className="ml-8 p-3 bg-white/3 backdrop-blur-lg border-2 border-primary rounded-full hover:bg-white/5 transition-colors"
+          title="Expand Toolkit"
         >
-          <EditIcon />
+          <ChevronRightIcon className="text-primary" />
         </button>
+      ) : (
+        <nav className="h-16 rounded-full bg-white/3 backdrop-blur-lg border-2 border-primary px-2 py-4 max-w-sm flex items-center gap-3 justify-center">
+          <button
+            onClick={() => setIsMinimized(true)}
+            className="p-3 text-primary cursor-pointer hover:bg-white/4 transition-colors rounded-full size-12 min-w-8 fij"
+            title="Minimize"
+          >
+            <ChevronLeftIcon />
+          </button>
 
-        <span className="h-6 w-0.5 bg-primary/30"></span>
+          <span className="h-6 w-0.5 bg-primary/30"></span>
 
-        <button
-          onClick={takeScreenShot}
-          title="Take Screenshot"
-          aria-label="Take Screenshot"
-          disabled={isCapturing}
-          className={cn(
-            "p-3 text-primary cursor-pointer hover:bg-white/4 transition-colors rounded-full size-12 min-w-8 fij",
-            isCapturing && "opacity-50 cursor-not-allowed"
+          <button
+            onClick={toggleEdit}
+            title="Edit Portfolio"
+            aria-label="Edit Portfolio"
+            disabled={isCapturing}
+            className={cn(
+              "p-3 text-primary cursor-pointer hover:bg-white/4 transition-colors rounded-full size-12 min-w-8 fij relative",
+              isEditing && "bg-primary text-white",
+              isCapturing && "opacity-50 cursor-not-allowed",
+            )}
+          >
+            <EditIcon />
+            {isEditing && (
+              <span className="absolute -top-1 -right-1 size-3 bg-green-500 rounded-full animate-pulse"></span>
+            )}
+          </button>
+
+          {isAdmin && hasUnsavedChanges && (
+            <>
+              <span className="h-6 w-0.5 bg-primary/30"></span>
+              <button
+                onClick={handleSave}
+                title="Save Changes"
+                aria-label="Save Changes"
+                disabled={isSaving || isCapturing}
+                className={cn(
+                  "p-3 text-primary cursor-pointer hover:bg-white/4 transition-colors rounded-full size-12 min-w-8 fij relative",
+                  isSaving && "opacity-50 cursor-not-allowed",
+                )}
+              >
+                {isSaving ? (
+                  <Loader2Icon className="animate-spin" />
+                ) : (
+                  <>
+                    <SaveIcon />
+                    <span className="absolute -top-1 -right-1 size-3 bg-orange-500 rounded-full animate-pulse"></span>
+                  </>
+                )}
+              </button>
+            </>
           )}
-        >
-          {isCapturing ? (
-            <Loader2Icon className="animate-spin" />
-          ) : (
-            <CameraIcon />
-          )}
-        </button>
-      </nav>
+
+          <span className="h-6 w-0.5 bg-primary/30"></span>
+
+          <button
+            onClick={takeScreenShot}
+            title="Take Screenshot"
+            aria-label="Take Screenshot"
+            disabled={isCapturing}
+            className={cn(
+              "p-3 text-primary cursor-pointer hover:bg-white/4 transition-colors rounded-full size-12 min-w-8 fij",
+              isCapturing && "opacity-50 cursor-not-allowed",
+            )}
+          >
+            {isCapturing ? (
+              <Loader2Icon className="animate-spin" />
+            ) : (
+              <CameraIcon />
+            )}
+          </button>
+        </nav>
+      )}
     </menu>
   );
 }

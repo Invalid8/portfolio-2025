@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useMemo, useCallback, useState } from "react";
@@ -18,6 +17,7 @@ import {
 } from "slate-react";
 import { usePageContext } from "@/lib/context/PageContent";
 import { useAuth } from "@/lib/context/auth";
+import { cn } from "@/lib/utils";
 
 interface ContentSpanProps {
   sectionKey: string;
@@ -74,6 +74,7 @@ function parseSpecialString(input: string): CustomText[] {
         out.push({ text: m[1], link: m[2] });
       } else {
         const inner = parseSpecialString(m[1]);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         inner.forEach((n) => ((n as any)[p.mark] = true));
         out.push(...inner);
       }
@@ -104,19 +105,22 @@ function serialize(nodes: Descendant[]): string {
   return nodes
     .map((n) => {
       if (!("children" in n)) return "";
-      return n.children
-        .map((l: any) => {
-          if (l.break) return "~~br~~";
-          let t = l.text;
-          if (l.link) t = `[${t}](${l.link})`;
-          if (l.underline) t = `__${t}__`;
-          if (l.primary) t = `^^${t}^^`;
-          if (l.strike) t = `~~${t}~~`;
-          if (l.italic) t = `*${t}*`;
-          if (l.bold) t = `**${t}**`;
-          return t;
-        })
-        .join("");
+      return (
+        n.children
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .map((l: any) => {
+            if (l.break) return "~~br~~";
+            let t = l.text;
+            if (l.link) t = `[${t}](${l.link})`;
+            if (l.underline) t = `__${t}__`;
+            if (l.primary) t = `^^${t}^^`;
+            if (l.strike) t = `~~${t}~~`;
+            if (l.italic) t = `*${t}*`;
+            if (l.bold) t = `**${t}**`;
+            return t;
+          })
+          .join("")
+      );
     })
     .join("\n");
 }
@@ -229,6 +233,7 @@ export default function ContentSpan({
 }: ContentSpanProps) {
   const { sections, editField, saveSection } = usePageContext();
   const { isEditing } = useAuth();
+  const [isFocused, setIsFocused] = useState(false);
 
   const raw =
     sections[sectionKey]?.[fieldKey] ??
@@ -242,10 +247,14 @@ export default function ContentSpan({
   const [value, setValue] = useState<Descendant[]>(createInitialValue(raw));
 
   const handleBlur = useCallback(async () => {
+    setIsFocused(false);
     const serialized = serialize(value);
     editField(sectionKey, fieldKey, serialized);
-    await saveSection(sectionKey);
-  }, [value, sectionKey, fieldKey, editField, saveSection]);
+  }, [value, sectionKey, fieldKey, editField]);
+
+  const handleFocus = useCallback(() => {
+    setIsFocused(true);
+  }, []);
 
   if (!isEditing) {
     return (
@@ -260,7 +269,16 @@ export default function ContentSpan({
       <Editable
         renderLeaf={renderLeaf}
         onBlur={handleBlur}
-        className={className}
+        onFocus={handleFocus}
+        className={cn(
+          className,
+          "transition-all duration-200 cursor-text",
+          isFocused &&
+            "ring-2 ring-primary/50 ring-offset-2 ring-offset-neutral-900 rounded-sm px-1",
+          !isFocused &&
+            isEditing &&
+            "hover:ring-1 hover:ring-primary/30 hover:ring-offset-1 hover:ring-offset-neutral-900 hover:rounded-sm hover:px-1",
+        )}
         style={{
           display: "inline",
           padding: 0,
@@ -270,7 +288,6 @@ export default function ContentSpan({
           fontSize: "inherit",
           lineHeight: "inherit",
           whiteSpace: "pre-wrap",
-          cursor: "text",
         }}
       />
     </Slate>

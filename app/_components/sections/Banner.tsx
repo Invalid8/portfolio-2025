@@ -52,7 +52,7 @@ export default function Banner({ initialSkills = [] }: BannerProps) {
   const showMarquee = !loading && skills.length > 0;
 
   return (
-    <div className="size-full min-h-[calc(100svh-var(--nav-h)-80px)] p-5 flex flex-col justify-center relative">
+    <div className="size-full min-h-[calc(100svh-var(--nav-h)-60px)] sm:min-h-[calc(100svh-var(--nav-h))] p-5 flex flex-col justify-center relative">
       <div className="md:px-[8%] xl:px-[10%] xl:max-w-7/10 z-10 space-y-6">
         <h1 className="text-5xl sm:text-[clamp(4rem,10vw,7rem)] sm:leading-[clamp(4rem,10vw,7rem)] font-semibold">
           <ContentSpan

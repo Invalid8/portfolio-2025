@@ -5,24 +5,7 @@ import { usePageContext } from "@/lib/context/PageContent";
 import { useEffect } from "react";
 import { MailIcon, MapPinIcon, PhoneIcon, SendIcon } from "lucide-react";
 import Link from "next/link";
-
-const socialLinks = [
-  {
-    name: "GitHub",
-    url: "https://github.com/Invalid8",
-    icon: "GH",
-  },
-  {
-    name: "LinkedIn",
-    url: "https://www.linkedin.com/in/daniel-fadamitan-a08052247",
-    icon: "LI",
-  },
-  {
-    name: "Twitter",
-    url: "https://x.com/D_Invalid1",
-    icon: "X",
-  },
-];
+import { SOCIAL_LINKS } from "@/lib/constants";
 
 export default function Contact() {
   const { setSection } = usePageContext();
@@ -95,15 +78,15 @@ export default function Contact() {
             <div className="pt-6 border-t border-neutral-800">
               <p className="text-sm text-neutral-500 mb-4">Follow me on</p>
               <div className="flex gap-4">
-                {socialLinks.map((link) => (
+                {SOCIAL_LINKS.map((link) => (
                   <Link
                     key={link.name}
-                    href={link.url}
+                    href={link.link}
                     target="_blank"
                     className="w-12 h-12 rounded-full bg-neutral-800/50 backdrop-blur border border-neutral-700/50 hover:bg-primary hover:border-primary flex items-center justify-center transition-all hover:scale-110 font-mono font-medium"
                     title={link.name}
                   >
-                    {link.icon}
+                    {link.label}
                   </Link>
                 ))}
               </div>

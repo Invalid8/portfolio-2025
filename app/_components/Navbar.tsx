@@ -4,26 +4,7 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import ContentSpan from "@/components/customs/ContentEditSpan";
-
-const links = [
-  {
-    name: "Github",
-    label: "GH",
-    link: "https://github.com/Invalid8",
-  },
-  {
-    name: "LinkedIn",
-    label: "LI",
-    link: "https://www.linkedin.com/in/daniel-fadamitan-a08052247",
-  },
-  {
-    name: "Twitter",
-    label: "X",
-    link: "https://x.com/D_Invalid1",
-  },
-];
-
-const sections = ["About", "Projects", "Experience", "Contact"];
+import { SOCIAL_LINKS, SECTIONS } from "@/lib/constants";
 
 function Navbar() {
   const [passed, setPassed] = useState(false);
@@ -35,7 +16,7 @@ function Navbar() {
 
       const scrollPosition = window.scrollY + window.innerHeight / 3;
 
-      for (const section of sections) {
+      for (const section of SECTIONS) {
         const element = document.getElementById(section);
         if (element) {
           const rect = element.getBoundingClientRect();
@@ -68,14 +49,13 @@ function Navbar() {
         className={cn(
           "min-h-(--nav-h) w-full py-3 px-5 lg:px-10 flex items-center z-999 sticky top-0 transition-all",
           passed &&
-            "backdrop-blur-sm bg-neutral-900/50 border-b border-white/5",
+            "backdrop-blur-sm bg-neutral-900/30 border-b border-white/5",
         )}
       >
         <nav className="w-full flex items-center justify-between">
-          {/* Social Links */}
           <div>
             <ul className="inline-flex gap-4 lg:gap-6">
-              {links.map((x, idx) => (
+              {SOCIAL_LINKS.map((x, idx) => (
                 <li
                   key={x.label}
                   className="flex items-center gap-4 lg:gap-6 group"
@@ -88,7 +68,7 @@ function Navbar() {
                   >
                     {x.label}
                   </Link>
-                  {idx < links.length - 1 && (
+                  {idx < SOCIAL_LINKS.length - 1 && (
                     <span className="block size-1 min-w-1 bg-primary rounded-full"></span>
                   )}
                 </li>
@@ -96,7 +76,6 @@ function Navbar() {
             </ul>
           </div>
 
-          {/* Logo */}
           <div className="absolute left-1/2 -translate-x-1/2 hidden md:block">
             <Link
               href="/"
@@ -112,9 +91,8 @@ function Navbar() {
             </Link>
           </div>
 
-          {/* Nav Sections - Desktop */}
           <div className="hidden lg:flex items-center gap-8">
-            {sections.map((section) => (
+            {SECTIONS.map((section) => (
               <button
                 key={section}
                 onClick={() => scrollToSection(section)}
@@ -132,9 +110,8 @@ function Navbar() {
         </nav>
       </header>
 
-      {/* Side Navigation Indicator */}
       <aside className="fixed top-1/2 -translate-y-1/2 left-8 hidden lg:flex flex-col items-center gap-8 z-998">
-        {sections.map((section) => (
+        {SECTIONS.map((section) => (
           <button
             key={section}
             onClick={() => scrollToSection(section)}
