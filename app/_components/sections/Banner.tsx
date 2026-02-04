@@ -54,7 +54,7 @@ export default function Banner({ initialSkills = [] }: BannerProps) {
   return (
     <div className="size-full min-h-[calc(100svh-var(--nav-h))] p-5 flex flex-col justify-center relative">
       <div className="md:px-[8%] xl:px-[10%] xl:max-w-7/10 z-10 space-y-6">
-        <h1 className="text-[clamp(4rem,10vw,7rem)] leading-[clamp(4rem,10vw,7rem)] font-semibold">
+        <h1 className="text-4xl sm:text-[clamp(4rem,10vw,7rem)] leading-[clamp(4rem,10vw,7rem)] font-semibold">
           <ContentSpan
             sectionKey="banner"
             fieldKey="titleLine"
