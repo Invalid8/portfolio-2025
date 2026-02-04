@@ -1,4 +1,4 @@
-"use client";
+export const revalidate = 60;
 
 import Banner from "./_components/sections/Banner";
 import About from "./_components/sections/About";
