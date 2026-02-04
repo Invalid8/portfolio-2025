@@ -13,6 +13,8 @@ import { Textarea } from "@/components/ui/textarea";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { EyeIcon, EditIcon, SaveIcon, XIcon } from "lucide-react";
+import { toast } from "sonner";
+import { usePageContext } from "@/lib/context/PageContent";
 
 interface MarkdownEditorProps {
   initialValue: string;
@@ -41,6 +43,13 @@ export function MarkdownEditor({
     setOpen(false);
   };
 
+  const handleOpenChange = (newOpen: boolean) => {
+    if (newOpen) {
+      setContent(initialValue);
+    }
+    setOpen(newOpen);
+  };
+
   return (
     <>
       {trigger ? (
@@ -52,8 +61,8 @@ export function MarkdownEditor({
         </Button>
       )}
 
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-4xl h-[80vh] flex flex-col">
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        <DialogContent className="md:max-w-4xl w-full h-[80vh] flex flex-col z-[10001]">
           <DialogHeader>
             <DialogTitle className="flex items-center justify-between">
               <span>{title}</span>
@@ -163,7 +172,6 @@ interface ProjectContentEditorProps {
 }
 
 export function ProjectContentEditor({
-  projectId,
   content,
   onSave,
 }: ProjectContentEditorProps) {
@@ -173,9 +181,10 @@ export function ProjectContentEditor({
     setSaving(true);
     try {
       await onSave(newContent);
+      toast.success("Content saved successfully!");
     } catch (error) {
       console.error("Failed to save content:", error);
-      alert("Failed to save content");
+      toast.error("Failed to save content");
     } finally {
       setSaving(false);
     }

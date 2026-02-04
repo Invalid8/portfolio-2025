@@ -13,23 +13,30 @@ import { useEffect, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import gsap from "gsap";
+import { ProjectContentEditor } from "@/components/customs/MarkdownEditor";
+import { useAuth } from "@/lib/context/auth";
 
 export function ProjectModal({
   project,
   projects,
   onClose,
   onNavigate,
+  onUpdateContent,
 }: {
   project: Project;
   projects: Project[];
   onClose: () => void;
   onNavigate: (project: Project) => void;
+  onUpdateContent: (projectId: string, content: string) => Promise<void>;
 }) {
+  const { isEditing } = useAuth();
   const modalRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const imageContainerRef = useRef<HTMLDivElement>(null);
   const isInitialMount = useRef(true);
+  const isAnimating = useRef(false);
+  const previousProjectId = useRef(project.id);
 
   const currentIndex = projects.findIndex((p) => p.id === project.id);
   const hasPrevious = currentIndex > 0;
@@ -51,10 +58,10 @@ export function ProjectModal({
 
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
-      if (e.key === "ArrowLeft" && hasPrevious) {
+      if (e.key === "ArrowLeft" && hasPrevious && !isAnimating.current) {
         onNavigate(projects[currentIndex - 1]);
       }
-      if (e.key === "ArrowRight" && hasNext) {
+      if (e.key === "ArrowRight" && hasNext && !isAnimating.current) {
         onNavigate(projects[currentIndex + 1]);
       }
     };
@@ -68,17 +75,29 @@ export function ProjectModal({
   }, [onClose, currentIndex, hasPrevious, hasNext, projects, onNavigate]);
 
   useEffect(() => {
+    // Only run animation if project actually changed
+    if (previousProjectId.current === project.id) {
+      return;
+    }
+
+    previousProjectId.current = project.id;
+
     if (!isInitialMount.current && imageRef.current && contentRef.current) {
       if (!isDesktop()) return;
 
       const scrollContainer = contentRef.current;
 
+      // Prevent animation if already animating
+      if (isAnimating.current) return;
+
+      isAnimating.current = true;
       scrollContainer.scrollTop = 0;
       scrollContainer.style.overflowY = "hidden";
 
       const tl = gsap.timeline({
         onComplete: () => {
           scrollContainer.style.overflowY = "auto";
+          isAnimating.current = false;
         },
       });
 
@@ -125,13 +144,13 @@ export function ProjectModal({
   }, [project.id]);
 
   const handlePrevious = () => {
-    if (hasPrevious) {
+    if (hasPrevious && !isAnimating.current) {
       onNavigate(projects[currentIndex - 1]);
     }
   };
 
   const handleNext = () => {
-    if (hasNext) {
+    if (hasNext && !isAnimating.current) {
       onNavigate(projects[currentIndex + 1]);
     }
   };
@@ -266,7 +285,25 @@ export function ProjectModal({
             </div>
 
             {project.content && (
-              <ProjectModalContent content={project.content} />
+              <>
+                <div className="flex justify-end">
+                  {isEditing && (
+                    <ProjectContentEditor
+                      projectId={project.id as string}
+                      content={project.content}
+                      onSave={(content) =>
+                        onUpdateContent(project.id as string, content)
+                      }
+                    />
+                  )}
+                </div>
+
+                <div className="prose prose-invert max-w-none">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {project.content}
+                  </ReactMarkdown>
+                </div>
+              </>
             )}
 
             <div className="flex flex-col sm:flex-row gap-4 pt-8">
@@ -313,14 +350,6 @@ export function ProjectModal({
           </div>
         </div>
       </div>
-    </div>
-  );
-}
-
-function ProjectModalContent({ content }: { content: string }) {
-  return (
-    <div className="prose prose-invert max-w-none prose-h2:text-primary prose-h3:text-primary prose-a:text-primary prose-a:no-underline hover:prose-a:underline">
-      <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
     </div>
   );
 }

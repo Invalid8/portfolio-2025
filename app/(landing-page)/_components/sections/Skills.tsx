@@ -97,8 +97,8 @@ export default function SkillsSection() {
       className="w-full py-20 px-5 md:px-10 bg-neutral-900/20"
     >
       <div className="max-w-7xl mx-auto space-y-16">
-        <div className="space-y-4 flex items-start justify-between">
-          <div>
+        <div className="space-y-4 flex items-start justify-between gap-3">
+          <div className="space-y-1">
             <h2 className="text-4xl lg:text-6xl font-bold">
               <ContentSpan sectionKey="skills-header" fieldKey="title">
                 SKILLS & TECHNOLOGIES

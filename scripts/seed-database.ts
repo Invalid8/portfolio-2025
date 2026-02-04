@@ -118,7 +118,9 @@ async function seedPortfolioSections() {
     banner: {
       titleLine: "Frontend~~br~~^^Developer^^",
       subtitle:
-        "A Nigerian based **^^Frontend Developer^^** passionate about building accessible and user friendly **^^websites^^**.~~br~~~~br~~^^__**[My Resume](https://drive.google.com/file/d/1ixmuBYgzXQdXrTn1n9aoz4SWYRU715h-/view)**__^^",
+        "A Nigerian based **^^Frontend Developer^^** passionate about building accessible and user friendly **^^websites^^**.",
+      resume:
+        "^^__**[My Resume](https://drive.google.com/file/d/1ixmuBYgzXQdXrTn1n9aoz4SWYRU715h-/view)**__^^",
     },
     about: {
       leading1:

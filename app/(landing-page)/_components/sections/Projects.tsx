@@ -12,6 +12,7 @@ import gsap from "gsap";
 import { ProjectCard } from "../cards/ProjectCard";
 import { PlusIcon } from "lucide-react";
 import { ProjectModal } from "../cards/ProjectModal";
+import { toast } from "sonner";
 
 function isProject(section: Section): section is Section & Project {
   return (
@@ -82,9 +83,41 @@ export default function Projects() {
         collection: "projects",
         id: String(newProject.id),
       });
-    } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
       console.error("Error adding project:", error);
       throw error;
+    }
+  };
+
+  const updateProjectContent = async (projectId: string, content: string) => {
+    const sectionKey = `project-${projectId}`;
+
+    setSection("projects", sectionKey, {
+      ...projectsCollection[sectionKey],
+      content,
+    });
+
+    setSelectedProject((prev) =>
+      prev && prev.id === projectId ? { ...prev, content } : prev,
+    );
+
+    if (!isAdmin || !isEditing) return;
+
+    try {
+      const res = await fetch(`/api/admin/firebase/projects/${projectId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to persist project content");
+      }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: any) {
+      toast.error(err.toString());
+      console.error("updateProjectContent failed:", err);
     }
   };
 
@@ -109,7 +142,7 @@ export default function Projects() {
         className="min-h-svh w-full py-20 px-5 md:px-10 relative overflow-hidden"
       >
         <div className="max-w-7xl mx-auto space-y-16">
-          <div className="space-y-4 flex items-start justify-between">
+          <div className="space-y-4 flex items-start justify-between gap-3">
             <div>
               <h2 className="text-4xl lg:text-6xl font-bold">
                 <ContentSpan sectionKey="projects-header" fieldKey="title">
@@ -170,6 +203,7 @@ export default function Projects() {
           projects={projects}
           onClose={() => setSelectedProject(null)}
           onNavigate={(project) => setSelectedProject(project)}
+          onUpdateContent={(id, content) => updateProjectContent(id, content)}
         />
       )}
     </>

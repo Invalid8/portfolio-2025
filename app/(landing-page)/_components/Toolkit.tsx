@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useState, useRef } from "react";
 import { domToPng } from "modern-screenshot";
+import { toast } from "sonner";
 
 function Toolkit() {
   const { isEditing, toggleEdit, isAdmin } = useAuth();
@@ -55,9 +56,10 @@ function Toolkit() {
       link.download = `portfolio-${Date.now()}.png`;
       link.href = dataUrl;
       link.click();
-    } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      toast.error(error.toString());
       console.error("Screenshot failed:", error);
-      alert("Failed to capture screenshot");
 
       if (toolbarRef.current) {
         toolbarRef.current.style.display = "";
@@ -73,7 +75,7 @@ function Toolkit() {
       await saveAll();
     } catch (error) {
       console.error("Save failed:", error);
-      alert("Failed to save changes");
+      toast.error("Failed to save changes");
     } finally {
       setIsSaving(false);
     }

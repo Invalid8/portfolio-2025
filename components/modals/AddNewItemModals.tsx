@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { PlusIcon, Loader2Icon } from "lucide-react";
+import { toast } from "sonner";
 
 interface AddProjectModalProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -54,7 +55,7 @@ export function AddProjectModal({ onAdd }: AddProjectModalProps) {
       });
     } catch (error) {
       console.error("Failed to add project:", error);
-      alert("Failed to add project");
+      toast.error("Failed to add project");
     } finally {
       setLoading(false);
     }
@@ -64,10 +65,10 @@ export function AddProjectModal({ onAdd }: AddProjectModalProps) {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="group flex items-center gap-3 px-8 py-4 bg-primary/10 backdrop-blur border border-primary/30 rounded-full hover:bg-primary/20 transition-all"
+        className="group flex items-center gap-3 md:px-8 px-6 py-4 bg-primary/10 backdrop-blur border border-primary/30 rounded-full hover:bg-primary/20 transition-all"
       >
         <PlusIcon className="w-5 h-5 text-primary" />
-        <span className="font-medium text-primary">
+        <span className="font-medium text-primary flex gap-2 items-center">
           Add <span className="hidden lg:block">New Project</span>
         </span>
       </button>
@@ -227,7 +228,7 @@ export function AddSkillModal({ onAdd }: AddSkillModalProps) {
       });
     } catch (error) {
       console.error("Failed to add skill:", error);
-      alert("Failed to add skill");
+      toast.error("Failed to add skill");
     } finally {
       setLoading(false);
     }
@@ -237,10 +238,10 @@ export function AddSkillModal({ onAdd }: AddSkillModalProps) {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="group flex items-center gap-3 px-8 py-4 bg-primary/10 backdrop-blur border border-primary/30 rounded-full hover:bg-primary/20 transition-all"
+        className="group flex items-center gap-3 md:px-8 px-6 py-4 bg-primary/10 backdrop-blur border border-primary/30 rounded-full hover:bg-primary/20 transition-all"
       >
         <PlusIcon className="w-5 h-5 text-primary" />
-        <span className="font-medium text-primary">
+        <span className="font-medium text-primary flex gap-2 items-center">
           Add <span className="hidden lg:block">New Skill</span>
         </span>
       </button>
@@ -388,7 +389,7 @@ export function AddExperienceModal({ onAdd }: AddExperienceModalProps) {
       });
     } catch (error) {
       console.error("Failed to add experience:", error);
-      alert("Failed to add experience");
+      toast.error("Failed to add experience");
     } finally {
       setLoading(false);
     }
@@ -398,10 +399,10 @@ export function AddExperienceModal({ onAdd }: AddExperienceModalProps) {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="group flex items-center gap-3 px-8 py-4 bg-primary/10 backdrop-blur border border-primary/30 rounded-full hover:bg-primary/20 transition-all"
+        className="group flex items-center gap-3 md:px-8 px-6 py-4 bg-primary/10 backdrop-blur border border-primary/30 rounded-full hover:bg-primary/20 transition-all"
       >
         <PlusIcon className="w-5 h-5 text-primary" />
-        <span className="font-medium text-primary">
+        <span className="font-medium text-primary flex gap-2 items-center">
           Add <span className="hidden lg:block">New Experience</span>
         </span>
       </button>

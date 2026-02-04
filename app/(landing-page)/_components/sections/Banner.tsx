@@ -51,7 +51,19 @@ export default function Banner() {
             className="space-y-0"
           >
             {bannerSection.subtitle ||
-              `A Nigerian based **^^Frontend Developer^^** passionate about building accessible and user friendly **^^websites^^**.~~br~~~~br~~^^__**[My Resume](https://drive.google.com/file/d/1ixmuBYgzXQdXrTn1n9aoz4SWYRU715h-/view)**__^^`}
+              `A Nigerian based **^^Frontend Developer^^** passionate about building accessible and user friendly **^^websites^^**.`}
+          </ContentSpan>
+
+          <br />
+          <br />
+
+          <ContentSpan
+            sectionKey="banner"
+            fieldKey="resume"
+            className="space-y-0"
+          >
+            {bannerSection.resume ||
+              `^^__**[My Resume](https://drive.google.com/file/d/1ixmuBYgzXQdXrTn1n9aoz4SWYRU715h-/view)**__^^`}
           </ContentSpan>
         </p>
       </div>

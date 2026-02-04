@@ -10,6 +10,7 @@ import {
 import { serializeFirestoreData } from "@/lib/serialize";
 import { ReactNode } from "react";
 import { Experience, Project, Skill, Section, NestedSections } from "@/types";
+import { toast } from "sonner";
 
 export default async function Layout({ children }: { children: ReactNode }) {
   let projects: Project[] = [];
@@ -38,7 +39,9 @@ export default async function Layout({ children }: { children: ReactNode }) {
     imagesData =
       serializeFirestoreData(await fetchByIdServer("portfolio", "images")) ||
       {};
-  } catch (err) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (err: any) {
+    toast.error(err.toString());
     console.error("Failed to load layout data:", err);
   }
 

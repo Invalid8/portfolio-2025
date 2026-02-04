@@ -18,7 +18,6 @@ export interface PendingImage {
   collection: string;
   docId: string;
   isExternal?: boolean;
-  clear?: boolean;
 }
 
 interface PageContextType {
@@ -41,6 +40,9 @@ interface PageContextType {
 
 const PageContext = createContext<PageContextType | undefined>(undefined);
 
+const dirtyKey = (collection: string, sectionKey: string) =>
+  `${collection}:${sectionKey}`;
+
 export const PageProvider = ({
   children,
   initialSections = {},
@@ -50,8 +52,10 @@ export const PageProvider = ({
 }) => {
   const [saving, setSaving] = useState(false);
   const [sections, setSections] = useState<NestedSections>(initialSections);
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
+  const [dirtySections, setDirtySections] = useState<Set<string>>(new Set());
+
+  const hasUnsavedChanges = dirtySections.size > 0;
 
   const setSection = useCallback(
     (collection: string, key: string, section: Section) => {
@@ -76,7 +80,12 @@ export const PageProvider = ({
           },
         },
       }));
-      setHasUnsavedChanges(true);
+
+      setDirtySections((prev) => {
+        const next = new Set(prev);
+        next.add(dirtyKey(collection, sectionKey));
+        return next;
+      });
     },
     [],
   );
@@ -93,7 +102,12 @@ export const PageProvider = ({
       ),
       image,
     ]);
-    setHasUnsavedChanges(true);
+
+    setDirtySections((prev) => {
+      const next = new Set(prev);
+      next.add(dirtyKey(image.collection, image.sectionKey));
+      return next;
+    });
   }, []);
 
   const saveSection = useCallback(
@@ -102,7 +116,7 @@ export const PageProvider = ({
       setSaving(true);
 
       const section = sections[collection]?.[sectionKey];
-      if (!section || !section.id || !section.collection) {
+      if (!section?.id || !section?.collection) {
         setSaving(false);
         return;
       }
@@ -112,10 +126,12 @@ export const PageProvider = ({
       );
 
       let updatedSection: Section = { ...section };
+
       for (const img of images) {
         const url = img.isExternal
           ? img.localUrl
           : await uploadToCloudinary(img.file!);
+
         updatedSection = { ...updatedSection, [img.fieldKey]: url };
       }
 
@@ -139,14 +155,20 @@ export const PageProvider = ({
             !(img.collection === collection && img.sectionKey === sectionKey),
         ),
       );
-      setHasUnsavedChanges(false);
+
+      setDirtySections((prev) => {
+        const next = new Set(prev);
+        next.delete(dirtyKey(collection, sectionKey));
+        return next;
+      });
+
       setSaving(false);
     },
     [sections, pendingImages, saving],
   );
 
   const saveAll = useCallback(async () => {
-    if (saving) return;
+    if (saving || dirtySections.size === 0) return;
     setSaving(true);
 
     const updatedSections: NestedSections = { ...sections };
@@ -158,6 +180,7 @@ export const PageProvider = ({
 
       if (!updatedSections[img.collection])
         updatedSections[img.collection] = {};
+
       if (!updatedSections[img.collection][img.sectionKey]) {
         updatedSections[img.collection][img.sectionKey] = {
           id: img.docId,
@@ -171,24 +194,23 @@ export const PageProvider = ({
       };
     }
 
-    for (const collection of Object.keys(updatedSections)) {
-      for (const key of Object.keys(updatedSections[collection])) {
-        const section = updatedSections[collection][key];
-        if (!section.id || !section.collection) continue;
+    for (const entry of dirtySections) {
+      const [collection, key] = entry.split(":");
+      const section = updatedSections[collection]?.[key];
+      if (!section?.id || !section?.collection) continue;
 
-        await fetch(`/api/admin/firebase/${section.collection}/${section.id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(section),
-        });
-      }
+      await fetch(`/api/admin/firebase/${section.collection}/${section.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(section),
+      });
     }
 
     setSections(updatedSections);
     setPendingImages([]);
-    setHasUnsavedChanges(false);
+    setDirtySections(new Set());
     setSaving(false);
-  }, [sections, pendingImages, saving]);
+  }, [sections, pendingImages, dirtySections, saving]);
 
   return (
     <PageContext.Provider

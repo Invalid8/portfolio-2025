@@ -1,5 +1,4 @@
 "use client";
-
 import {
   createContext,
   useContext,
@@ -17,6 +16,7 @@ import {
 import { setCookie, deleteCookie } from "cookies-next";
 import { LogOutIcon } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { ADMIN_LOGIN_ROUTE } from "../constants";
 
 interface AuthContextType {
@@ -42,13 +42,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const unsubscribe = auth.onAuthStateChanged(async (u) => {
       if (u) {
         setUser(u);
-
         const tokenResult = await u.getIdTokenResult();
         const admin = !!tokenResult.claims.admin;
-
         setIsAdmin(admin);
         setCookie("adminToken", tokenResult.token, { path: "/" });
-
         if (pathname.startsWith(ADMIN_LOGIN_ROUTE)) {
           router.replace("/");
         }
@@ -58,9 +55,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         deleteCookie("adminToken", { path: "/" });
       }
     });
-
     return () => unsubscribe();
   }, [router, pathname]);
+
+  useEffect(() => {
+    const originalFetch = window.fetch;
+
+    window.fetch = async (...args: Parameters<typeof fetch>) => {
+      try {
+        const response = await originalFetch(...args);
+
+        if (response.status === 401) {
+          try {
+            const data = await response.clone().json();
+            if (data.logout) {
+              toast.error("Session expired. Please login again.");
+              await signOut(auth);
+              setUser(null);
+              setIsAdmin(false);
+              setIsEditing(false);
+              deleteCookie("adminToken", { path: "/" });
+              router.push(ADMIN_LOGIN_ROUTE);
+            }
+          } catch (e) {
+            console.error("Error parsing 401 response:", e);
+          }
+        }
+
+        return response;
+      } catch (error) {
+        console.error("Fetch error:", error);
+        throw error;
+      }
+    };
+
+    return () => {
+      window.fetch = originalFetch;
+    };
+  }, [router]);
 
   const loginWithGoogle = async () => {
     const result = await signInWithPopup(auth, googleProvider);
