@@ -7,7 +7,7 @@ export const skills: Skill[] = [
 		value: 'HTML',
 		skillLevel: 100,
 		description: 'The backbone of all web content, ensuring semantic structure and accessibility.',
-		img: '/assets/image/skill/html.svg',
+		img: '/assets/images/skill/html.svg',
 		color: '#E34F26'
 	},
 	{
@@ -16,7 +16,7 @@ export const skills: Skill[] = [
 		value: 'CSS',
 		skillLevel: 100,
 		description: 'Styling websites with precision and responsiveness.',
-		img: '/assets/image/skill/css.svg',
+		img: '/assets/images/skill/css.svg',
 		color: '#1572B6'
 	},
 	{
@@ -25,7 +25,7 @@ export const skills: Skill[] = [
 		value: 'JavaScript',
 		skillLevel: 100,
 		description: 'Dynamic and interactive programming for web development.',
-		img: '/assets/image/skill/javascript.svg',
+		img: '/assets/images/skill/javascript.svg',
 		color: '#F7DF1E'
 	},
 	{
@@ -34,7 +34,7 @@ export const skills: Skill[] = [
 		value: 'TypeScript',
 		skillLevel: 90,
 		description: 'A strongly typed superset of JavaScript for safer and scalable development.',
-		img: '/assets/image/skill/typescript.svg',
+		img: '/assets/images/skill/typescript.svg',
 		color: '#3178C6'
 	},
 	{
@@ -43,7 +43,7 @@ export const skills: Skill[] = [
 		value: 'React',
 		skillLevel: 90,
 		description: 'Building interactive UIs and SPAs with reusable components.',
-		img: '/assets/image/skill/react.svg',
+		img: '/assets/images/skill/react.svg',
 		color: '#61DAFB'
 	},
 	{
@@ -52,7 +52,7 @@ export const skills: Skill[] = [
 		value: 'React Native',
 		skillLevel: 90,
 		description: 'Building interactive Mobile Apps with reusable components.',
-		img: '/assets/image/skill/react-native.svg',
+		img: '/assets/images/skill/react-native.svg',
 		color: '#61DAAD'
 	},
 	{
@@ -61,7 +61,7 @@ export const skills: Skill[] = [
 		value: 'Next.js',
 		skillLevel: 95,
 		description: 'Optimized React framework for server-side rendering and static site generation.',
-		img: '/assets/image/skill/nextjs.svg',
+		img: '/assets/images/skill/nextjs.svg',
 		color: '#000000'
 	},
 	{
@@ -70,7 +70,7 @@ export const skills: Skill[] = [
 		value: 'Svelte',
 		skillLevel: 85,
 		description: 'A compiler-based framework for highly optimized, fast web apps.',
-		img: '/assets/image/skill/svelte.svg',
+		img: '/assets/images/skill/svelte.svg',
 		color: '#FF3E00'
 	},
 	{
@@ -79,7 +79,7 @@ export const skills: Skill[] = [
 		value: 'Node.js',
 		skillLevel: 85,
 		description: 'Backend JavaScript runtime for building scalable server-side applications.',
-		img: '/assets/image/skill/nodejs.svg',
+		img: '/assets/images/skill/nodejs.svg',
 		color: '#339933'
 	},
 	{
@@ -88,7 +88,7 @@ export const skills: Skill[] = [
 		value: 'Tailwind CSS',
 		skillLevel: 100,
 		description: 'Utility-first CSS framework for rapid UI development.',
-		img: '/assets/image/skill/tailwindcss.svg',
+		img: '/assets/images/skill/tailwindcss.svg',
 		color: '#06B6D4'
 	},
 	{
@@ -97,7 +97,7 @@ export const skills: Skill[] = [
 		value: 'GraphQL',
 		skillLevel: 80,
 		description: 'A flexible query language for APIs to request exactly the needed data.',
-		img: '/assets/image/skill/graphql.svg',
+		img: '/assets/images/skill/graphql.svg',
 		color: '#E535AB'
 	},
 	{
@@ -106,7 +106,7 @@ export const skills: Skill[] = [
 		value: 'Vite',
 		skillLevel: 75,
 		description: 'A fast and efficient build tool for modern JavaScript frameworks.',
-		img: '/assets/image/skill/vite.svg',
+		img: '/assets/images/skill/vite.svg',
 		color: '#646CFF'
 	},
 	{
@@ -115,7 +115,7 @@ export const skills: Skill[] = [
 		value: 'Git',
 		skillLevel: 95,
 		description: 'Version control for tracking and managing code changes effectively.',
-		img: '/assets/image/skill/git.svg',
+		img: '/assets/images/skill/git.svg',
 		color: '#F05032'
 	},
 	{
@@ -125,7 +125,7 @@ export const skills: Skill[] = [
 		skillLevel: 85,
 		description:
 			'Cloud-based storage for images and videos with advanced transformation capabilities.',
-		img: '/assets/image/skill/cloudinary.svg',
+		img: '/assets/images/skill/cloudinary.svg',
 		color: '#3448C5'
 	},
 	{
@@ -134,7 +134,7 @@ export const skills: Skill[] = [
 		value: 'NPM',
 		skillLevel: 80,
 		description: 'JavaScript package manager for managing project dependencies.',
-		img: '/assets/image/skill/npm.svg',
+		img: '/assets/images/skill/npm.svg',
 		color: '#CB3837'
 	},
 	{
@@ -143,7 +143,7 @@ export const skills: Skill[] = [
 		value: 'Zod',
 		skillLevel: 85,
 		description: 'A TypeScript-first schema declaration and validation library.',
-		img: '/assets/image/skill/zod.svg',
+		img: '/assets/images/skill/zod.svg',
 		color: '#8552A1'
 	},
 	{
@@ -152,7 +152,7 @@ export const skills: Skill[] = [
 		value: 'Mailtrap',
 		skillLevel: 80,
 		description: 'Email testing service for simulating mail delivery in development.',
-		img: '/assets/image/skill/mailtrap.svg',
+		img: '/assets/images/skill/mailtrap.svg',
 		color: '#19A974'
 	},
 	{
@@ -162,7 +162,7 @@ export const skills: Skill[] = [
 		skillLevel: 85,
 		description: 'React UI framework for implementing Google Material Design.',
 		color: '#0081CB',
-		img: '/assets/image/skill/material-ui.svg'
+		img: '/assets/images/skill/material-ui.svg'
 	},
 	{
 		id: 21,
@@ -171,7 +171,7 @@ export const skills: Skill[] = [
 		skillLevel: 80,
 		description: 'Collaborative interface design and prototyping tool.',
 		color: '#F24E1E',
-		img: '/assets/image/skill/figma.svg'
+		img: '/assets/images/skill/figma.svg'
 	},
 	{
 		id: 22,
@@ -180,7 +180,7 @@ export const skills: Skill[] = [
 		skillLevel: 75,
 		description: 'Next-generation ORM for TypeScript and JavaScript.',
 		color: '#2D3748',
-		img: '/assets/image/skill/prisma.svg'
+		img: '/assets/images/skill/prisma.svg'
 	},
 	{
 		id: 23,
@@ -189,7 +189,7 @@ export const skills: Skill[] = [
 		skillLevel: 70,
 		description: 'JavaScript testing framework for unit and integration tests.',
 		color: '#C21325',
-		img: '/assets/image/skill/jest.svg'
+		img: '/assets/images/skill/jest.svg'
 	},
 	{
 		id: 24,
@@ -198,7 +198,7 @@ export const skills: Skill[] = [
 		skillLevel: 65,
 		description: 'Static site generator powered by Vite for documentation.',
 		color: '#646CFF',
-		img: '/assets/image/skill/vitepress.svg'
+		img: '/assets/images/skill/vitepress.svg'
 	},
 	{
 		id: 25,
@@ -207,7 +207,7 @@ export const skills: Skill[] = [
 		skillLevel: 80,
 		description: 'Simple yet flexible JavaScript charting library.',
 		color: '#FF6384',
-		img: '/assets/image/skill/chartjs.svg'
+		img: '/assets/images/skill/chartjs.svg'
 	},
 	{
 		id: 26,
@@ -216,7 +216,7 @@ export const skills: Skill[] = [
 		skillLevel: 75,
 		description: 'State management library for JavaScript applications.',
 		color: '#764ABC',
-		img: '/assets/image/skill/redux.svg'
+		img: '/assets/images/skill/redux.svg'
 	},
 	{
 		id: 27,
@@ -225,7 +225,7 @@ export const skills: Skill[] = [
 		skillLevel: 85,
 		description: 'TypeScript-first schema declaration and validation library.',
 		color: '#1F2937',
-		img: '/assets/image/skill/zod.svg'
+		img: '/assets/images/skill/zod.svg'
 	},
 	{
 		id: 28,
@@ -234,7 +234,7 @@ export const skills: Skill[] = [
 		skillLevel: 65,
 		description: 'All-in-one web framework for server-side rendering and islands architecture.',
 		color: '#FF5D01',
-		img: '/assets/image/skill/astro.svg'
+		img: '/assets/images/skill/astro.svg'
 	},
 	{
 		id: 29,
@@ -243,7 +243,7 @@ export const skills: Skill[] = [
 		skillLevel: 70,
 		description: 'Visual web design tool for building responsive websites.',
 		color: '#4353FF',
-		img: '/assets/image/skill/webflow.svg'
+		img: '/assets/images/skill/webflow.svg'
 	},
 	{
 		id: 30,
@@ -252,6 +252,6 @@ export const skills: Skill[] = [
 		skillLevel: 78,
 		description: 'Professional-grade JavaScript library for animations.',
 		color: '#88CE02',
-		img: '/assets/image/skill/gsap.svg'
+		img: '/assets/images/skill/gsap.svg'
 	}
 ];
