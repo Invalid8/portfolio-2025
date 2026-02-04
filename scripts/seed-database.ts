@@ -13,7 +13,6 @@ import { projects } from "../data/projects";
 import { experiences } from "../data/experiences";
 import { skills } from "../data/skills";
 
-// Load environment variables
 const serviceAccount = {
   project_id: process.env.FIREBASE_PROJECT_ID,
   clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
@@ -22,7 +21,6 @@ const serviceAccount = {
 
 const databaseURL = process.env.FIREBASE_DB_URL;
 
-// Initialize Firebase Admin
 if (!admin.apps.length) {
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
@@ -34,6 +32,15 @@ const db = admin.firestore();
 
 async function seedProjects() {
   console.log("🌱 Seeding projects...");
+
+  const batch = db.batch();
+  const existingDocs = await db.collection("projects").get();
+
+  existingDocs.docs.forEach((doc) => {
+    batch.delete(doc.ref);
+  });
+
+  await batch.commit();
 
   for (const project of projects) {
     await db
@@ -52,6 +59,15 @@ async function seedProjects() {
 async function seedExperiences() {
   console.log("🌱 Seeding experiences...");
 
+  const batch = db.batch();
+  const existingDocs = await db.collection("experiences").get();
+
+  existingDocs.docs.forEach((doc) => {
+    batch.delete(doc.ref);
+  });
+
+  await batch.commit();
+
   for (const exp of experiences) {
     await db
       .collection("experiences")
@@ -68,6 +84,15 @@ async function seedExperiences() {
 
 async function seedSkills() {
   console.log("🌱 Seeding skills...");
+
+  const batch = db.batch();
+  const existingDocs = await db.collection("skills").get();
+
+  existingDocs.docs.forEach((doc) => {
+    batch.delete(doc.ref);
+  });
+
+  await batch.commit();
 
   for (const skill of skills) {
     await db

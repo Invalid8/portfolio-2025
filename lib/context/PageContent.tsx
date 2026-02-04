@@ -1,7 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  ReactNode,
+} from "react";
 
 interface Section {
   id: string;
@@ -22,38 +27,56 @@ const PageContext = createContext<PageContextType | undefined>(undefined);
 export const PageProvider = ({ children }: { children: ReactNode }) => {
   const [sections, setSections] = useState<Record<string, Section>>({});
 
-  const setSection = (key: string, section: Section) => {
+  const setSection = useCallback((key: string, section: Section) => {
     setSections((prev) => ({ ...prev, [key]: section }));
-  };
+  }, []);
 
-  const editField = (sectionKey: string, fieldKey: string, value: any) => {
-    setSections((prev) => ({
-      ...prev,
-      [sectionKey]: { ...prev[sectionKey], [fieldKey]: value },
-    }));
-  };
+  const editField = useCallback(
+    (sectionKey: string, fieldKey: string, value: any) => {
+      setSections((prev) => ({
+        ...prev,
+        [sectionKey]: { ...prev[sectionKey], [fieldKey]: value },
+      }));
+    },
+    [],
+  );
 
-  const saveSection = async (sectionKey: string) => {
-    const section = sections[sectionKey];
-    if (!section?.id || !section?.collection) return;
+  const saveSection = useCallback(async (sectionKey: string) => {
+    setSections((currentSections) => {
+      const section = currentSections[sectionKey];
+      if (!section?.id || !section?.collection) return currentSections;
 
-    try {
-      await fetch(`/api/admin/firebase/${section.collection}/${section.id}`, {
+      fetch(`/api/admin/firebase/${section.collection}/${section.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(section),
+      }).catch((err) => {
+        console.error(`Failed to save section ${sectionKey}`, err);
       });
-    } catch (err) {
-      console.error(`Failed to save section ${sectionKey}`, err);
-    }
-  };
 
-  const saveAll = async () => {
-    const keys = Object.keys(sections);
-    for (const key of keys) {
-      await saveSection(key);
-    }
-  };
+      return currentSections;
+    });
+  }, []);
+
+  const saveAll = useCallback(async () => {
+    setSections((currentSections) => {
+      const keys = Object.keys(currentSections);
+      keys.forEach((key) => {
+        const section = currentSections[key];
+        if (!section?.id || !section?.collection) return;
+
+        fetch(`/api/admin/firebase/${section.collection}/${section.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(section),
+        }).catch((err) => {
+          console.error(`Failed to save section ${key}`, err);
+        });
+      });
+
+      return currentSections;
+    });
+  }, []);
 
   return (
     <PageContext.Provider

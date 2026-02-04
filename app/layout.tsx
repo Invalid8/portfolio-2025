@@ -45,7 +45,6 @@ export default function RootLayout({
               {children}
               <Footer/>
               <Toolkit/>
-              
             </SurpriseUIProvider>
           </PageProvider>
         </AuthProvider>
