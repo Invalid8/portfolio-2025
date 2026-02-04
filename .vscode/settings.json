@@ -1,6 +1,7 @@
 {
     "cSpell.words": [
-        "GSAP"
+        "GSAP",
+        "Hackhathon"
     ],
     "typescript.tsdk": "node_modules/typescript/lib"
 }

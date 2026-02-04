@@ -3,9 +3,11 @@ import { db } from "../admin";
 
 export async function fetchCollectionServer<T>(
   collectionName: string,
-  q?: Query
+  q?: Query,
 ): Promise<(T & { id: string })[]> {
-  const snap = q ? await q.get() : await db.collection(collectionName).get();
+  const queryRef =
+    q || db.collection(collectionName).orderBy("createdAt", "desc");
+  const snap = await queryRef.get();
 
   return snap.docs.map((doc) => ({
     id: doc.id,
@@ -15,7 +17,7 @@ export async function fetchCollectionServer<T>(
 
 export async function fetchByIdServer<T>(
   collection: string,
-  id: string
+  id: string,
 ): Promise<(T & { id: string }) | null> {
   const doc = await db.collection(collection).doc(id).get();
 
@@ -29,7 +31,7 @@ export async function fetchByIdServer<T>(
 
 export async function createDocument<T>(
   collectionName: string,
-  data: T
+  data: T,
 ): Promise<T & { id: string }> {
   const ref = db.collection(collectionName).doc();
 
@@ -48,7 +50,7 @@ export async function createDocument<T>(
 export async function createDocumentWithId<T>(
   collectionName: string,
   id: string,
-  data: T
+  data: T,
 ): Promise<T & { id: string }> {
   await db
     .collection(collectionName)
@@ -65,7 +67,7 @@ export async function createDocumentWithId<T>(
 export async function updateDocument<T extends object>(
   collectionName: string,
   id: string,
-  data: Partial<T>
+  data: Partial<T>,
 ): Promise<void> {
   await db
     .collection(collectionName)
@@ -79,7 +81,7 @@ export async function updateDocument<T extends object>(
 export async function upsertDocument<T extends object>(
   collectionName: string,
   id: string,
-  data: Partial<T>
+  data: Partial<T>,
 ): Promise<void> {
   await db
     .collection(collectionName)
@@ -89,13 +91,13 @@ export async function upsertDocument<T extends object>(
         ...data,
         updatedAt: new Date(),
       },
-      { merge: true }
+      { merge: true },
     );
 }
 
 export async function deleteDocument(
   collectionName: string,
-  id: string
+  id: string,
 ): Promise<void> {
   await db.collection(collectionName).doc(id).delete();
 }

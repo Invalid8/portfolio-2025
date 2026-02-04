@@ -1,45 +1,47 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import ContentSpan from "@/components/customs/ContentEditSpan";
 import { usePageContext } from "@/lib/context/PageContent";
-import { fetchCollectionClient } from "@/lib/firebase/services";
-import type { Project } from "@/types";
+import { useAuth } from "@/lib/context/auth";
+import { Project, Section } from "@/types";
+import { AddProjectModal } from "@/components/modals/AddNewItemModals";
 
 import { cn } from "@/lib/utils";
 import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ProjectCard } from "../cards/ProjectCard";
 import { PlusIcon } from "lucide-react";
 import { ProjectModal } from "../cards/ProjectModal";
 
-gsap.registerPlugin(ScrollTrigger);
-
-interface ProjectsProps {
-  initialProjects: Project[];
+function isProject(section: Section): section is Section & Project {
+  return (
+    section &&
+    typeof section === "object" &&
+    "thumbnail" in section &&
+    "title" in section &&
+    "description" in section &&
+    "medias" in section &&
+    Array.isArray(section.medias)
+  );
 }
 
-export default function Projects({ initialProjects = [] }: ProjectsProps) {
-  const { setSection } = usePageContext();
-  const [projects, setProjects] = useState<Project[]>(initialProjects);
-  const [loading, setLoading] = useState(!initialProjects.length);
+export default function Projects() {
+  const { sections, setSection } = usePageContext();
+  const { isAdmin, isEditing } = useAuth();
+  const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [showAllProjects, setShowAllProjects] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  const projectsCollection = useMemo(
+    () => sections["projects"] || {},
+    [sections],
+  );
+
   useEffect(() => {
-    if (!initialProjects.length) {
-      loadProjects();
-    } else {
-      initialProjects.forEach((project) => {
-        setSection(`project-${project.id}`, {
-          ...project,
-          collection: "projects",
-          id: project.id as string,
-        });
-      });
-    }
-  }, [initialProjects]);
+    const projectList = Object.values(projectsCollection).filter(isProject);
+    setProjects(projectList);
+  }, [projectsCollection]);
 
   useEffect(() => {
     if (containerRef.current && projects.length) {
@@ -63,31 +65,38 @@ export default function Projects({ initialProjects = [] }: ProjectsProps) {
     }
   }, [projects]);
 
-  const loadProjects = async () => {
+  const handleAddProject = async (projectData: Partial<Project>) => {
     try {
-      const data = await fetchCollectionClient<Project>("projects");
-      setProjects(data);
+      const response = await fetch("/api/admin/firebase/projects", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(projectData),
+      });
 
-      data.forEach((project) => {
-        setSection(`project-${project.id}`, {
-          ...project,
-          collection: "projects",
-          id: project.id as string,
-        });
+      if (!response.ok) throw new Error("Failed to add project");
+
+      const newProject: Project = await response.json();
+
+      setSection("projects", `project-${newProject.id}`, {
+        ...newProject,
+        collection: "projects",
+        id: String(newProject.id),
       });
     } catch (error) {
-      console.error("Failed to load projects:", error);
-    } finally {
-      setLoading(false);
+      console.error("Error adding project:", error);
+      throw error;
     }
   };
 
   const featuredProjects = projects.slice(0, 4);
   const displayedProjects = showAllProjects ? projects : featuredProjects;
 
-  if (loading) {
+  if (!projects.length) {
     return (
-      <div id="Projects" className="min-h-svh w-full fij">
+      <div
+        id="Projects"
+        className="min-h-svh w-full flex justify-center items-center"
+      >
         <div className="animate-pulse text-2xl">Loading projects...</div>
       </div>
     );
@@ -100,17 +109,23 @@ export default function Projects({ initialProjects = [] }: ProjectsProps) {
         className="min-h-svh w-full py-20 px-5 md:px-10 relative overflow-hidden"
       >
         <div className="max-w-7xl mx-auto space-y-16">
-          <div className="space-y-4" data-aos="fade-up">
-            <h2 className="text-4xl lg:text-6xl font-bold">
-              <ContentSpan sectionKey="projects-header" fieldKey="title">
-                SELECTED WORKS
-              </ContentSpan>
-            </h2>
-            <p className="text-lg text-neutral-400 max-w-2xl">
-              <ContentSpan sectionKey="projects-header" fieldKey="subtitle">
-                A showcase of projects where creativity meets functionality.
-              </ContentSpan>
-            </p>
+          <div className="space-y-4 flex items-start justify-between">
+            <div>
+              <h2 className="text-4xl lg:text-6xl font-bold">
+                <ContentSpan sectionKey="projects-header" fieldKey="title">
+                  SELECTED WORKS
+                </ContentSpan>
+              </h2>
+              <p className="text-lg text-neutral-400 max-w-2xl mt-4">
+                <ContentSpan sectionKey="projects-header" fieldKey="subtitle">
+                  A showcase of projects where creativity meets functionality.
+                </ContentSpan>
+              </p>
+            </div>
+
+            {isAdmin && isEditing && (
+              <AddProjectModal onAdd={handleAddProject} />
+            )}
           </div>
 
           <div

@@ -5,16 +5,19 @@ import {
   query as buildQuery,
   getDoc,
   doc,
+  orderBy,
 } from "firebase/firestore";
 import { db } from "../config";
 
 export async function fetchCollectionClient<T>(
   collectionName: string,
-  q?: Query
+  q?: Query,
 ): Promise<(T & { id: string })[]> {
   const baseCollection = collection(db, collectionName);
 
-  const snap = q ? await getDocs(q) : await getDocs(buildQuery(baseCollection));
+  const snap = q
+    ? await getDocs(q)
+    : await getDocs(buildQuery(baseCollection, orderBy("createdAt", "desc")));
 
   return snap.docs.map((doc) => ({
     id: doc.id,
@@ -24,7 +27,7 @@ export async function fetchCollectionClient<T>(
 
 export async function fetchByIdClient<T>(
   collectionName: string,
-  id: string
+  id: string,
 ): Promise<(T & { id: string }) | null> {
   const snap = await getDoc(doc(db, collectionName, id));
 

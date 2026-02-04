@@ -38,71 +38,26 @@ export type Experience = {
   skills: Skill[];
 };
 
-export interface Bio {
+export interface Section {
   id: string;
-  name: string;
-  username: string;
-  about: {
-    summary: string;
-    fullDetails: string;
-  };
-  description: string;
-  links: {
-    github: string;
-    linkedin: string;
-    resume: string;
-  };
+  collection: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any;
 }
 
-type Optional<T> = T | undefined | null;
+export type SectionMap = Record<string, Section>;
 
-export type UserType = {
-  displayName: Optional<string>;
-  photoURL: Optional<string>;
-  uid: string;
-  email: Optional<string>;
+export type NestedSections = {
+  [collection: string]: {
+    [key: string]: Section;
+  };
 };
 
-// Generic content block
-export interface ContentBlock {
-  id: string;
-  type: string; // e.g., 'text', 'image', 'marquee'
-  value: string | string[];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  style?: Record<string, any>; // optional styles like color, bold
-}
-
-// Banner Section
-export interface BannerSection {
-  heading: ContentBlock[];
-  subheading: ContentBlock[];
-  marqueeList: string[];
-}
-
-// Project Item
-export interface ProjectItem {
-  id: string;
-  title: ContentBlock[];
-  description: ContentBlock[];
-  link?: string;
-  order: number;
-}
-
-// Experience Item
-export interface ExperienceItem {
-  id: string;
-  role: ContentBlock[];
-  company: ContentBlock[];
-  dateRange: string;
-  description: ContentBlock[];
-}
-
-// Homepage Schema
-export interface HomePageContent {
-  banner: BannerSection;
-  about: ContentBlock[];
-  projects: ProjectItem[];
-  experience: ExperienceItem[];
-  skills: string[];
-  contact: ContentBlock[];
+interface PendingImage {
+  file: File;
+  localUrl: string;
+  sectionKey: string;
+  fieldKey: string;
+  collection: string;
+  docId: string;
 }

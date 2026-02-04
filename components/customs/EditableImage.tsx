@@ -1,10 +1,9 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React, { useRef, useState } from "react";
-import { CameraIcon } from "lucide-react";
+import { createPortal } from "react-dom";
+import { CameraIcon, Link2Icon, XIcon, CheckIcon } from "lucide-react";
 import { useAuth } from "@/lib/context/auth";
-import { uploadFileToFirebase } from "@/lib/firebase/storage";
 import { usePageContext } from "@/lib/context/PageContent";
 import { cn } from "@/lib/utils";
 
@@ -25,92 +24,173 @@ export default function EditableImage({
   docId,
   className,
 }: EditableImageProps) {
-  const { isEditing, isAdmin } = useAuth();
-  const { editField } = usePageContext();
+  const { isEditing } = useAuth();
+  const { editField, setPendingImage, pendingImages, saving } =
+    usePageContext();
   const [preview, setPreview] = useState(src);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [showUrlModal, setShowUrlModal] = useState(false);
+  const [urlInput, setUrlInput] = useState("");
+  const [urlPreview, setUrlPreview] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const pendingImage = pendingImages.find(
+    (img) => img.sectionKey === sectionKey && img.fieldKey === fieldKey,
+  );
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (saving) return;
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setError(null);
     const localUrl = URL.createObjectURL(file);
     setPreview(localUrl);
-    editField(sectionKey, fieldKey, localUrl);
 
-    if (isAdmin) {
-      setLoading(true);
-      try {
-        const storagePath = `sections/${sectionKey}/${fieldKey}-${Date.now()}`;
-        const uploadedUrl = await uploadFileToFirebase(file, storagePath);
+    editField(collection, sectionKey, fieldKey, localUrl);
 
-        editField(sectionKey, fieldKey, uploadedUrl);
-        await fetch(`/api/admin/firebase/${collection}/${docId}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            [fieldKey]: uploadedUrl,
-            updatedAt: new Date(),
-          }),
-        });
-        setPreview(uploadedUrl);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } catch (err: any) {
-        console.error(err);
-        setError("Failed to upload image.");
-        setPreview(src);
-        editField(sectionKey, fieldKey, src);
-      } finally {
-        setLoading(false);
+    setPendingImage({
+      file,
+      localUrl,
+      sectionKey,
+      fieldKey,
+      collection,
+      docId,
+      isExternal: false,
+    });
+  };
+
+  const handleUrlConfirm = () => {
+    if (!urlPreview) return;
+
+    setPreview(urlPreview);
+    editField(collection, sectionKey, fieldKey, urlPreview);
+
+    setPendingImage({
+      file: null,
+      localUrl: urlPreview,
+      sectionKey,
+      fieldKey,
+      collection,
+      docId,
+      isExternal: true,
+    });
+
+    setShowUrlModal(false);
+    setUrlInput("");
+    setUrlPreview("");
+  };
+
+  const handleUrlChange = (value: string) => {
+    setUrlInput(value);
+    try {
+      const url = new URL(value);
+      if (url.protocol === "http:" || url.protocol === "https:") {
+        setUrlPreview(value);
+      } else {
+        setUrlPreview("");
       }
+    } catch {
+      setUrlPreview("");
     }
   };
 
+  const handleImageError = (
+    e: React.SyntheticEvent<HTMLImageElement, Event>,
+  ) => {
+    e.currentTarget.src = "/images/placeholder.png";
+  };
+
+  const imgSrc = pendingImage?.localUrl || preview;
+
+  if (!isEditing) {
+    return <img src={imgSrc} alt="" className={className} onError={handleImageError} />;
+  }
+
   return (
-    <label
-      htmlFor={`${sectionKey}-${fieldKey}`}
-      className={`relative ${className} cursor-pointer`}
-    >
-      <img
-        src={preview}
-        alt=""
-        className={`w-full h-full object-cover transition-opacity duration-200 ${
-          loading ? "opacity-50" : "opacity-100"
-        }`}
-      />
+    <>
+      <div className={`relative ${className} group`}>
+        <img
+          src={imgSrc}
+          alt=""
+          className="w-full h-full object-cover transition-opacity duration-200"
+          onError={handleImageError}
+        />
 
-      {isEditing && !loading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-          <CameraIcon className="w-8 h-8 text-white" />
+        <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity">
+          {saving ? (
+            <div className="w-8 h-8 border-4 border-white border-t-transparent rounded-full animate-spin mx-auto" />
+          ) : (
+            <div className="flex gap-12">
+              <CameraIcon
+                className="w-12 h-12 text-white cursor-pointer hover:text-primary transition-colors z-10"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  inputRef.current?.click();
+                }}
+              />
+              <Link2Icon
+                className="w-12 h-12 text-white cursor-pointer hover:text-primary transition-colors z-10"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowUrlModal(true);
+                }}
+              />
+            </div>
+          )}
         </div>
-      )}
 
-      {loading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-          <span className="text-white font-semibold">Uploading...</span>
-        </div>
-      )}
+        <input
+          type="file"
+          ref={inputRef}
+          className={cn("absolute inset-0 opacity-0 pointer-events-none")}
+          accept="image/*"
+          disabled={saving}
+          onChange={handleFileChange}
+        />
+      </div>
 
-      {error && (
-        <div className="absolute inset-0 flex items-center justify-center bg-red-500/70">
-          <span className="text-white font-bold">{error}</span>
-        </div>
-      )}
-
-      <input
-        type="file"
-        ref={inputRef}
-        className={cn(
-          "size-full absolute top-0 left-0 bottom-0 right-0 opacity-0",
-          !isEditing && "hidden"
+      {showUrlModal &&
+        createPortal(
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+            <div className="bg-neutral-900 rounded-xl p-6 max-w-sm w-full space-y-4 relative">
+              <h3 className="text-lg font-bold">Add Image URL</h3>
+              <input
+                type="text"
+                placeholder="https://example.com/image.png"
+                value={urlInput}
+                onChange={(e) => handleUrlChange(e.target.value)}
+                className="w-full px-3 py-2 rounded border border-neutral-700 bg-neutral-800 text-white"
+              />
+              {urlPreview ? (
+                <img
+                  src={urlPreview}
+                  alt="Preview"
+                  className="w-full h-40 object-contain rounded"
+                  onError={(e) => (e.currentTarget.src = "/images/placeholder.png")}
+                />
+              ) : (
+                <div className="w-full h-40 flex items-center justify-center text-neutral-400 border border-neutral-700 rounded">
+                  Invalid URL
+                </div>
+              )}
+              <div className="flex justify-end gap-2">
+                <button
+                  onClick={() => setShowUrlModal(false)}
+                  className="px-3 py-1 bg-neutral-700 rounded text-sm hover:bg-neutral-600 transition"
+                >
+                  <XIcon className="w-4 h-4 inline" /> Cancel
+                </button>
+                <button
+                  onClick={handleUrlConfirm}
+                  disabled={!urlPreview}
+                  className="px-3 py-1 bg-primary rounded text-sm hover:bg-primary/90 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <CheckIcon className="w-4 h-4 inline" /> Confirm
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body,
         )}
-        name={`${sectionKey}-${fieldKey}`}
-        accept="image/*"
-        onChange={handleChange}
-      />
-    </label>
+    </>
   );
 }

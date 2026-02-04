@@ -165,49 +165,6 @@ Content supports special formatting:
 - `~~br~~` → line break
 - `[text](url)` → link
 
-## Project Structure
-
-```
-portfolio-2025/
-├── app/
-│   ├── _components/       # Page components
-│   │   ├── Banner.tsx
-│   │   ├── About.tsx
-│   │   ├── Projects.tsx
-│   │   ├── Experience.tsx
-│   │   └── Contact.tsx
-│   ├── api/              # API routes
-│   │   └── admin/        # Admin-only endpoints
-│   ├── globals.css
-│   ├── layout.tsx
-│   └── page.tsx
-├── components/
-│   ├── customs/          # Custom components
-│   │   ├── ContentEditSpan.tsx
-│   │   ├── EditableImage.tsx
-│   │   └── AngledMarquee.tsx
-│   ├── modals/          # Modal components
-│   └── ui/              # shadcn/ui components
-├── lib/
-│   ├── context/         # React contexts
-│   │   ├── auth.tsx
-│   │   └── PageContent.tsx
-│   ├── firebase/        # Firebase config
-│   │   ├── config.ts    # Client config
-│   │   ├── server/      # Server config
-│   │   ├── services/    # Firestore helpers
-│   │   └── storage.ts   # Storage helpers
-│   └── utils.ts
-├── data/               # Initial data for seeding
-│   ├── projects.ts
-│   ├── experiences.ts
-│   └── skills.ts
-├── scripts/           # Utility scripts
-│   ├── seed-database.ts
-│   └── set-admin.js
-└── types.ts          # TypeScript types
-```
-
 ## Deployment
 
 ### Vercel (Recommended)

@@ -8,18 +8,28 @@ import Link from "next/link";
 import { SOCIAL_LINKS } from "@/lib/constants";
 
 export default function Contact() {
-  const { setSection } = usePageContext();
+  const { sections, setSection } = usePageContext();
+
+  const contactSection = sections["portfolio"]?.["contact"] || {
+    id: "contact",
+    collection: "portfolio",
+    title: "LET'S WORK TOGETHER",
+    subtitle:
+      "Have a project in mind? Let's discuss how we can work together to bring your ideas to life.",
+    email: "b.fadamitan2019@gmail.com",
+    phone: "+234 703 4797 467",
+    location: "Lagos, Nigeria",
+  };
 
   useEffect(() => {
-    setSection("contact", {
-      id: "contact",
-      collection: "portfolio",
-      title: "LET'S WORK TOGETHER",
-      subtitle:
-        "Have a project in mind? Let's discuss how we can work together to bring your ideas to life.",
-      email: "b.fadamitan2019@gmail.com",
-      phone: "+234 703 4797 467",
-      location: "Lagos, Nigeria",
+    setSection("portfolio", "contact", {
+      id: contactSection.id,
+      collection: contactSection.collection,
+      title: contactSection.title,
+      subtitle: contactSection.subtitle,
+      email: contactSection.email,
+      phone: contactSection.phone,
+      location: contactSection.location,
     });
   }, [setSection]);
 
@@ -37,14 +47,13 @@ export default function Contact() {
               <div className="relative">
                 <h2 className="text-4xl lg:text-6xl font-bold">
                   <ContentSpan sectionKey="contact" fieldKey="title">
-                    LET&apos;S WORK TOGETHER
+                    {contactSection.title}
                   </ContentSpan>
                 </h2>
               </div>
               <p className="text-lg text-neutral-400 max-w-xl">
                 <ContentSpan sectionKey="contact" fieldKey="subtitle">
-                  Have a project in mind? Let&apos;s discuss how we can work
-                  together to bring your ideas to life.
+                  {contactSection.subtitle}
                 </ContentSpan>
               </p>
             </div>
@@ -53,23 +62,23 @@ export default function Contact() {
               <ContactItem
                 icon={<MailIcon className="w-5 h-5" />}
                 label="Email"
-                value="b.fadamitan2019@gmail.com"
-                href="mailto:b.fadamitan2019@gmail.com"
+                value={contactSection.email}
+                href={`mailto:${contactSection.email}`}
                 sectionKey="contact"
                 fieldKey="email"
               />
               <ContactItem
                 icon={<PhoneIcon className="w-5 h-5" />}
                 label="Phone"
-                value="+234 703 4797 467"
-                href="tel:+2347034797467"
+                value={contactSection.phone}
+                href={`tel:${contactSection.phone.replace(/\s+/g, "")}`}
                 sectionKey="contact"
                 fieldKey="phone"
               />
               <ContactItem
                 icon={<MapPinIcon className="w-5 h-5" />}
                 label="Location"
-                value="Lagos, Nigeria"
+                value={contactSection.location}
                 sectionKey="contact"
                 fieldKey="location"
               />

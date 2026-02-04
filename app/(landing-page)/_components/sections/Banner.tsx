@@ -2,34 +2,14 @@
 
 import ContentSpan from "@/components/customs/ContentEditSpan";
 import AngledMarquee from "@/components/customs/AngledMarquee";
-import { useEffect, useState } from "react";
-import { fetchCollectionClient } from "@/lib/firebase/services";
-import type { Skill } from "@/types";
+import { usePageContext } from "@/lib/context/PageContent";
+import { Skill } from "@/types";
 
-interface BannerProps {
-  initialSkills?: Skill[];
-}
+export default function Banner() {
+  const { sections } = usePageContext();
 
-export default function Banner({ initialSkills = [] }: BannerProps) {
-  const [skills, setSkills] = useState<Skill[]>(initialSkills);
-  const [loading, setLoading] = useState(!initialSkills.length);
-
-  useEffect(() => {
-    if (!initialSkills.length) {
-      loadSkills();
-    }
-  }, [initialSkills]);
-
-  const loadSkills = async () => {
-    try {
-      const data = await fetchCollectionClient<Skill>("skills");
-      setSkills(data);
-    } catch (error) {
-      console.error("Failed to load skills:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const bannerSection = sections["portfolio"]?.["banner"] || {};
+  const skills: Skill[] = bannerSection.skills || [];
 
   const staticList = [
     "Development",
@@ -49,7 +29,7 @@ export default function Banner({ initialSkills = [] }: BannerProps) {
       ? [...skillValues, ...staticList, ...skillValues]
       : staticList;
 
-  const showMarquee = !loading && skills.length > 0;
+  const showMarquee = fullList.length > 0;
 
   return (
     <div className="size-full min-h-[calc(100svh-var(--nav-h)-60px)] sm:min-h-[calc(100svh-var(--nav-h))] p-5 flex flex-col justify-center relative">
@@ -60,7 +40,7 @@ export default function Banner({ initialSkills = [] }: BannerProps) {
             fieldKey="titleLine"
             className="font-bold"
           >
-            {"Frontend~~br~~^^Developer^^"}
+            {bannerSection.titleLine || "Frontend~~br~~^^Developer^^"}
           </ContentSpan>
         </h1>
 
@@ -70,10 +50,8 @@ export default function Banner({ initialSkills = [] }: BannerProps) {
             fieldKey="subtitle"
             className="space-y-0"
           >
-            A Nigerian based **^^Frontend Developer^^** passionate about
-            building accessible and user friendly
-            **^^websites^^**.~~br~~~~br~~^^__**[My
-            Resume](https://drive.google.com/file/d/1ixmuBYgzXQdXrTn1n9aoz4SWYRU715h-/view)**__^^
+            {bannerSection.subtitle ||
+              `A Nigerian based **^^Frontend Developer^^** passionate about building accessible and user friendly **^^websites^^**.~~br~~~~br~~^^__**[My Resume](https://drive.google.com/file/d/1ixmuBYgzXQdXrTn1n9aoz4SWYRU715h-/view)**__^^`}
           </ContentSpan>
         </p>
       </div>

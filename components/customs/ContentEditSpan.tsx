@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useMemo, useCallback, useState } from "react";
+import React, { useMemo, useCallback, useState, useRef } from "react";
 import {
   createEditor,
   BaseEditor,
   Descendant,
   Text,
   Element as SlateElement,
+  Transforms,
 } from "slate";
 import {
   Slate,
@@ -21,6 +22,7 @@ import { useAuth } from "@/lib/context/auth";
 import { cn } from "@/lib/utils";
 
 interface ContentSpanProps {
+  collection?: string;
   sectionKey: string;
   fieldKey: string;
   className?: string;
@@ -70,7 +72,7 @@ function parseSpecialString(input: string): CustomText[] {
       matched = true;
 
       if (p.mark === "break") {
-        out.push({ text: "", break: true });
+        out.push({ text: "\n", break: true });
       } else if ("isLink" in p) {
         out.push({ text: m[1], link: m[2] });
       } else {
@@ -235,6 +237,7 @@ function RenderStatic({ raw }: { raw: string }) {
 }
 
 export default function ContentSpan({
+  collection = "portfolio",
   sectionKey,
   fieldKey,
   className,
@@ -244,7 +247,7 @@ export default function ContentSpan({
   const { isEditing } = useAuth();
 
   const raw =
-    sections[sectionKey]?.[fieldKey] ??
+    sections[collection]?.[sectionKey]?.[fieldKey] ??
     (typeof children === "string" ? children : "");
 
   if (!isEditing) {
@@ -257,7 +260,8 @@ export default function ContentSpan({
 
   return (
     <EditableContentSpan
-      key={`${sectionKey}-${fieldKey}-editing`}
+      key={`${collection}-${sectionKey}-${fieldKey}-${raw}`}
+      collection={collection}
       sectionKey={sectionKey}
       fieldKey={fieldKey}
       className={className}
@@ -268,27 +272,37 @@ export default function ContentSpan({
 }
 
 function EditableContentSpan({
+  collection = "portfolio",
   sectionKey,
   fieldKey,
   className,
   raw,
   editField,
 }: {
+  collection?: string;
   sectionKey: string;
   fieldKey: string;
   className?: string;
   raw: string;
-  editField: (sectionKey: string, fieldKey: string, value: string) => void;
+  editField: (
+    collection: string,
+    sectionKey: string,
+    fieldKey: string,
+    value: string,
+  ) => void;
 }) {
   const { isEditing } = useAuth();
   const [isFocused, setIsFocused] = useState(false);
+  const savedRawRef = useRef(raw);
 
   const editor = useMemo(
     () => withReact(createEditor() as BaseEditor & ReactEditor),
     [],
   );
 
-  const [value, setValue] = useState<Descendant[]>(() => createInitialValue(raw));
+  const [value, setValue] = useState<Descendant[]>(() =>
+    createInitialValue(raw),
+  );
 
   const handleChange = useCallback((newValue: Descendant[]) => {
     setValue(newValue);
@@ -297,14 +311,24 @@ function EditableContentSpan({
   const handleBlur = useCallback(() => {
     setIsFocused(false);
     const serialized = serialize(value);
-    if (serialized !== raw) {
-      editField(sectionKey, fieldKey, serialized);
+    if (serialized !== savedRawRef.current) {
+      savedRawRef.current = serialized;
+      editField(collection!, sectionKey, fieldKey, serialized);
     }
-  }, [value, sectionKey, fieldKey, editField, raw]);
+  }, [value, collection, sectionKey, fieldKey, editField]);
 
-  const handleFocus = useCallback(() => {
-    setIsFocused(true);
-  }, []);
+  const handleFocus = useCallback(() => setIsFocused(true), []);
+
+  const handleDOMBeforeInput = useCallback(
+    (e: Event) => {
+      const inputEvent = e as InputEvent;
+      if (inputEvent.inputType === "insertLineBreak") {
+        e.preventDefault();
+        Transforms.insertText(editor, "\n");
+      }
+    },
+    [editor],
+  );
 
   return (
     <Slate editor={editor} initialValue={value} onChange={handleChange}>
@@ -314,6 +338,7 @@ function EditableContentSpan({
         renderLeaf={renderLeaf}
         onBlur={handleBlur}
         onFocus={handleFocus}
+        onDOMBeforeInput={handleDOMBeforeInput}
         className={cn(
           className,
           "transition-all duration-200 cursor-text",
@@ -332,7 +357,9 @@ function EditableContentSpan({
           fontSize: "inherit",
           lineHeight: "inherit",
           whiteSpace: "pre-wrap",
+          wordBreak: "break-word",
         }}
+        placeholder={isEditing ? "Click to edit..." : ""}
       />
     </Slate>
   );
