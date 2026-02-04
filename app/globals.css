@@ -137,6 +137,10 @@
     @apply font-bebas tracking-widest;
   }
 
+  button {
+    cursor: pointer;
+  }
+
   .fij {
     @apply flex items-center justify-center flex-1;
   }

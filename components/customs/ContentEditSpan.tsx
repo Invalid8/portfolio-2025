@@ -14,6 +14,7 @@ import {
   withReact,
   ReactEditor,
   RenderLeafProps,
+  RenderElementProps,
 } from "slate-react";
 import { usePageContext } from "@/lib/context/PageContent";
 import { useAuth } from "@/lib/context/auth";
@@ -125,6 +126,14 @@ function serialize(nodes: Descendant[]): string {
     .join("\n");
 }
 
+const renderElement = (props: RenderElementProps) => {
+  return (
+    <span {...props.attributes} style={{ display: "inline" }}>
+      {props.children}
+    </span>
+  );
+};
+
 const renderLeaf = ({ leaf, attributes, children }: RenderLeafProps) => {
   const l = leaf as CustomText;
 
@@ -231,30 +240,12 @@ export default function ContentSpan({
   className,
   children,
 }: ContentSpanProps) {
-  const { sections, editField, saveSection } = usePageContext();
+  const { sections, editField } = usePageContext();
   const { isEditing } = useAuth();
-  const [isFocused, setIsFocused] = useState(false);
 
   const raw =
     sections[sectionKey]?.[fieldKey] ??
     (typeof children === "string" ? children : "");
-
-  const editor = useMemo(
-    () => withReact(createEditor() as BaseEditor & ReactEditor),
-    [],
-  );
-
-  const [value, setValue] = useState<Descendant[]>(createInitialValue(raw));
-
-  const handleBlur = useCallback(async () => {
-    setIsFocused(false);
-    const serialized = serialize(value);
-    editField(sectionKey, fieldKey, serialized);
-  }, [value, sectionKey, fieldKey, editField]);
-
-  const handleFocus = useCallback(() => {
-    setIsFocused(true);
-  }, []);
 
   if (!isEditing) {
     return (
@@ -265,8 +256,63 @@ export default function ContentSpan({
   }
 
   return (
-    <Slate editor={editor} initialValue={value} onChange={setValue}>
+    <EditableContentSpan
+      key={`${sectionKey}-${fieldKey}`}
+      sectionKey={sectionKey}
+      fieldKey={fieldKey}
+      className={className}
+      raw={raw}
+      editField={editField}
+    />
+  );
+}
+
+function EditableContentSpan({
+  sectionKey,
+  fieldKey,
+  className,
+  raw,
+  editField,
+}: {
+  sectionKey: string;
+  fieldKey: string;
+  className?: string;
+  raw: string;
+  editField: (sectionKey: string, fieldKey: string, value: string) => void;
+}) {
+  const { isEditing } = useAuth();
+  const [isFocused, setIsFocused] = useState(false);
+
+  const editor = useMemo(
+    () => withReact(createEditor() as BaseEditor & ReactEditor),
+    [],
+  );
+
+  const [value, setValue] = useState<Descendant[]>(() =>
+    createInitialValue(raw),
+  );
+
+  const handleChange = useCallback((newValue: Descendant[]) => {
+    setValue(newValue);
+  }, []);
+
+  const handleBlur = useCallback(() => {
+    setIsFocused(false);
+    const serialized = serialize(value);
+    if (serialized !== raw) {
+      editField(sectionKey, fieldKey, serialized);
+    }
+  }, [value, sectionKey, fieldKey, editField, raw]);
+
+  const handleFocus = useCallback(() => {
+    setIsFocused(true);
+  }, []);
+
+  return (
+    <Slate editor={editor} initialValue={value} onChange={handleChange}>
       <Editable
+        as="span"
+        renderElement={renderElement}
         renderLeaf={renderLeaf}
         onBlur={handleBlur}
         onFocus={handleFocus}

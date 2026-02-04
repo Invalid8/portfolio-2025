@@ -73,7 +73,7 @@ export default function SkillsSection({ initialSkills = [] }: SkillsProps) {
   return (
     <section
       id="Skills"
-      className="min-h-svh w-full py-20 px-5 md:px-10 bg-neutral-900/20"
+      className="w-full py-20 px-5 md:px-10 bg-neutral-900/20"
     >
       <div className="max-w-7xl mx-auto space-y-16">
         <div className="space-y-4">
