@@ -257,7 +257,7 @@ export default function ContentSpan({
 
   return (
     <EditableContentSpan
-      key={`${sectionKey}-${fieldKey}`}
+      key={`${sectionKey}-${fieldKey}-editing`}
       sectionKey={sectionKey}
       fieldKey={fieldKey}
       className={className}
@@ -288,9 +288,7 @@ function EditableContentSpan({
     [],
   );
 
-  const [value, setValue] = useState<Descendant[]>(() =>
-    createInitialValue(raw),
-  );
+  const [value, setValue] = useState<Descendant[]>(() => createInitialValue(raw));
 
   const handleChange = useCallback((newValue: Descendant[]) => {
     setValue(newValue);

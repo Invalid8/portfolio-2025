@@ -83,7 +83,7 @@ function Toolkit() {
     <menu
       ref={toolbarRef}
       className={cn(
-        "flex justify-center items-center fixed bottom-8 z-999 transition-all duration-300",
+        "flex justify-center items-center fixed bottom-8 z-9999999 transition-all duration-300",
         isMinimized ? "left-0" : "left-0 right-0",
       )}
     >
@@ -119,9 +119,6 @@ function Toolkit() {
             )}
           >
             <EditIcon />
-            {isEditing && (
-              <span className="absolute -top-1 -right-1 size-3 bg-green-500 rounded-full animate-pulse"></span>
-            )}
           </button>
 
           {isAdmin && hasUnsavedChanges && (
@@ -142,7 +139,6 @@ function Toolkit() {
                 ) : (
                   <>
                     <SaveIcon />
-                    <span className="absolute -top-1 -right-1 size-3 bg-orange-500 rounded-full animate-pulse"></span>
                   </>
                 )}
               </button>
