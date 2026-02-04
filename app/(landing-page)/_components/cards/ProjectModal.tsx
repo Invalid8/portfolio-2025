@@ -30,9 +30,12 @@ export function ProjectModal({
   const contentRef = useRef<HTMLDivElement>(null);
   const imageContainerRef = useRef<HTMLDivElement>(null);
   const isInitialMount = useRef(true);
+
   const currentIndex = projects.findIndex((p) => p.id === project.id);
   const hasPrevious = currentIndex > 0;
   const hasNext = currentIndex < projects.length - 1;
+
+  const isDesktop = () => window.matchMedia("(min-width: 1024px)").matches;
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -66,14 +69,16 @@ export function ProjectModal({
 
   useEffect(() => {
     if (!isInitialMount.current && imageRef.current && contentRef.current) {
-      const scrollContainer = contentRef.current;
-      const originalOverflow = scrollContainer.style.overflow;
+      if (!isDesktop()) return;
 
-      scrollContainer.style.overflow = "hidden";
+      const scrollContainer = contentRef.current;
+
+      scrollContainer.scrollTop = 0;
+      scrollContainer.style.overflowY = "hidden";
 
       const tl = gsap.timeline({
         onComplete: () => {
-          scrollContainer.style.overflow = originalOverflow;
+          scrollContainer.style.overflowY = "auto";
         },
       });
 
@@ -97,15 +102,9 @@ export function ProjectModal({
           },
           0,
         )
-        .set([imageRef.current, contentRef.current], {
-          y: 0,
-        })
-        .set(imageRef.current, {
-          y: 30,
-        })
-        .set(contentRef.current, {
-          y: -30,
-        })
+        .set([imageRef.current, contentRef.current], { y: 0 })
+        .set(imageRef.current, { y: 30 })
+        .set(contentRef.current, { y: -30 })
         .to(imageRef.current, {
           opacity: 1,
           y: 0,
@@ -125,27 +124,6 @@ export function ProjectModal({
     }
   }, [project.id]);
 
-  useEffect(() => {
-    const modalContainer = modalRef.current;
-    const imageContainer = imageContainerRef.current;
-    if (!modalContainer || !imageContainer) return;
-
-    const handleScroll = () => {
-      const scrollTop = modalContainer.scrollTop;
-      const translateY = Math.min(scrollTop * 0.5, 150);
-      imageContainer.style.transform = `translateY(-${translateY}px)`;
-    };
-
-    const mediaQuery = window.matchMedia("(max-width: 1024px)");
-
-    if (mediaQuery.matches) {
-      modalContainer.addEventListener("scroll", handleScroll);
-      return () => {
-        modalContainer.removeEventListener("scroll", handleScroll);
-      };
-    }
-  }, []);
-
   const handlePrevious = () => {
     if (hasPrevious) {
       onNavigate(projects[currentIndex - 1]);
@@ -160,8 +138,12 @@ export function ProjectModal({
 
   return (
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 md:p-8 bg-black/70 backdrop-blur-sm"
-      onClick={onClose}
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
     >
       {hasPrevious && (
         <button
@@ -199,18 +181,17 @@ export function ProjectModal({
 
       <div
         ref={modalRef}
-        className="relative w-full max-w-7xl h-[90vh] bg-neutral-900 rounded-2xl border border-neutral-700 shadow-2xl flex flex-col lg:flex-row lg:overflow-hidden overflow-y-auto"
+        className="relative w-full max-w-7xl sm:h-[90vh] h-screen bg-neutral-900 sm:rounded-2xl border border-neutral-700 shadow-2xl flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         <div
           ref={imageContainerRef}
-          className="relative bg-neutral-950 flex items-center justify-center p-8 lg:p-12 overflow-hidden lg:w-1/2 min-h-[40vh] lg:h-full flex-shrink-0 transition-transform duration-300 ease-out"
+          className="relative bg-neutral-950 flex items-center justify-center p-6 sm:p-8 lg:p-12 lg:w-1/2 lg:h-full w-full min-h-[40vh] sm:min-h-[50vh] lg:min-h-0 lg:flex-shrink-0"
         >
           <div className="absolute inset-0 bg-gradient-to-br from-neutral-950 via-neutral-900/50 to-neutral-950 z-0"></div>
           <div
             ref={imageRef}
             className="relative z-10 flex items-center justify-center w-full h-full"
-            style={{ opacity: 1 }}
           >
             <EditableImage
               key={`${project.id}-thumbnail`}
@@ -224,101 +205,111 @@ export function ProjectModal({
           </div>
         </div>
 
-        <div
-          ref={contentRef}
-          className="p-8 lg:p-12 space-y-6 lg:w-1/2 flex-1 lg:overflow-y-auto"
-          style={{ opacity: 1 }}
-        >
-          <div>
-            <span className="inline-block px-4 py-1.5 bg-primary/10 text-primary rounded-full text-sm font-medium uppercase tracking-wider mb-6">
-              <ContentSpan sectionKey={`project-${project.id}`} fieldKey="type">
-                {project.type}
+        <div className="lg:w-1/2 flex-1 flex flex-col overflow-visible">
+          <div
+            ref={contentRef}
+            className="flex-1 p-6 sm:p-8 lg:p-12 space-y-6 overflow-visible lg:overflow-y-auto"
+            style={{ WebkitOverflowScrolling: "touch" }}
+          >
+            <div>
+              <span className="inline-block px-4 py-1.5 bg-primary/10 text-primary rounded-full text-sm font-medium uppercase tracking-wider mb-6">
+                <ContentSpan
+                  sectionKey={`project-${project.id}`}
+                  fieldKey="type"
+                >
+                  {project.type}
+                </ContentSpan>
+              </span>
+            </div>
+
+            <h2 className="text-4xl lg:text-5xl font-bold">
+              <ContentSpan
+                sectionKey={`project-${project.id}`}
+                fieldKey="title"
+              >
+                {project.title}
               </ContentSpan>
-            </span>
-          </div>
+            </h2>
 
-          <h2 className="text-4xl lg:text-5xl font-bold">
-            <ContentSpan sectionKey={`project-${project.id}`} fieldKey="title">
-              {project.title}
-            </ContentSpan>
-          </h2>
-
-          <p className="text-xl text-neutral-300 leading-relaxed">
-            <ContentSpan
-              sectionKey={`project-${project.id}`}
-              fieldKey="description"
-            >
-              {project.description}
-            </ContentSpan>
-          </p>
-
-          <div className="grid grid-cols-2 gap-4 pt-6 pb-8 border-y border-neutral-700">
-            <div>
-              <span className="text-neutral-500 text-sm">Role</span>
-              <p className="text-neutral-200 font-medium mt-1">
-                <ContentSpan
-                  sectionKey={`project-${project.id}`}
-                  fieldKey="role"
-                >
-                  {project.role}
-                </ContentSpan>
-              </p>
-            </div>
-            <div>
-              <span className="text-neutral-500 text-sm">Year</span>
-              <p className="text-neutral-200 font-medium mt-1">
-                <ContentSpan
-                  sectionKey={`project-${project.id}`}
-                  fieldKey="date"
-                >
-                  {new Date(project.date).getFullYear()}
-                </ContentSpan>
-              </p>
-            </div>
-          </div>
-
-          {project.content && <ProjectModalContent content={project.content} />}
-
-          <div className="flex flex-col sm:flex-row gap-4 pt-8">
-            {project.link && (
-              <Link
-                href={project.link}
-                target="_blank"
-                className="flex-1 px-6 py-4 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 font-medium"
+            <p className="text-xl text-neutral-300 leading-relaxed">
+              <ContentSpan
+                sectionKey={`project-${project.id}`}
+                fieldKey="description"
               >
-                <ExternalLinkIcon className="w-5 h-5" />
-                Visit Live Site
-              </Link>
-            )}
-            {project.github && (
-              <Link
-                href={project.github}
-                target="_blank"
-                className="flex-1 px-6 py-4 bg-neutral-800 text-white rounded-lg hover:bg-neutral-700 transition-colors flex items-center justify-center gap-2 font-medium"
-              >
-                <GithubIcon className="w-5 h-5" />
-                View Code
-              </Link>
-            )}
-          </div>
+                {project.description}
+              </ContentSpan>
+            </p>
 
-          <div className="flex lg:hidden gap-4 pt-4 pb-8">
-            <button
-              onClick={handlePrevious}
-              disabled={!hasPrevious}
-              className="flex-1 px-6 py-3 bg-neutral-800/50 rounded-lg hover:bg-neutral-800 transition-colors flex items-center justify-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed"
-            >
-              <ChevronLeftIcon className="w-5 h-5" />
-              Previous
-            </button>
-            <button
-              onClick={handleNext}
-              disabled={!hasNext}
-              className="flex-1 px-6 py-3 bg-neutral-800/50 rounded-lg hover:bg-neutral-800 transition-colors flex items-center justify-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed"
-            >
-              Next
-              <ChevronRightIcon className="w-5 h-5" />
-            </button>
+            <div className="grid grid-cols-2 gap-4 pt-6 pb-8 border-y border-neutral-700">
+              <div>
+                <span className="text-neutral-500 text-sm">Role</span>
+                <p className="text-neutral-200 font-medium mt-1">
+                  <ContentSpan
+                    sectionKey={`project-${project.id}`}
+                    fieldKey="role"
+                  >
+                    {project.role}
+                  </ContentSpan>
+                </p>
+              </div>
+              <div>
+                <span className="text-neutral-500 text-sm">Year</span>
+                <p className="text-neutral-200 font-medium mt-1">
+                  <ContentSpan
+                    sectionKey={`project-${project.id}`}
+                    fieldKey="date"
+                  >
+                    {new Date(project.date).getFullYear()}
+                  </ContentSpan>
+                </p>
+              </div>
+            </div>
+
+            {project.content && (
+              <ProjectModalContent content={project.content} />
+            )}
+
+            <div className="flex flex-col sm:flex-row gap-4 pt-8">
+              {project.link && (
+                <Link
+                  href={project.link}
+                  target="_blank"
+                  className="flex-1 px-6 py-4 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 font-medium"
+                >
+                  <ExternalLinkIcon className="w-5 h-5" />
+                  Visit Live Site
+                </Link>
+              )}
+              {project.github && (
+                <Link
+                  href={project.github}
+                  target="_blank"
+                  className="flex-1 px-6 py-4 bg-neutral-800 text-white rounded-lg hover:bg-neutral-700 transition-colors flex items-center justify-center gap-2 font-medium"
+                >
+                  <GithubIcon className="w-5 h-5" />
+                  View Code
+                </Link>
+              )}
+            </div>
+
+            <div className="flex lg:hidden gap-4 pt-4 pb-8">
+              <button
+                onClick={handlePrevious}
+                disabled={!hasPrevious}
+                className="flex-1 px-6 py-3 bg-neutral-800/50 rounded-lg hover:bg-neutral-800 transition-colors flex items-center justify-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                <ChevronLeftIcon className="w-5 h-5" />
+                Previous
+              </button>
+              <button
+                onClick={handleNext}
+                disabled={!hasNext}
+                className="flex-1 px-6 py-3 bg-neutral-800/50 rounded-lg hover:bg-neutral-800 transition-colors flex items-center justify-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                Next
+                <ChevronRightIcon className="w-5 h-5" />
+              </button>
+            </div>
           </div>
         </div>
       </div>

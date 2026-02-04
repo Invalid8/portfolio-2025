@@ -63,11 +63,11 @@ export function ProjectCard({
           {project.title}
         </h3>
 
-        <p className="text-sm text-neutral-300 line-clamp-2 mb-4 opacity-0 group-hover:opacity-100 transition-opacity">
+        <p className="text-sm text-neutral-300 line-clamp-2 mb-4 max-h-0 opacity-0 group-hover:max-h-20 group-hover:opacity-100 transition-all duration-300">
           {project.description}
         </p>
 
-        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex gap-2 max-h-0 opacity-0 group-hover:max-h-20 group-hover:opacity-100 transition-all duration-300 overflow-hidden">
           {project.link && (
             <div className="px-3 py-1.5 bg-white/10 backdrop-blur rounded-lg text-xs flex items-center gap-1">
               <ExternalLinkIcon className="w-3 h-3" />
