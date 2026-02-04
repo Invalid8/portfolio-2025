@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useMemo, useCallback, useState } from "react";
@@ -73,7 +74,6 @@ function parseSpecialString(input: string): CustomText[] {
         out.push({ text: m[1], link: m[2] });
       } else {
         const inner = parseSpecialString(m[1]);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         inner.forEach((n) => ((n as any)[p.mark] = true));
         out.push(...inner);
       }
@@ -104,22 +104,19 @@ function serialize(nodes: Descendant[]): string {
   return nodes
     .map((n) => {
       if (!("children" in n)) return "";
-      return (
-        n.children
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .map((l: any) => {
-            if (l.break) return "~~br~~";
-            let t = l.text;
-            if (l.link) t = `[${t}](${l.link})`;
-            if (l.underline) t = `__${t}__`;
-            if (l.primary) t = `^^${t}^^`;
-            if (l.strike) t = `~~${t}~~`;
-            if (l.italic) t = `*${t}*`;
-            if (l.bold) t = `**${t}**`;
-            return t;
-          })
-          .join("")
-      );
+      return n.children
+        .map((l: any) => {
+          if (l.break) return "~~br~~";
+          let t = l.text;
+          if (l.link) t = `[${t}](${l.link})`;
+          if (l.underline) t = `__${t}__`;
+          if (l.primary) t = `^^${t}^^`;
+          if (l.strike) t = `~~${t}~~`;
+          if (l.italic) t = `*${t}*`;
+          if (l.bold) t = `**${t}**`;
+          return t;
+        })
+        .join("");
     })
     .join("\n");
 }
@@ -150,7 +147,12 @@ const renderLeaf = ({ leaf, attributes, children }: RenderLeafProps) => {
 
   if (l.link) {
     el = (
-      <a href={l.link} target="_blank" rel="noopener noreferrer">
+      <a
+        href={l.link}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline hover:underline"
+      >
         {el}
       </a>
     );
@@ -198,13 +200,22 @@ function RenderStatic({ raw }: { raw: string }) {
 
         if (l.link) {
           el = (
-            <a href={l.link} target="_blank" rel="noopener noreferrer">
+            <a
+              href={l.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline hover:underline"
+            >
               {el}
             </a>
           );
         }
 
-        return <React.Fragment key={i}>{el}</React.Fragment>;
+        return (
+          <span key={i} className="inline">
+            {el}
+          </span>
+        );
       })}
     </>
   );
@@ -225,7 +236,7 @@ export default function ContentSpan({
 
   const editor = useMemo(
     () => withReact(createEditor() as BaseEditor & ReactEditor),
-    []
+    [],
   );
 
   const [value, setValue] = useState<Descendant[]>(createInitialValue(raw));

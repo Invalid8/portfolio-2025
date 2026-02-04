@@ -119,7 +119,7 @@ function Navbar() {
                 key={section}
                 onClick={() => scrollToSection(section)}
                 className={cn(
-                  "text-sm font-medium uppercase tracking-wider transition-colors hover:text-primary",
+                  "text-sm font-medium uppercase tracking-wider transition-colors hover:text-primary cursor-pointer",
                   activeSection === section
                     ? "text-primary"
                     : "text-neutral-400",

@@ -24,7 +24,7 @@ const socialLinks = [
   },
 ];
 
-function Contact() {
+export default function Contact() {
   const { setSection } = usePageContext();
 
   useEffect(() => {
@@ -41,17 +41,23 @@ function Contact() {
   }, [setSection]);
 
   return (
-    <div id="Contact" className="w-full py-20 px-5 md:px-10">
-      <div className="max-w-7xl mx-auto">
+    <section
+      id="Contact"
+      className="w-full py-20 px-5 md:px-10 relative overflow-hidden"
+    >
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent blur-3xl"></div>
+
+      <div className="max-w-7xl mx-auto relative z-10">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
-          {/* Left - Info */}
           <div className="space-y-8">
             <div className="space-y-4">
-              <h2 className="text-4xl lg:text-6xl font-bold">
-                <ContentSpan sectionKey="contact" fieldKey="title">
-                  LET&apos;S WORK TOGETHER
-                </ContentSpan>
-              </h2>
+              <div className="relative">
+                <h2 className="text-4xl lg:text-6xl font-bold">
+                  <ContentSpan sectionKey="contact" fieldKey="title">
+                    LET&apos;S WORK TOGETHER
+                  </ContentSpan>
+                </h2>
+              </div>
               <p className="text-lg text-neutral-400 max-w-xl">
                 <ContentSpan sectionKey="contact" fieldKey="subtitle">
                   Have a project in mind? Let&apos;s discuss how we can work
@@ -60,7 +66,6 @@ function Contact() {
               </p>
             </div>
 
-            {/* Contact Info */}
             <div className="flex flex-col gap-4">
               <ContactItem
                 icon={<MailIcon className="w-5 h-5" />}
@@ -87,7 +92,6 @@ function Contact() {
               />
             </div>
 
-            {/* Social Links */}
             <div className="pt-6 border-t border-neutral-800">
               <p className="text-sm text-neutral-500 mb-4">Follow me on</p>
               <div className="flex gap-4">
@@ -96,7 +100,7 @@ function Contact() {
                     key={link.name}
                     href={link.url}
                     target="_blank"
-                    className="w-12 h-12 rounded-full bg-neutral-800 hover:bg-primary flex items-center justify-center transition-all hover:scale-110 font-mono font-medium"
+                    className="w-12 h-12 rounded-full bg-neutral-800/50 backdrop-blur border border-neutral-700/50 hover:bg-primary hover:border-primary flex items-center justify-center transition-all hover:scale-110 font-mono font-medium"
                     title={link.name}
                   >
                     {link.icon}
@@ -106,14 +110,13 @@ function Contact() {
             </div>
           </div>
 
-          {/* Right - Contact Form */}
-          <div className="bg-neutral-800/50 backdrop-blur border border-neutral-700/50 rounded-2xl p-8 lg:p-10">
+          <div className="bg-neutral-800/30 backdrop-blur border border-neutral-700/50 rounded-2xl p-8 lg:p-10 hover:border-primary/30 transition-all">
             <form className="space-y-6">
               <div className="space-y-4">
                 <div>
                   <label
                     htmlFor="name"
-                    className="block text-sm font-medium mb-2"
+                    className="block text-sm font-medium mb-2 text-neutral-300"
                   >
                     Name
                   </label>
@@ -121,7 +124,7 @@ function Contact() {
                     type="text"
                     id="name"
                     name="name"
-                    className="w-full px-4 py-3 bg-neutral-900/50 border border-neutral-700 rounded-lg focus:border-primary focus:outline-none transition-colors"
+                    className="w-full px-4 py-3 bg-neutral-900/50 border border-neutral-700 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                     placeholder="Your name"
                   />
                 </div>
@@ -129,7 +132,7 @@ function Contact() {
                 <div>
                   <label
                     htmlFor="email"
-                    className="block text-sm font-medium mb-2"
+                    className="block text-sm font-medium mb-2 text-neutral-300"
                   >
                     Email
                   </label>
@@ -137,7 +140,7 @@ function Contact() {
                     type="email"
                     id="email"
                     name="email"
-                    className="w-full px-4 py-3 bg-neutral-900/50 border border-neutral-700 rounded-lg focus:border-primary focus:outline-none transition-colors"
+                    className="w-full px-4 py-3 bg-neutral-900/50 border border-neutral-700 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                     placeholder="your.email@example.com"
                   />
                 </div>
@@ -145,7 +148,7 @@ function Contact() {
                 <div>
                   <label
                     htmlFor="message"
-                    className="block text-sm font-medium mb-2"
+                    className="block text-sm font-medium mb-2 text-neutral-300"
                   >
                     Message
                   </label>
@@ -153,7 +156,7 @@ function Contact() {
                     id="message"
                     name="message"
                     rows={5}
-                    className="w-full px-4 py-3 bg-neutral-900/50 border border-neutral-700 rounded-lg focus:border-primary focus:outline-none transition-colors resize-none"
+                    className="w-full px-4 py-3 bg-neutral-900/50 border border-neutral-700 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-none"
                     placeholder="Tell me about your project..."
                   />
                 </div>
@@ -161,7 +164,7 @@ function Contact() {
 
               <button
                 type="submit"
-                className="w-full px-6 py-4 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 font-medium"
+                className="w-full px-6 py-4 bg-primary text-white rounded-lg hover:bg-primary/90 transition-all flex items-center justify-center gap-2 font-medium hover:shadow-lg hover:shadow-primary/20"
               >
                 Send Message
                 <SendIcon className="w-4 h-4" />
@@ -169,10 +172,8 @@ function Contact() {
             </form>
           </div>
         </div>
-
-        {/* Footer */}
       </div>
-    </div>
+    </section>
   );
 }
 
@@ -192,8 +193,8 @@ function ContactItem({
   fieldKey: string;
 }) {
   const content = (
-    <div className="flex items-start gap-4 group cursor-pointer">
-      <div className="p-3 bg-neutral-800 rounded-lg group-hover:bg-primary transition-colors">
+    <div className="flex items-start gap-4 group cursor-pointer p-4 rounded-xl bg-neutral-800/20 backdrop-blur border border-neutral-700/30 hover:border-primary/50 hover:bg-neutral-800/40 transition-all">
+      <div className="p-3 bg-neutral-800/50 rounded-lg group-hover:bg-primary transition-colors">
         {icon}
       </div>
       <div>
@@ -217,5 +218,3 @@ function ContactItem({
 
   return content;
 }
-
-export default Contact;
