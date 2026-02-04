@@ -3,20 +3,21 @@ import {
   createDocumentWithId,
 } from "@/lib/firebase/server/services";
 import { requireAdmin } from "@/lib/firebase/server/services/auth";
+import { serializeFirestoreData } from "@/lib/serialize";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(
-  req: NextRequest,
-  { params }: { params: { collection: string } }
+  request: NextRequest,
+  context: { params: { collection: string } },
 ) {
   await requireAdmin();
 
-  const body = await req.json();
-  const { id, ...data } = body;
+  const body = await request.json();
+  const { id, ...data } = serializeFirestoreData(body);
 
   const result = id
-    ? await createDocumentWithId(params.collection, id, data)
-    : await createDocument(params.collection, data);
+    ? await createDocumentWithId(context.params.collection, id, data)
+    : await createDocument(context.params.collection, data);
 
   return NextResponse.json(result);
 }

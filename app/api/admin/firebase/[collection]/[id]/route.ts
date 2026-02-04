@@ -1,42 +1,44 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   updateDocument,
   upsertDocument,
   deleteDocument,
 } from "@/lib/firebase/server/services";
 import { requireAdmin } from "@/lib/firebase/server/services/auth";
+import { serializeFirestoreData } from "@/lib/serialize";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function PATCH(
-  req: NextRequest,
-  { params }: { params: { collection: string; id: string } }
+  request: NextRequest,
+  context: { params: { collection: string; id: string } },
 ) {
   await requireAdmin();
 
-  const data = await req.json();
-  await updateDocument(params.collection, params.id, data);
+  const data = serializeFirestoreData(await request.json());
+  await updateDocument(context.params.collection, context.params.id, data);
 
   return NextResponse.json({ ok: true });
 }
 
 export async function PUT(
-  req: NextRequest,
-  { params }: { params: { collection: string; id: string } }
+  request: NextRequest,
+  context: { params: { collection: string; id: string } },
 ) {
   await requireAdmin();
 
-  const data = await req.json();
-  await upsertDocument(params.collection, params.id, data);
+  const data = serializeFirestoreData(await request.json());
+  await upsertDocument(context.params.collection, context.params.id, data);
 
   return NextResponse.json({ ok: true });
 }
 
 export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { collection: string; id: string } }
+  request: NextRequest,
+  context: { params: { collection: string; id: string } },
 ) {
   await requireAdmin();
 
-  await deleteDocument(params.collection, params.id);
+  await deleteDocument(context.params.collection, context.params.id);
 
   return NextResponse.json({ ok: true });
 }
