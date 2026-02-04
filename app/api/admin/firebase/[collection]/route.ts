@@ -8,16 +8,17 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(
   request: NextRequest,
-  context: { params: { collection: string } },
+  context: { params: Promise<{ collection: string }> },
 ) {
   await requireAdmin();
 
+  const { collection } = await context.params;
   const body = await request.json();
   const { id, ...data } = serializeFirestoreData(body);
 
   const result = id
-    ? await createDocumentWithId(context.params.collection, id, data)
-    : await createDocument(context.params.collection, data);
+    ? await createDocumentWithId(collection, id, data)
+    : await createDocument(collection, data);
 
   return NextResponse.json(result);
 }
