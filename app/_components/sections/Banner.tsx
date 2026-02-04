@@ -79,7 +79,7 @@ export default function Banner({ initialSkills = [] }: BannerProps) {
       </div>
 
       {showMarquee && (
-        <div className="absolute inset-0 size-full overflow-hidden max-w-[100vw] pointer-events-none">
+        <div className="absolute inset-0 size-full overflow-hidden max-w-[100vw] pointer-events-none hidden md:block">
           <AngledMarquee
             angle={-22}
             bgColor="#1f2937"
