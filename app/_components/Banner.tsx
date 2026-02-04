@@ -54,7 +54,7 @@ function Banner() {
       </div>
 
       {/* Angled Marquees */}
-      <div className="absolute inset-0 size-full overflow-hidden max-w-[100vw]">
+      {/* <div className="absolute inset-0 size-full overflow-hidden max-w-[100vw]">
         <AngledMarquee
           angle={-22}
           bgColor="#1f2937"
@@ -97,7 +97,7 @@ function Banner() {
             ))}
           </ul>
         </AngledMarquee>
-      </div>
+      </div> */}
     </div>
   );
 }
