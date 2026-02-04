@@ -6,6 +6,7 @@ import { SurpriseUIProvider } from "@/lib/context/suprise-props";
 import Navbar from "./_components/Navbar";
 import { PageProvider } from "@/lib/context/PageContent";
 import Toolkit from "./_components/Toolkit";
+import Footer from "./_components/Footer";
 
 const geistSans = Inter({
   variable: "--font-geist-sans",
@@ -42,7 +43,9 @@ export default function RootLayout({
             <SurpriseUIProvider>
               <Navbar />
               {children}
+              <Footer/>
               <Toolkit/>
+              
             </SurpriseUIProvider>
           </PageProvider>
         </AuthProvider>
