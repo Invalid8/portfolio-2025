@@ -2,11 +2,6 @@ import type { Metadata } from "next";
 import { Montserrat, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/lib/context/auth";
-import { SurpriseUIProvider } from "@/lib/context/suprise-props";
-import Navbar from "./_components/Navbar";
-import { PageProvider } from "@/lib/context/PageContent";
-import Toolkit from "./_components/Toolkit";
-import Footer from "./_components/Footer";
 
 const geistSans = Inter({
   variable: "--font-geist-sans",
@@ -38,16 +33,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${bebasNeue.variable} antialiased dark overflow-x-hidden min-h-svh`}
       >
-        <AuthProvider>
-          <PageProvider>
-            <SurpriseUIProvider>
-              <Navbar />
-              {children}
-              <Footer/>
-              <Toolkit/>
-            </SurpriseUIProvider>
-          </PageProvider>
-        </AuthProvider>
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );

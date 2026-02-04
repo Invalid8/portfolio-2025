@@ -16,6 +16,8 @@ import {
 } from "firebase/auth";
 import { setCookie, deleteCookie } from "cookies-next";
 import { LogOutIcon } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { ADMIN_LOGIN_ROUTE } from "../constants";
 
 interface AuthContextType {
   user: User | null;
@@ -33,15 +35,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (u) => {
       if (u) {
         setUser(u);
-        const tokenResult = await u.getIdTokenResult();
-        setIsAdmin(!!tokenResult.claims.admin);
 
+        const tokenResult = await u.getIdTokenResult();
+        const admin = !!tokenResult.claims.admin;
+
+        setIsAdmin(admin);
         setCookie("adminToken", tokenResult.token, { path: "/" });
+
+        if (pathname.startsWith(ADMIN_LOGIN_ROUTE)) {
+          router.replace("/");
+        }
       } else {
         setUser(null);
         setIsAdmin(false);
@@ -50,7 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [router, pathname]);
 
   const loginWithGoogle = async () => {
     const result = await signInWithPopup(auth, googleProvider);
@@ -92,7 +102,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     >
       {user && (
         <button
-          className="flex items-center gap-2 text-red-500 cursor-pointer fixed right-8 top-24 z-9999 p-3 bg-neutral-800/50 backdrop-blur rounded-full hover:bg-neutral-800 transition-colors"
+          className="flex items-center gap-2 text-red-500 cursor-pointer fixed right-8 bottom-24 z-9999 p-3 bg-neutral-800/50 backdrop-blur rounded-full hover:bg-neutral-800 transition-colors"
           onClick={logout}
           title="Logout"
         >
