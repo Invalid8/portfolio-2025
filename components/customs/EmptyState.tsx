@@ -35,7 +35,7 @@ export function EmptyState({
         {description}
       </p>
 
-      {action && <div className="mt-4">{action}</div>}
+      {action && <div className="mt-0">{action}</div>}
     </div>
   );
 }

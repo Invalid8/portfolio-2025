@@ -10,7 +10,7 @@ import { EmptyState } from "@/components/customs/EmptyState";
 import { cn } from "@/lib/utils";
 import gsap from "gsap";
 import { ProjectCard } from "../cards/ProjectCard";
-import { PlusIcon, BriefcaseIcon } from "lucide-react";
+import { PlusIcon, RocketIcon } from "lucide-react";
 import { ProjectModal } from "../cards/ProjectModal";
 import { toast } from "sonner";
 
@@ -168,7 +168,7 @@ export default function Projects() {
               title="No Projects Yet"
               description="Start showcasing your work by adding your first project. Your portfolio is waiting to shine!"
               icon={
-                <BriefcaseIcon
+                <RocketIcon
                   className="w-16 h-16 text-neutral-600"
                   strokeWidth={1.5}
                 />

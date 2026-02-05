@@ -53,9 +53,10 @@ function Navbar() {
     <>
       <header
         className={cn(
-          "min-h-(--nav-h) w-full py-3 px-5 lg:px-10 flex items-center z-999 sticky top-0 transition-all",
+          "min-h-(--nav-h) w-full py-3 px-5 lg:px-10 flex items-center z-999 top-0 transition-all",
           passed &&
-            "backdrop-blur-sm bg-neutral-900/30 border-b border-white/5",
+            "sticky backdrop-blur-sm bg-neutral-900/30 border-b border-white/5",
+          !passed && "fixed",
         )}
       >
         <nav className="w-full flex items-center justify-between">
@@ -112,6 +113,20 @@ function Navbar() {
                 {section}
               </button>
             ))}
+          </div>
+          <div className="block lg:hidden">
+            <Link
+              href="/"
+              onClick={(e) => {
+                e.preventDefault();
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+              className="text-lg xl:text-2xl font-medium tracking-widest hover:scale-110 transition-all text-primary cursor-pointer"
+            >
+              <ContentSpan sectionKey="navbar" fieldKey="logo">
+                {navbarSection?.logo || "dalgoridim"}
+              </ContentSpan>
+            </Link>
           </div>
         </nav>
       </header>
