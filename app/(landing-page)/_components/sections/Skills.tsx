@@ -6,7 +6,8 @@ import { useAuth } from "@/lib/context/auth";
 import { usePageContext } from "@/lib/context/PageContent";
 import { Skill, Section } from "@/types";
 import { AddSkillModal, EditSkillModal } from "@/components/modals";
-import { PlusIcon, Trash2Icon, Edit2Icon } from "lucide-react";
+import { EmptyState } from "@/components/customs/EmptyState";
+import { PlusIcon, Trash2Icon, Edit2Icon, CodeIcon } from "lucide-react";
 import gsap from "gsap";
 import { toast } from "sonner";
 
@@ -27,6 +28,7 @@ export default function SkillsSection() {
   const [skills, setSkills] = useState<Skill[]>([]);
   const [showAllSkills, setShowAllSkills] = useState(false);
   const [editingSkill, setEditingSkill] = useState<Skill | null>(null);
+  const [loading, setLoading] = useState(true);
   const skillsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -35,6 +37,7 @@ export default function SkillsSection() {
       .filter(isSkill)
       .sort((a, b) => b.skillLevel - a.skillLevel);
     setSkills(skillList);
+    setLoading(false);
   }, [sections]);
 
   useEffect(() => {
@@ -132,7 +135,7 @@ export default function SkillsSection() {
 
   const displayedSkills = showAllSkills ? skills : skills.slice(0, 12);
 
-  if (!skills.length) {
+  if (loading) {
     return (
       <div
         id="Skills"
@@ -166,7 +169,23 @@ export default function SkillsSection() {
           {isAdmin && isEditing && <AddSkillModal onAdd={handleAddSkill} />}
         </div>
 
-        {skills.length > 0 && (
+        {skills.length === 0 ? (
+          <EmptyState
+            title="No Skills Yet"
+            description="Showcase your technical expertise by adding skills and technologies you work with. Let your abilities shine!"
+            icon={
+              <CodeIcon
+                className="w-16 h-16 text-neutral-600"
+                strokeWidth={1.5}
+              />
+            }
+            action={
+              isAdmin && isEditing ? (
+                <AddSkillModal onAdd={handleAddSkill} />
+              ) : null
+            }
+          />
+        ) : (
           <div className="space-y-8">
             <div
               ref={skillsRef}

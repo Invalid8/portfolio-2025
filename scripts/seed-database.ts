@@ -124,6 +124,7 @@ async function seedPortfolioSections() {
         "A Nigerian based **^^Frontend Developer^^** passionate about building accessible and user friendly **^^websites^^**.",
       resume:
         "^^__**[My Resume](https://drive.google.com/file/d/1ixmuBYgzXQdXrTn1n9aoz4SWYRU715h-/view)**__^^",
+
       skills: skills.slice(0, 15),
     },
     about: {

@@ -7,8 +7,9 @@ import { fetchCollectionClient } from "@/lib/firebase/services";
 import type { Experience, Section } from "@/types";
 import { useAuth } from "@/lib/context/auth";
 import { AddExperienceModal } from "@/components/modals";
+import { EmptyState } from "@/components/customs/EmptyState";
 import { ExperienceCard } from "../cards/ExpereinceCard";
-import { PlusIcon } from "lucide-react";
+import { PlusIcon, BriefcaseIcon } from "lucide-react";
 import { toast } from "sonner";
 import { parseDurationStart } from "@/utils/dateFormatter";
 
@@ -21,7 +22,6 @@ export default function ExperienceSection() {
   const experiencesCollection = sections["experiences"] || {};
   const experiences: Experience[] = Object.values(experiencesCollection)
     .filter(isExperience)
-    // Sort by start date - latest first
     .sort((a, b) => {
       const dateA = parseDurationStart(a.position.duration);
       const dateB = parseDurationStart(b.position.duration);
@@ -30,6 +30,7 @@ export default function ExperienceSection() {
 
   useEffect(() => {
     if (Object.keys(experiencesCollection).length === 0) loadData();
+    else setLoading(false);
   }, []);
 
   async function loadData() {
@@ -52,7 +53,9 @@ export default function ExperienceSection() {
     }
   }
 
-  const handleAddExperience = async (experienceData: Partial<Experience>) => {
+  const handleAddExperience = async (
+    experienceData: Omit<Experience, "id">,
+  ) => {
     try {
       const res = await fetch("/api/admin/firebase/experiences", {
         method: "POST",
@@ -74,6 +77,7 @@ export default function ExperienceSection() {
     } catch (err) {
       console.error("Error adding experience:", err);
       toast.error("Failed to add experience");
+      throw err;
     }
   };
 
@@ -81,7 +85,7 @@ export default function ExperienceSection() {
     ? experiences
     : experiences.slice(0, 3);
 
-  if (loading && experiences.length === 0) {
+  if (loading) {
     return (
       <div
         id="Experience"
@@ -115,31 +119,49 @@ export default function ExperienceSection() {
           )}
         </div>
 
-        <div className="space-y-6">
-          {displayedExperiences.map((exp) => (
-            <ExperienceCard key={exp.id} experience={exp} />
-          ))}
+        {experiences.length === 0 ? (
+          <EmptyState
+            title="No Experience Yet"
+            description="Build your professional story by adding your work experience. Share your journey and achievements!"
+            icon={
+              <BriefcaseIcon
+                className="w-16 h-16 text-neutral-600"
+                strokeWidth={1.5}
+              />
+            }
+            action={
+              isAdmin && isEditing ? (
+                <AddExperienceModal onAdd={handleAddExperience} />
+              ) : null
+            }
+          />
+        ) : (
+          <div className="space-y-6">
+            {displayedExperiences.map((exp) => (
+              <ExperienceCard key={exp.id} experience={exp} />
+            ))}
 
-          {experiences.length > 3 && (
-            <div className="flex justify-center pt-4">
-              <button
-                onClick={() => setShowAllExperiences(!showAllExperiences)}
-                className="group flex items-center gap-3 px-8 py-4 bg-neutral-800/50 backdrop-blur border border-neutral-700/50 rounded-full hover:border-primary/50 hover:bg-neutral-800/70 transition-all"
-              >
-                <PlusIcon
-                  className={`w-5 h-5 transition-transform ${
-                    showAllExperiences ? "rotate-45" : ""
-                  }`}
-                />
-                <span className="font-medium">
-                  {showAllExperiences
-                    ? "Show Less"
-                    : `View All Experience (${experiences.length})`}
-                </span>
-              </button>
-            </div>
-          )}
-        </div>
+            {experiences.length > 3 && (
+              <div className="flex justify-center pt-4">
+                <button
+                  onClick={() => setShowAllExperiences(!showAllExperiences)}
+                  className="group flex items-center gap-3 px-8 py-4 bg-neutral-800/50 backdrop-blur border border-neutral-700/50 rounded-full hover:border-primary/50 hover:bg-neutral-800/70 transition-all"
+                >
+                  <PlusIcon
+                    className={`w-5 h-5 transition-transform ${
+                      showAllExperiences ? "rotate-45" : ""
+                    }`}
+                  />
+                  <span className="font-medium">
+                    {showAllExperiences
+                      ? "Show Less"
+                      : `View All Experience (${experiences.length})`}
+                  </span>
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </section>
   );

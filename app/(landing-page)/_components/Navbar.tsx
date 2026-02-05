@@ -5,10 +5,16 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import ContentSpan from "@/components/customs/ContentEditSpan";
 import { SOCIAL_LINKS, SECTIONS } from "@/lib/constants";
+import { usePageContext } from "@/lib/context/PageContent";
 
 function Navbar() {
+  const { sections } = usePageContext();
   const [passed, setPassed] = useState(false);
   const [activeSection, setActiveSection] = useState("");
+
+  const navbarSection = sections["portfolio"]?.["navbar"] || {
+    logo: "dalgoridim",
+  };
 
   useEffect(() => {
     function handleScroll() {
@@ -85,7 +91,9 @@ function Navbar() {
               }}
               className="text-lg xl:text-2xl font-medium tracking-widest hover:scale-110 transition-all hover:text-primary cursor-pointer"
             >
-              dalgoridim
+              <ContentSpan sectionKey="navbar" fieldKey="logo">
+                {navbarSection?.logo}
+              </ContentSpan>
             </Link>
           </div>
 

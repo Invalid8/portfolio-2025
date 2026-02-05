@@ -6,11 +6,11 @@ import { usePageContext } from "@/lib/context/PageContent";
 import { useAuth } from "@/lib/context/auth";
 import { Project, Section } from "@/types";
 import { AddProjectModal } from "@/components/modals";
-
+import { EmptyState } from "@/components/customs/EmptyState";
 import { cn } from "@/lib/utils";
 import gsap from "gsap";
 import { ProjectCard } from "../cards/ProjectCard";
-import { PlusIcon } from "lucide-react";
+import { PlusIcon, BriefcaseIcon } from "lucide-react";
 import { ProjectModal } from "../cards/ProjectModal";
 import { toast } from "sonner";
 
@@ -32,6 +32,7 @@ export default function Projects() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [showAllProjects, setShowAllProjects] = useState(false);
+  const [loading, setLoading] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const projectsCollection = useMemo(
@@ -42,6 +43,7 @@ export default function Projects() {
   useEffect(() => {
     const projectList = Object.values(projectsCollection).filter(isProject);
     setProjects(projectList);
+    setLoading(false);
   }, [projectsCollection]);
 
   useEffect(() => {
@@ -83,9 +85,10 @@ export default function Projects() {
         collection: "projects",
         id: String(newProject.id),
       });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
+      toast.success("Project added successfully!");
+    } catch (error) {
       console.error("Error adding project:", error);
+      toast.error("Failed to add project");
       throw error;
     }
   };
@@ -114,9 +117,8 @@ export default function Projects() {
       if (!res.ok) {
         throw new Error("Failed to persist project content");
       }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      toast.error(err.toString());
+    } catch (err) {
+      toast.error(String(err));
       console.error("updateProjectContent failed:", err);
     }
   };
@@ -124,7 +126,7 @@ export default function Projects() {
   const featuredProjects = projects.slice(0, 4);
   const displayedProjects = showAllProjects ? projects : featuredProjects;
 
-  if (!projects.length) {
+  if (loading) {
     return (
       <div
         id="Projects"
@@ -161,38 +163,58 @@ export default function Projects() {
             )}
           </div>
 
-          <div
-            ref={containerRef}
-            className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8"
-          >
-            {displayedProjects.map((project) => (
-              <ProjectCard
-                key={project.id}
-                project={project}
-                onClick={() => setSelectedProject(project)}
-              />
-            ))}
-          </div>
-
-          {projects.length > 4 && (
-            <div className="flex justify-center pt-8">
-              <button
-                onClick={() => setShowAllProjects(!showAllProjects)}
-                className="group flex items-center gap-3 px-8 py-4 bg-neutral-800/50 backdrop-blur border border-neutral-700/50 rounded-full hover:border-primary/50 hover:bg-neutral-800/70 transition-all"
-              >
-                <PlusIcon
-                  className={cn(
-                    "w-5 h-5 transition-transform",
-                    showAllProjects && "rotate-45",
-                  )}
+          {projects.length === 0 ? (
+            <EmptyState
+              title="No Projects Yet"
+              description="Start showcasing your work by adding your first project. Your portfolio is waiting to shine!"
+              icon={
+                <BriefcaseIcon
+                  className="w-16 h-16 text-neutral-600"
+                  strokeWidth={1.5}
                 />
-                <span className="font-medium">
-                  {showAllProjects
-                    ? "Show Less"
-                    : `View All Projects (${projects.length})`}
-                </span>
-              </button>
-            </div>
+              }
+              action={
+                isAdmin && isEditing ? (
+                  <AddProjectModal onAdd={handleAddProject} />
+                ) : null
+              }
+            />
+          ) : (
+            <>
+              <div
+                ref={containerRef}
+                className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8"
+              >
+                {displayedProjects.map((project) => (
+                  <ProjectCard
+                    key={project.id}
+                    project={project}
+                    onClick={() => setSelectedProject(project)}
+                  />
+                ))}
+              </div>
+
+              {projects.length > 4 && (
+                <div className="flex justify-center pt-8">
+                  <button
+                    onClick={() => setShowAllProjects(!showAllProjects)}
+                    className="group flex items-center gap-3 px-8 py-4 bg-neutral-800/50 backdrop-blur border border-neutral-700/50 rounded-full hover:border-primary/50 hover:bg-neutral-800/70 transition-all"
+                  >
+                    <PlusIcon
+                      className={cn(
+                        "w-5 h-5 transition-transform",
+                        showAllProjects && "rotate-45",
+                      )}
+                    />
+                    <span className="font-medium">
+                      {showAllProjects
+                        ? "Show Less"
+                        : `View All Projects (${projects.length})`}
+                    </span>
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </section>

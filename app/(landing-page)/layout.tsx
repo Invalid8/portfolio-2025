@@ -17,6 +17,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
   let experiences: Experience[] = [];
   let skills: Skill[] = [];
   let aboutData: Partial<Section> = {};
+  let navbarData: Partial<Section> = {};
   let bannerData: Partial<Section> = {};
   let imagesData: Partial<Section> = {};
 
@@ -33,6 +34,9 @@ export default async function Layout({ children }: { children: ReactNode }) {
 
     aboutData =
       serializeFirestoreData(await fetchByIdServer("portfolio", "about")) || {};
+    navbarData =
+      serializeFirestoreData(await fetchByIdServer("portfolio", "navbar")) ||
+      {};
     bannerData =
       serializeFirestoreData(await fetchByIdServer("portfolio", "banner")) ||
       {};
@@ -48,6 +52,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
   const initialSections: NestedSections = {
     portfolio: {
       about: { id: "about", collection: "portfolio", ...aboutData },
+      navbar: { id: "navbar", collection: "portfolio", ...navbarData },
       banner: { id: "banner", collection: "portfolio", ...bannerData },
       images: { id: "images", collection: "portfolio", ...imagesData },
     },
