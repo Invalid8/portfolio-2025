@@ -10,7 +10,7 @@ import {
   ChevronRightIcon,
 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import gsap from "gsap";
@@ -50,6 +50,25 @@ export function ProjectModal({
   const projectYear = formatYear(project.date);
   const projectMonthYear = formatMonthYear(project.date);
 
+  // Handle ESC key and navigation
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onClose();
+      }
+      if (e.key === "ArrowLeft" && hasPrevious && !isAnimating.current) {
+        e.preventDefault();
+        onNavigate(projects[currentIndex - 1]);
+      }
+      if (e.key === "ArrowRight" && hasNext && !isAnimating.current) {
+        e.preventDefault();
+        onNavigate(projects[currentIndex + 1]);
+      }
+    },
+    [onClose, currentIndex, hasPrevious, hasNext, projects, onNavigate],
+  );
+
   useEffect(() => {
     document.body.style.overflow = "hidden";
 
@@ -62,23 +81,14 @@ export function ProjectModal({
       isInitialMount.current = false;
     }
 
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-      if (e.key === "ArrowLeft" && hasPrevious && !isAnimating.current) {
-        onNavigate(projects[currentIndex - 1]);
-      }
-      if (e.key === "ArrowRight" && hasNext && !isAnimating.current) {
-        onNavigate(projects[currentIndex + 1]);
-      }
-    };
-
-    document.addEventListener("keydown", handleEscape);
+    // Add keyboard listeners
+    document.addEventListener("keydown", handleKeyDown);
 
     return () => {
       document.body.style.overflow = "";
-      document.removeEventListener("keydown", handleEscape);
+      document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [onClose, currentIndex, hasPrevious, hasNext, projects, onNavigate]);
+  }, [handleKeyDown]);
 
   useEffect(() => {
     if (previousProjectId.current === project.id) {
@@ -181,14 +191,17 @@ export function ProjectModal({
     }
   };
 
+  // Handle backdrop click
+  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
   return (
     <div
       className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) {
-          onClose();
-        }
-      }}
+      onClick={handleBackdropClick}
     >
       {hasPrevious && (
         <button
@@ -198,6 +211,7 @@ export function ProjectModal({
           }}
           className="fixed top-1/2 -translate-y-1/2 left-8 z-[10000] p-4 bg-neutral-800/90 backdrop-blur rounded-full hover:bg-neutral-700 transition-all hover:scale-110 hidden lg:flex"
           title="Previous Project (←)"
+          aria-label="Previous Project"
         >
           <ChevronLeftIcon className="w-8 h-8" />
         </button>
@@ -211,19 +225,23 @@ export function ProjectModal({
           }}
           className="fixed top-1/2 -translate-y-1/2 right-8 z-[10000] p-4 bg-neutral-800/90 backdrop-blur rounded-full hover:bg-neutral-700 transition-all hover:scale-110 hidden lg:flex"
           title="Next Project (→)"
+          aria-label="Next Project"
         >
           <ChevronRightIcon className="w-8 h-8" />
         </button>
       )}
 
-      <Link
-        href="/#Projects"
-        onClick={onClose}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onClose();
+        }}
         className="fixed top-8 right-8 z-[10000] p-3 bg-neutral-800/90 backdrop-blur rounded-full hover:bg-neutral-700 transition-colors"
         title="Close (Esc)"
+        aria-label="Close modal"
       >
         <XIcon className="w-6 h-6" />
-      </Link>
+      </button>
 
       <div
         ref={modalRef}

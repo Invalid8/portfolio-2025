@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { ProjectModal } from "../cards/ProjectDetailsModal";
 import { usePageContext } from "@/lib/context/PageContent";
 import { Project, Section } from "@/types";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/context/auth";
 
@@ -20,6 +20,8 @@ function isProject(section: Section): section is Section & Project {
   );
 }
 
+const projectCache = new Map<string, Project>();
+
 export function ProjectModalWrapper({
   project: initialProject,
   projectId,
@@ -32,6 +34,10 @@ export function ProjectModalWrapper({
   const { isAdmin, isEditing } = useAuth();
   const [currentProject, setCurrentProject] = useState(initialProject);
   const [isNavigating, setIsNavigating] = useState(false);
+
+  useEffect(() => {
+    projectCache.set(projectId, initialProject);
+  }, [projectId, initialProject]);
 
   const projectsCollection = useMemo(
     () => sections["projects"] || {},
@@ -50,66 +56,93 @@ export function ProjectModalWrapper({
     }
   }, [projectId, projects]);
 
-  const handleNavigate = async (newProject: Project) => {
-    setIsNavigating(true);
+  const handleNavigate = useCallback(
+    async (newProject: Project) => {
+      setIsNavigating(true);
 
-    const currentIndex = projects.findIndex((p) => p.id === newProject.id);
-    const nextProject = projects[currentIndex + 1];
-    const prevProject = projects[currentIndex - 1];
+      const currentIndex = projects.findIndex((p) => p.id === newProject.id);
+      const nextProject = projects[currentIndex + 1];
+      const prevProject = projects[currentIndex - 1];
 
-    if (nextProject) {
-      fetch(`/api/projects/${nextProject.id}`).catch(() => {});
-    }
-    if (prevProject) {
-      fetch(`/api/projects/${prevProject.id}`).catch(() => {});
-    }
+      if (nextProject && !projectCache.has(String(nextProject.id))) {
+        fetch(`/api/projects/${nextProject.id}`)
+          .then((res) => res.json())
+          .then((data) => projectCache.set(String(nextProject.id), data))
+          .catch(() => {});
+      }
+      if (prevProject && !projectCache.has(String(prevProject.id))) {
+        fetch(`/api/projects/${prevProject.id}`)
+          .then((res) => res.json())
+          .then((data) => projectCache.set(String(prevProject.id), data))
+          .catch(() => {});
+      }
 
-    try {
-      const response = await fetch(`/api/projects/${newProject.id}`);
-      if (!response.ok) throw new Error("Failed to fetch project");
+      try {
+        const cached = projectCache.get(String(newProject.id));
+        if (cached) {
+          setCurrentProject(cached);
+          window.history.replaceState(null, "", `/project/${newProject.id}`);
+          setIsNavigating(false);
+          return;
+        }
 
-      const projectData = await response.json();
-      setCurrentProject(projectData);
+        const response = await fetch(`/api/projects/${newProject.id}`);
+        if (!response.ok) throw new Error("Failed to fetch project");
 
-      window.history.replaceState(null, "", `/project/${newProject.id}`);
-    } catch (error) {
-      console.error("Failed to navigate:", error);
-      toast.error("Failed to load project");
-    } finally {
-      setIsNavigating(false);
-    }
-  };
-  const handleClose = () => {
-    router.push("/#Projects");
-  };
+        const projectData = await response.json();
+        projectCache.set(String(newProject.id), projectData);
+        setCurrentProject(projectData);
 
-  const updateProjectContent = async (projectId: string, content: string) => {
-    const sectionKey = `project-${projectId}`;
+        window.history.replaceState(null, "", `/project/${newProject.id}`);
+      } catch (error) {
+        console.error("Failed to navigate:", error);
+        toast.error("Failed to load project");
+      } finally {
+        setIsNavigating(false);
+      }
+    },
+    [projects],
+  );
 
-    setSection("projects", sectionKey, {
-      ...projectsCollection[sectionKey],
-      content,
-    });
+  const handleClose = useCallback(() => {
+    router.push("/#Projects", { scroll: false });
+  }, [router]);
 
-    setCurrentProject({ ...currentProject, content });
+  const updateProjectContent = useCallback(
+    async (projectId: string, content: string) => {
+      const sectionKey = `project-${projectId}`;
 
-    if (!isAdmin || !isEditing) return;
-
-    try {
-      const res = await fetch(`/api/admin/firebase/projects/${projectId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content }),
+      setSection("projects", sectionKey, {
+        ...projectsCollection[sectionKey],
+        content,
       });
 
-      if (!res.ok) {
-        throw new Error("Failed to persist project content");
+      setCurrentProject((prev) => ({ ...prev, content }));
+
+      const cached = projectCache.get(projectId);
+      if (cached) {
+        projectCache.set(projectId, { ...cached, content });
       }
-    } catch (err) {
-      toast.error(String(err));
-      console.error("updateProjectContent failed:", err);
-    }
-  };
+
+      if (!isAdmin || !isEditing) return;
+
+      try {
+        const res = await fetch(`/api/admin/firebase/projects/${projectId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content }),
+        });
+
+        if (!res.ok) {
+          throw new Error("Failed to persist project content");
+        }
+      } catch (err) {
+        toast.error(String(err));
+        console.error("updateProjectContent failed:", err);
+      }
+    },
+    [projectsCollection, isAdmin, isEditing, setSection],
+  );
 
   return (
     <>

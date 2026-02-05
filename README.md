@@ -2,34 +2,38 @@
 
 A fully customizable, CMS-powered portfolio website built with Next.js 16, React 19, Firebase, and GSAP animations.
 
-## Features
+## ✨ Features
 
 - **Real-time Editing**: Edit content directly on the website with inline editing
 - **Firebase Backend**: All data stored in Firestore for easy management
-- **Server-Side Rendering**: Fast initial page loads with SSR
+- **Server-Side Rendering**: Fast initial page loads with SSR & Static Generation
 - **Modern UI**: Glassmorphic cards, GSAP animations, and responsive design
 - **Admin Panel**: Secure admin authentication with role-based access
-- **Image Management**: Firebase Storage integration for image uploads
+- **Image Management**: Cloudinary integration for optimized image uploads
 - **Type Safety**: Full TypeScript support
+- **SEO Optimized**: Dynamic metadata and static generation for better SEO
+- **Performance**: Client-side caching and prefetching for instant navigation
 
-## Tech Stack
+## 🚀 Tech Stack
 
 - **Framework**: Next.js 16 (App Router)
 - **UI**: React 19, TailwindCSS 4
 - **Animations**: GSAP with ScrollTrigger
 - **Backend**: Firebase (Firestore + Storage + Auth)
 - **Editor**: Slate.js for rich text editing
+- **Images**: Cloudinary for optimization
 - **Type Safety**: TypeScript
 
-## Prerequisites
+## 📋 Prerequisites
 
 Before you begin, ensure you have:
 
 - Node.js 18+ installed
 - A Firebase project created
 - Firebase Admin SDK credentials
+- Cloudinary account (for image uploads)
 
-## Setup Instructions
+## 🛠️ Setup Instructions
 
 ### 1. Clone the Repository
 
@@ -77,6 +81,7 @@ cp .env.example .env.local
 Fill in the variables:
 
 ```env
+# Firebase Client Config
 NEXT_PUBLIC_FIREBASE_API_KEY="your-api-key"
 NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN="your-project.firebaseapp.com"
 NEXT_PUBLIC_FIREBASE_PROJECT_ID="your-project-id"
@@ -85,10 +90,19 @@ NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID="your-sender-id"
 NEXT_PUBLIC_FIREBASE_APP_ID="your-app-id"
 NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID="G-XXXXXXXXXX"
 
+# Firebase Admin Config
 FIREBASE_DB_URL="https://your-project.firebaseio.com"
 FIREBASE_CLIENT_EMAIL="firebase-adminsdk-xxxxx@your-project.iam.gserviceaccount.com"
 FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nYour-Private-Key\n-----END PRIVATE KEY-----\n"
 FIREBASE_PROJECT_ID="your-project-id"
+
+# Admin Access
+ADMIN_EMAILS="your-email@example.com"
+
+# Cloudinary Config
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME="your-cloud-name"
+CLOUDINARY_API_KEY="your-api-key"
+CLOUDINARY_API_SECRET="your-api-secret"
 ```
 
 **Important**: For `FIREBASE_PRIVATE_KEY`, ensure:
@@ -108,7 +122,7 @@ This creates collections for:
 - Projects
 - Experiences
 - Skills
-- Portfolio sections (banner, about, contact, etc.)
+- Portfolio sections (banner, about, contact, stats, etc.)
 
 ### 5. Set Up Admin Access
 
@@ -118,7 +132,9 @@ After creating your account (via Google or Email), set yourself as admin:
 npm run seed:admin your-email@example.com
 ```
 
-**Important**: Log out and log back in for admin privileges to take effect.
+**Important**: 
+- Your email must match one in the `ADMIN_EMAILS` environment variable
+- Log out and log back in for admin privileges to take effect
 
 ### 6. Run Development Server
 
@@ -128,7 +144,7 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000)
 
-## Usage Guide
+## 📝 Usage Guide
 
 ### Editing Content
 
@@ -136,23 +152,25 @@ Open [http://localhost:3000](http://localhost:3000)
 2. **Enable Edit Mode**: Click the edit icon (bottom toolbar)
 3. **Edit Inline**: Click on any text to edit
 4. **Upload Images**: Click on images to replace them
-5. **Save**: Changes auto-save on blur
+5. **Save**: Changes auto-save on blur, or click Save All button
 
 ### Adding New Projects
 
 Projects are managed in Firestore. You can:
 1. Edit existing projects directly on the site
-2. Add new projects via the Firebase Console
+2. Add new projects via the "Add New Project" button (when logged in)
 3. Use the seed script to bulk import
 
 ### Customizing Sections
 
 All sections are editable via the CMS:
-- **Banner**: Title and subtitle
+- **Banner**: Title, subtitle, and resume link
 - **About**: Bio paragraphs and image
-- **Projects**: Individual project cards
-- **Experience**: Work history and skills
-- **Contact**: Contact information
+- **Stats**: Years of experience, projects completed, hackathons won
+- **Projects**: Individual project cards with full content
+- **Experience**: Work history with company details
+- **Skills**: Technologies with proficiency levels
+- **Contact**: Email, phone, location, and social links
 
 ### Markdown Support
 
@@ -165,7 +183,47 @@ Content supports special formatting:
 - `~~br~~` → line break
 - `[text](url)` → link
 
-## Deployment
+## ⚡ Performance Optimizations
+
+### Static Generation
+- All project pages are pre-generated at build time
+- Instant page loads with `generateStaticParams`
+
+### Client-Side Caching
+- Projects are cached after first load
+- Adjacent projects are prefetched for instant navigation
+- Modal navigation is near-instant with cache
+
+### Image Optimization
+- Cloudinary integration for automatic optimization
+- Lazy loading for off-screen images
+- Proper image sizing and formats
+
+## 🎨 Customization
+
+### Theme Colors
+
+Edit `app/globals.css` to customize your color scheme:
+
+```css
+:root {
+  --primary: oklch(67.33% 0.19256 41.287); /* Your brand color */
+  /* ... other colors */
+}
+```
+
+### Fonts
+
+Modify `app/layout.tsx` to use different fonts:
+
+```typescript
+const yourFont = YourFont({
+  variable: "--font-your-font",
+  subsets: ["latin"],
+});
+```
+
+## 🚢 Deployment
 
 ### Vercel (Recommended)
 
@@ -174,6 +232,11 @@ Content supports special formatting:
 3. Add environment variables
 4. Deploy
 
+**Build Configuration**:
+- Build Command: `npm run build`
+- Output Directory: `.next`
+- Install Command: `npm install`
+
 ### Other Platforms
 
 Ensure your platform supports:
@@ -181,7 +244,7 @@ Ensure your platform supports:
 - Environment variables
 - Server-side rendering
 
-## Troubleshooting
+## 🐛 Troubleshooting
 
 ### Hydration Errors
 
@@ -193,9 +256,10 @@ If you see hydration errors:
 
 If admin privileges aren't working:
 1. Verify you ran `npm run seed:admin`
-2. Log out completely
-3. Clear browser cookies
-4. Log back in
+2. Check email matches `ADMIN_EMAILS` in `.env.local`
+3. Log out completely
+4. Clear browser cookies
+5. Log back in
 
 ### Firebase Connection Issues
 
@@ -207,11 +271,19 @@ Check that:
 ### Image Upload Failures
 
 Ensure:
-- Firebase Storage is enabled
-- Storage rules allow authenticated writes
-- File size is under 5MB
+- Cloudinary credentials are correct
+- File size is under 10MB for images
+- Supported formats: PNG, JPG, GIF, WEBP, SVG
 
-## Scripts
+### Modal Not Closing
+
+If the project modal won't close:
+- Press ESC key
+- Click outside the modal
+- Click the X button in top right
+- Check browser console for errors
+
+## 📜 Scripts
 
 - `npm run dev` - Start development server
 - `npm run build` - Build for production
@@ -220,10 +292,40 @@ Ensure:
 - `npm run seed:admin` - Set user as admin
 - `npm run lint` - Run ESLint
 
-## License
+## 🔄 Recent Updates
+
+### Performance Improvements
+- ✅ Added client-side caching for instant modal navigation
+- ✅ Implemented prefetching for adjacent projects
+- ✅ Fixed modal close handlers (ESC + close button)
+- ✅ Added `generateStaticParams` for static page generation
+
+### SEO Enhancements
+- ✅ Dynamic metadata for each project page
+- ✅ Improved root layout metadata with Open Graph and Twitter cards
+- ✅ Added structured data support
+
+### UX Improvements
+- ✅ Smooth modal transitions with GSAP
+- ✅ Loading states for navigation
+- ✅ Better keyboard navigation support
+
+## 📄 License
 
 MIT
 
-## Support
+## 🤝 Support
 
-For issues or questions, please open a GitHub issue.
+For issues or questions:
+- Open a GitHub issue
+- Check existing documentation
+- Review error messages in console
+
+## 🙏 Credits
+
+Built with modern web technologies:
+- Next.js team for the amazing framework
+- Firebase for backend infrastructure
+- GSAP for smooth animations
+- Cloudinary for image optimization
+- Vercel for hosting platform
