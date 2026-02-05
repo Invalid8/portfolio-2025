@@ -97,7 +97,7 @@ export default function ExperienceSection() {
   }
 
   return (
-    <section id="Experience" className="min-h-svh w-full py-20 px-5 md:px-10">
+    <section id="Experience" className="min-h-svh w-full py-20 sm:px-5 px-3 md:px-10">
       <div className="max-w-7xl mx-auto space-y-16">
         <div className="space-y-4 flex items-start justify-between gap-3">
           <div className="space-y-1">

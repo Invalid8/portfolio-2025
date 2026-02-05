@@ -149,7 +149,7 @@ export default function SkillsSection() {
   return (
     <section
       id="Skills"
-      className="w-full py-20 px-5 md:px-10 bg-neutral-900/20"
+      className="w-full py-20 px-3 sm:px-5 md:px-10 bg-neutral-900/20"
     >
       <div className="max-w-7xl mx-auto space-y-16">
         <div className="space-y-4 flex items-start justify-between gap-3">

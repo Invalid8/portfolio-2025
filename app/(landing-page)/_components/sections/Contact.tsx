@@ -87,7 +87,7 @@ export default function Contact() {
   return (
     <section
       id="Contact"
-      className="w-full py-20 px-5 md:px-10 relative overflow-hidden"
+      className="w-full py-20 sm:px-5 px-3 md:px-10 relative overflow-hidden"
     >
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent blur-3xl"></div>
 

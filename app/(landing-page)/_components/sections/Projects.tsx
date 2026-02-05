@@ -141,7 +141,7 @@ export default function Projects() {
     <>
       <section
         id="Projects"
-        className="min-h-svh w-full py-20 px-5 md:px-10 relative overflow-hidden"
+        className="min-h-svh w-full py-20 sm:px-5 px-3 md:px-10 relative overflow-hidden"
       >
         <div className="max-w-7xl mx-auto space-y-16">
           <div className="space-y-4 flex items-start justify-between gap-3">

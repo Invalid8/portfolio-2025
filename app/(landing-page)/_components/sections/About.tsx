@@ -43,7 +43,7 @@ export default function About() {
   return (
     <section
       id="About"
-      className="min-h-svh grid lg:grid-cols-2 items-center justify-center p-10 gap-12 lg:gap-16 relative overflow-hidden"
+      className="min-h-svh grid lg:grid-cols-2 items-center justify-center sm:p-10 sm:py-10 py-5 px-3 gap-12 lg:gap-16 relative overflow-hidden"
     >
       {/* Image Section */}
       <div className="relative flex items-center justify-center lg:min-h-svh">
