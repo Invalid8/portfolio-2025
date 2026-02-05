@@ -216,13 +216,14 @@ export function ProjectModal({
         </button>
       )}
 
-      <button
+      <Link
+        href="/#Projects"
         onClick={onClose}
         className="fixed top-8 right-8 z-[10000] p-3 bg-neutral-800/90 backdrop-blur rounded-full hover:bg-neutral-700 transition-colors"
         title="Close (Esc)"
       >
         <XIcon className="w-6 h-6" />
-      </button>
+      </Link>
 
       <div
         ref={modalRef}

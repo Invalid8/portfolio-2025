@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { Montserrat, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/lib/context/auth";
-import { Analytics } from "@vercel/analytics/next"
+import { Analytics } from "@vercel/analytics/next";
+import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Inter({
   variable: "--font-geist-sans",
@@ -35,7 +36,8 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${bebasNeue.variable} antialiased dark overflow-x-hidden min-h-svh`}
       >
         <AuthProvider>{children}</AuthProvider>
-        <Analytics/>
+        <Analytics />
+        <Toaster />
       </body>
     </html>
   );

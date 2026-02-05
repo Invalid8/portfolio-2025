@@ -12,7 +12,13 @@ import { ReactNode } from "react";
 import { Experience, Project, Skill, Section, NestedSections } from "@/types";
 import { toast } from "sonner";
 
-export default async function Layout({ children }: { children: ReactNode }) {
+export default async function Layout({
+  children,
+  modal,
+}: {
+  children: ReactNode;
+  modal: React.ReactNode;
+}) {
   let projects: Project[] = [];
   let experiences: Experience[] = [];
   let skills: Skill[] = [];
@@ -84,6 +90,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
         <Footer />
         <Toolkit />
       </SurpriseUIProvider>
+      {modal}
     </PageProvider>
   );
 }

@@ -1,24 +1,18 @@
 /* eslint-disable @next/next/no-img-element */
-
 import { Project } from "@/types";
 import { ExternalLinkIcon, GithubIcon, PlusIcon } from "lucide-react";
 import { useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 
-export function ProjectCard({
-  project,
-  onClick,
-}: {
-  project: Project;
-  onClick: () => void;
-}) {
+export function ProjectCard({ project }: { project: Project }) {
   const cardRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   useEffect(() => {
     if (!cardRef.current) return;
 
     const handleMouseMove = (e: MouseEvent) => {
       if (!cardRef.current) return;
-
       const rect = cardRef.current.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
@@ -29,14 +23,22 @@ export function ProjectCard({
 
     const card = cardRef.current;
     card.addEventListener("mousemove", handleMouseMove);
-
     return () => card.removeEventListener("mousemove", handleMouseMove);
   }, []);
+
+  const handleMouseEnter = () => {
+    router.prefetch(`/project/${project.id}`);
+
+    fetch(`/api/projects/${project.id}`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    }).catch(() => {});
+  };
 
   return (
     <div
       ref={cardRef}
-      onClick={onClick}
+      onMouseEnter={handleMouseEnter}
       className="project-card group relative cursor-pointer overflow-hidden rounded-2xl bg-neutral-900 border border-neutral-800 hover:border-primary/30 transition-all aspect-[4/3]"
       style={{
         background:
