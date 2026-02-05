@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 import gsap from "gsap";
 import { ProjectCard } from "../cards/ProjectCard";
 import { PlusIcon, RocketIcon } from "lucide-react";
-import { ProjectModal } from "../cards/ProjectModal";
+import { ProjectModal } from "../cards/ProjectDetailsModal";
 import { toast } from "sonner";
 
 function isProject(section: Section): section is Section & Project {

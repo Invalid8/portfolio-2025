@@ -1,7 +1,6 @@
-"use client";
-
 import ContentSpan from "@/components/customs/ContentEditSpan";
 import EditableImage from "@/components/customs/EditableImage";
+import { ProjectMediaManager } from "@/components/customs/ProjectMediaManager";
 import { Project } from "@/types";
 import {
   ExternalLinkIcon,
@@ -18,6 +17,7 @@ import gsap from "gsap";
 import { ProjectContentEditor } from "@/components/customs/MarkdownEditor";
 import { useAuth } from "@/lib/context/auth";
 import { formatMonthYear, formatYear } from "@/utils/dateFormatter";
+import { toast } from "sonner";
 
 export function ProjectModal({
   project,
@@ -47,7 +47,6 @@ export function ProjectModal({
 
   const isDesktop = () => window.matchMedia("(min-width: 1024px)").matches;
 
-  // Format the date properly
   const projectYear = formatYear(project.date);
   const projectMonthYear = formatMonthYear(project.date);
 
@@ -82,7 +81,6 @@ export function ProjectModal({
   }, [onClose, currentIndex, hasPrevious, hasNext, projects, onNavigate]);
 
   useEffect(() => {
-    // Only run animation if project actually changed
     if (previousProjectId.current === project.id) {
       return;
     }
@@ -94,7 +92,6 @@ export function ProjectModal({
 
       const scrollContainer = contentRef.current;
 
-      // Prevent animation if already animating
       if (isAnimating.current) return;
 
       isAnimating.current = true;
@@ -162,6 +159,28 @@ export function ProjectModal({
     }
   };
 
+  const handleMediaUpdate = async (
+    medias: { link: string; type: "image" | "video" }[],
+  ) => {
+    try {
+      const response = await fetch(
+        `/api/admin/firebase/projects/${project.id}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ medias }),
+        },
+      );
+
+      if (!response.ok) throw new Error("Failed to update project medias");
+
+      toast.success("Media updated successfully!");
+    } catch (error) {
+      console.error("Failed to update medias:", error);
+      throw error;
+    }
+  };
+
   return (
     <div
       className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm"
@@ -171,7 +190,6 @@ export function ProjectModal({
         }
       }}
     >
-      {/* Navigation Buttons */}
       {hasPrevious && (
         <button
           onClick={(e) => {
@@ -198,7 +216,6 @@ export function ProjectModal({
         </button>
       )}
 
-      {/* Close Button */}
       <button
         onClick={onClose}
         className="fixed top-8 right-8 z-[10000] p-3 bg-neutral-800/90 backdrop-blur rounded-full hover:bg-neutral-700 transition-colors"
@@ -207,13 +224,11 @@ export function ProjectModal({
         <XIcon className="w-6 h-6" />
       </button>
 
-      {/* Modal Content */}
       <div
         ref={modalRef}
         className="relative w-full max-w-7xl sm:h-[90vh] h-screen bg-neutral-900 sm:rounded-2xl border border-neutral-700 shadow-2xl flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Image Section */}
         <div
           ref={imageContainerRef}
           className="relative bg-neutral-950 flex items-center justify-center p-6 sm:p-8 lg:p-12 lg:w-1/2 lg:h-full w-full min-h-[40vh] sm:min-h-[50vh] lg:min-h-0 lg:flex-shrink-0"
@@ -235,14 +250,12 @@ export function ProjectModal({
           </div>
         </div>
 
-        {/* Content Section */}
         <div className="lg:w-1/2 flex-1 flex flex-col overflow-visible">
           <div
             ref={contentRef}
             className="flex-1 p-6 sm:p-8 lg:p-12 space-y-6 overflow-visible lg:overflow-y-auto"
             style={{ WebkitOverflowScrolling: "touch" }}
           >
-            {/* Project Type Badge */}
             <div>
               <span className="inline-block px-4 py-1.5 bg-primary/10 text-primary rounded-full text-sm font-medium uppercase tracking-wider mb-6">
                 <ContentSpan
@@ -254,7 +267,6 @@ export function ProjectModal({
               </span>
             </div>
 
-            {/* Project Title */}
             <h2 className="text-4xl lg:text-5xl font-bold">
               <ContentSpan
                 sectionKey={`project-${project.id}`}
@@ -264,7 +276,6 @@ export function ProjectModal({
               </ContentSpan>
             </h2>
 
-            {/* Project Description */}
             <p className="text-xl text-neutral-300 leading-relaxed">
               <ContentSpan
                 sectionKey={`project-${project.id}`}
@@ -274,7 +285,6 @@ export function ProjectModal({
               </ContentSpan>
             </p>
 
-            {/* Project Details Grid */}
             <div className="grid grid-cols-2 gap-4 pt-6 pb-8 border-y border-neutral-700">
               <div>
                 <span className="text-neutral-500 text-sm">Role</span>
@@ -298,7 +308,13 @@ export function ProjectModal({
               </div>
             </div>
 
-            {/* Project Content (Markdown) */}
+            <ProjectMediaManager
+              medias={project.medias || []}
+              projectId={project.id as string}
+              onUpdate={handleMediaUpdate}
+              isEditing={isEditing}
+            />
+
             {project.content && (
               <>
                 <div className="flex justify-end">
@@ -321,7 +337,6 @@ export function ProjectModal({
               </>
             )}
 
-            {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 pt-8">
               {project.link && (
                 <Link
@@ -345,7 +360,6 @@ export function ProjectModal({
               )}
             </div>
 
-            {/* Mobile Navigation */}
             <div className="flex lg:hidden gap-4 pt-4 pb-8">
               <button
                 onClick={handlePrevious}

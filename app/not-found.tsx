@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import Link from "next/link";
@@ -64,16 +65,6 @@ export default function NotFound() {
               <HomeIcon className="w-5 h-5 text-primary" />
               <span className="font-medium text-primary">Back to Home</span>
             </Link>
-          </div>
-
-          <div className="pt-8 border-t border-neutral-800">
-            <p className="text-sm text-neutral-500">
-              If you believe this is a mistake, please{" "}
-              <Link href="/#Contact" className="text-primary hover:underline">
-                contact me
-              </Link>
-              .
-            </p>
           </div>
         </div>
       </div>
