@@ -53,7 +53,7 @@ export type NestedSections = {
   };
 };
 
-interface PendingImage {
+export interface PendingImage {
   file: File;
   localUrl: string;
   sectionKey: string;

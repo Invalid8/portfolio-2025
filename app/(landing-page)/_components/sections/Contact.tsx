@@ -2,13 +2,26 @@
 
 import ContentSpan from "@/components/customs/ContentEditSpan";
 import { usePageContext } from "@/lib/context/PageContent";
-import { useEffect } from "react";
-import { MailIcon, MapPinIcon, PhoneIcon, SendIcon } from "lucide-react";
+import { useState } from "react";
+import {
+  MailIcon,
+  MapPinIcon,
+  PhoneIcon,
+  SendIcon,
+  Loader2Icon,
+} from "lucide-react";
 import Link from "next/link";
 import { SOCIAL_LINKS } from "@/lib/constants";
+import { toast } from "sonner";
 
 export default function Contact() {
-  const { sections, setSection } = usePageContext();
+  const { sections } = usePageContext();
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    message: "",
+  });
 
   const contactSection = sections["portfolio"]?.["contact"] || {
     id: "contact",
@@ -21,17 +34,55 @@ export default function Contact() {
     location: "Lagos, Nigeria",
   };
 
-  useEffect(() => {
-    setSection("portfolio", "contact", {
-      id: contactSection.id,
-      collection: contactSection.collection,
-      title: contactSection.title,
-      subtitle: contactSection.subtitle,
-      email: contactSection.email,
-      phone: contactSection.phone,
-      location: contactSection.location,
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const response = await fetch(
+        "https://formsubmit.co/ajax/b.fadamitan2019@gmail.com",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({
+            name: formData.name,
+            email: formData.email,
+            message: formData.message,
+            _subject: `New Portfolio Contact from ${formData.name}`,
+            _template: "table",
+          }),
+        },
+      );
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        toast.success("Message sent successfully! I'll get back to you soon.");
+        setFormData({ name: "", email: "", message: "" });
+      } else {
+        throw new Error("Failed to send message");
+      }
+    } catch (error) {
+      console.error("Form submission error:", error);
+      toast.error(
+        "Failed to send message. Please try again or email me directly.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
     });
-  }, [setSection]);
+  };
 
   return (
     <section
@@ -47,13 +98,13 @@ export default function Contact() {
               <div className="relative">
                 <h2 className="text-4xl lg:text-6xl font-bold">
                   <ContentSpan sectionKey="contact" fieldKey="title">
-                    {contactSection.title}
+                    {contactSection?.title}
                   </ContentSpan>
                 </h2>
               </div>
               <p className="text-lg text-neutral-400 max-w-xl">
                 <ContentSpan sectionKey="contact" fieldKey="subtitle">
-                  {contactSection.subtitle}
+                  {contactSection?.subtitle}
                 </ContentSpan>
               </p>
             </div>
@@ -62,23 +113,23 @@ export default function Contact() {
               <ContactItem
                 icon={<MailIcon className="w-5 h-5" />}
                 label="Email"
-                value={contactSection.email}
-                href={`mailto:${contactSection.email}`}
+                value={contactSection?.email}
+                href={`mailto:${contactSection?.email}`}
                 sectionKey="contact"
                 fieldKey="email"
               />
               <ContactItem
                 icon={<PhoneIcon className="w-5 h-5" />}
                 label="Phone"
-                value={contactSection.phone}
-                href={`tel:${contactSection.phone.replace(/\s+/g, "")}`}
+                value={contactSection?.phone}
+                href={`tel:${contactSection?.phone.replace(/\s+/g, "")}`}
                 sectionKey="contact"
                 fieldKey="phone"
               />
               <ContactItem
                 icon={<MapPinIcon className="w-5 h-5" />}
                 label="Location"
-                value={contactSection.location}
+                value={contactSection?.location}
                 sectionKey="contact"
                 fieldKey="location"
               />
@@ -103,7 +154,7 @@ export default function Contact() {
           </div>
 
           <div className="bg-neutral-800/30 backdrop-blur border border-neutral-700/50 rounded-2xl p-8 lg:p-10 hover:border-primary/30 transition-all">
-            <form className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-4">
                 <div>
                   <label
@@ -116,7 +167,11 @@ export default function Contact() {
                     type="text"
                     id="name"
                     name="name"
-                    className="w-full px-4 py-3 bg-neutral-900/50 border border-neutral-700 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                    value={formData.name}
+                    onChange={handleChange}
+                    required
+                    disabled={loading}
+                    className="w-full px-4 py-3 bg-neutral-900/50 border border-neutral-700 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     placeholder="Your name"
                   />
                 </div>
@@ -132,7 +187,11 @@ export default function Contact() {
                     type="email"
                     id="email"
                     name="email"
-                    className="w-full px-4 py-3 bg-neutral-900/50 border border-neutral-700 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                    disabled={loading}
+                    className="w-full px-4 py-3 bg-neutral-900/50 border border-neutral-700 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     placeholder="your.email@example.com"
                   />
                 </div>
@@ -148,7 +207,11 @@ export default function Contact() {
                     id="message"
                     name="message"
                     rows={5}
-                    className="w-full px-4 py-3 bg-neutral-900/50 border border-neutral-700 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-none"
+                    value={formData.message}
+                    onChange={handleChange}
+                    required
+                    disabled={loading}
+                    className="w-full px-4 py-3 bg-neutral-900/50 border border-neutral-700 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-none disabled:opacity-50 disabled:cursor-not-allowed"
                     placeholder="Tell me about your project..."
                   />
                 </div>
@@ -156,10 +219,20 @@ export default function Contact() {
 
               <button
                 type="submit"
-                className="w-full px-6 py-4 bg-primary text-white rounded-lg hover:bg-primary/90 transition-all flex items-center justify-center gap-2 font-medium hover:shadow-lg hover:shadow-primary/20"
+                disabled={loading}
+                className="w-full px-6 py-4 bg-primary text-white rounded-lg hover:bg-primary/90 transition-all flex items-center justify-center gap-2 font-medium hover:shadow-lg hover:shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Send Message
-                <SendIcon className="w-4 h-4" />
+                {loading ? (
+                  <>
+                    <Loader2Icon className="w-4 h-4 animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    Send Message
+                    <SendIcon className="w-4 h-4" />
+                  </>
+                )}
               </button>
             </form>
           </div>

@@ -1,3 +1,5 @@
+"use client";
+
 import ContentSpan from "@/components/customs/ContentEditSpan";
 import EditableImage from "@/components/customs/EditableImage";
 import { Project } from "@/types";
@@ -15,6 +17,7 @@ import remarkGfm from "remark-gfm";
 import gsap from "gsap";
 import { ProjectContentEditor } from "@/components/customs/MarkdownEditor";
 import { useAuth } from "@/lib/context/auth";
+import { formatMonthYear, formatYear } from "@/utils/dateFormatter";
 
 export function ProjectModal({
   project,
@@ -43,6 +46,10 @@ export function ProjectModal({
   const hasNext = currentIndex < projects.length - 1;
 
   const isDesktop = () => window.matchMedia("(min-width: 1024px)").matches;
+
+  // Format the date properly
+  const projectYear = formatYear(project.date);
+  const projectMonthYear = formatMonthYear(project.date);
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -164,6 +171,7 @@ export function ProjectModal({
         }
       }}
     >
+      {/* Navigation Buttons */}
       {hasPrevious && (
         <button
           onClick={(e) => {
@@ -190,6 +198,7 @@ export function ProjectModal({
         </button>
       )}
 
+      {/* Close Button */}
       <button
         onClick={onClose}
         className="fixed top-8 right-8 z-[10000] p-3 bg-neutral-800/90 backdrop-blur rounded-full hover:bg-neutral-700 transition-colors"
@@ -198,11 +207,13 @@ export function ProjectModal({
         <XIcon className="w-6 h-6" />
       </button>
 
+      {/* Modal Content */}
       <div
         ref={modalRef}
         className="relative w-full max-w-7xl sm:h-[90vh] h-screen bg-neutral-900 sm:rounded-2xl border border-neutral-700 shadow-2xl flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Image Section */}
         <div
           ref={imageContainerRef}
           className="relative bg-neutral-950 flex items-center justify-center p-6 sm:p-8 lg:p-12 lg:w-1/2 lg:h-full w-full min-h-[40vh] sm:min-h-[50vh] lg:min-h-0 lg:flex-shrink-0"
@@ -224,12 +235,14 @@ export function ProjectModal({
           </div>
         </div>
 
+        {/* Content Section */}
         <div className="lg:w-1/2 flex-1 flex flex-col overflow-visible">
           <div
             ref={contentRef}
             className="flex-1 p-6 sm:p-8 lg:p-12 space-y-6 overflow-visible lg:overflow-y-auto"
             style={{ WebkitOverflowScrolling: "touch" }}
           >
+            {/* Project Type Badge */}
             <div>
               <span className="inline-block px-4 py-1.5 bg-primary/10 text-primary rounded-full text-sm font-medium uppercase tracking-wider mb-6">
                 <ContentSpan
@@ -241,6 +254,7 @@ export function ProjectModal({
               </span>
             </div>
 
+            {/* Project Title */}
             <h2 className="text-4xl lg:text-5xl font-bold">
               <ContentSpan
                 sectionKey={`project-${project.id}`}
@@ -250,6 +264,7 @@ export function ProjectModal({
               </ContentSpan>
             </h2>
 
+            {/* Project Description */}
             <p className="text-xl text-neutral-300 leading-relaxed">
               <ContentSpan
                 sectionKey={`project-${project.id}`}
@@ -259,6 +274,7 @@ export function ProjectModal({
               </ContentSpan>
             </p>
 
+            {/* Project Details Grid */}
             <div className="grid grid-cols-2 gap-4 pt-6 pb-8 border-y border-neutral-700">
               <div>
                 <span className="text-neutral-500 text-sm">Role</span>
@@ -272,18 +288,17 @@ export function ProjectModal({
                 </p>
               </div>
               <div>
-                <span className="text-neutral-500 text-sm">Year</span>
-                <p className="text-neutral-200 font-medium mt-1">
-                  <ContentSpan
-                    sectionKey={`project-${project.id}`}
-                    fieldKey="date"
-                  >
-                    {new Date(project.date).getFullYear()}
-                  </ContentSpan>
+                <span className="text-neutral-500 text-sm">Completed</span>
+                <p
+                  className="text-neutral-200 font-medium mt-1"
+                  title={projectMonthYear}
+                >
+                  {projectYear || "N/A"}
                 </p>
               </div>
             </div>
 
+            {/* Project Content (Markdown) */}
             {project.content && (
               <>
                 <div className="flex justify-end">
@@ -306,6 +321,7 @@ export function ProjectModal({
               </>
             )}
 
+            {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 pt-8">
               {project.link && (
                 <Link
@@ -329,6 +345,7 @@ export function ProjectModal({
               )}
             </div>
 
+            {/* Mobile Navigation */}
             <div className="flex lg:hidden gap-4 pt-4 pb-8">
               <button
                 onClick={handlePrevious}

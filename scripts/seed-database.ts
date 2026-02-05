@@ -1,10 +1,11 @@
 /**
- * Database Seeding Script
+ * Database Seeding Script - UPDATED
  *
  * Run this ONCE during initial setup:
  * npm run seed
  *
  * This imports data from your /data folder and populates Firebase.
+ * UPDATED: Now includes stats, complete contact data, and better date handling
  */
 
 import "dotenv/config";
@@ -48,6 +49,8 @@ async function seedProjects() {
       .doc(String(project.id))
       .set({
         ...project,
+        // Ensure date is in ISO format
+        date: new Date(project.date).toISOString(),
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
@@ -121,12 +124,18 @@ async function seedPortfolioSections() {
         "A Nigerian based **^^Frontend Developer^^** passionate about building accessible and user friendly **^^websites^^**.",
       resume:
         "^^__**[My Resume](https://drive.google.com/file/d/1ixmuBYgzXQdXrTn1n9aoz4SWYRU715h-/view)**__^^",
+      skills: skills.slice(0, 15),
     },
     about: {
       leading1:
         "I am a Frontend Developer based in Nigeria with a strong foundation in Computer Science. I specialize in building accessible and user-friendly web applications, with a particular focus on React.js, React Native, Next.js, and TypeScript. Passionate about solving complex problems.",
       leading2:
         "When I'm not coding, I enjoy gaming, playing Mobile Legends, and diving into new technologies to stay ahead in my field. Always curious and eager to learn, I aim to create impactful solutions through technology.",
+    },
+    stats: {
+      yearsExperience: "5+",
+      projectsCompleted: "20+",
+      hackathonsWon: "2",
     },
     images: {
       aboutImg: "/images/AstronutCat.svg",
@@ -140,8 +149,13 @@ async function seedPortfolioSections() {
       title: "EXPERIENCE",
       subtitle:
         "My professional journey building exceptional digital experiences.",
-      skillsTitle: "Skills & Technologies",
     },
+    "skills-header": {
+      title: "SKILLS & TECHNOLOGIES",
+      subtitle:
+        "Technologies and tools I work with to build exceptional digital experiences.",
+    },
+    // UPDATED: Complete contact data
     contact: {
       title: "LET'S WORK TOGETHER",
       subtitle:

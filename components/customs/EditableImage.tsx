@@ -150,7 +150,7 @@ export default function EditableImage({
 
       {showUrlModal &&
         createPortal(
-          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-9999 p-4">
             <div className="bg-neutral-900 rounded-xl p-6 max-w-sm w-full space-y-4 relative">
               <h3 className="text-lg font-bold">Add Image URL</h3>
               <input

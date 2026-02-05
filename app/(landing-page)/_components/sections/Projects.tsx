@@ -5,7 +5,7 @@ import ContentSpan from "@/components/customs/ContentEditSpan";
 import { usePageContext } from "@/lib/context/PageContent";
 import { useAuth } from "@/lib/context/auth";
 import { Project, Section } from "@/types";
-import { AddProjectModal } from "@/components/modals/AddNewItemModals";
+import { AddProjectModal } from "@/components/modals";
 
 import { cn } from "@/lib/utils";
 import gsap from "gsap";
@@ -66,7 +66,7 @@ export default function Projects() {
     }
   }, [projects]);
 
-  const handleAddProject = async (projectData: Partial<Project>) => {
+  const handleAddProject = async (projectData: FormData) => {
     try {
       const response = await fetch("/api/admin/firebase/projects", {
         method: "POST",

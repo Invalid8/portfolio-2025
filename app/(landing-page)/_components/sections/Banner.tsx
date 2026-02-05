@@ -11,6 +11,7 @@ export default function Banner() {
   const bannerSection = sections["portfolio"]?.["banner"] || {};
   const skills: Skill[] = bannerSection.skills || [];
 
+  // Define static list as fallback
   const staticList = [
     "Development",
     "UI/UX",
@@ -21,13 +22,26 @@ export default function Banner() {
     "Vue Js",
     "CSS",
     "HTML",
+    "TypeScript",
+    "JavaScript",
+    "TailwindCSS",
+    "Firebase",
+    "Node.js",
   ];
 
+  // Get skill values from backend
   const skillValues = skills.map((x) => x.value);
-  const fullList =
-    skillValues.length > 0
-      ? [...skillValues, ...staticList, ...skillValues]
-      : staticList;
+
+  // Combine and ensure we have enough items for marquee
+  // Repeat the list multiple times to ensure smooth scrolling
+  const baseList = skillValues.length > 0 ? skillValues : staticList;
+  const fullList = [
+    ...baseList,
+    ...baseList,
+    ...baseList,
+    ...staticList,
+    ...staticList,
+  ];
 
   const showMarquee = fullList.length > 0;
 
@@ -79,7 +93,7 @@ export default function Banner() {
             <ul className="inline-flex gap-8 lg:gap-14 justify-center items-center">
               {fullList.map((item, i) => (
                 <li
-                  key={i}
+                  key={`marquee-1-${i}`}
                   className="flex items-center gap-8 lg:gap-14 group text-lg md:text-3xl uppercase"
                 >
                   <span className="tracking-wider font-medium font-mono">
@@ -101,7 +115,7 @@ export default function Banner() {
             <ul className="inline-flex gap-8 lg:gap-14 justify-center items-center">
               {fullList.map((item, i) => (
                 <li
-                  key={i}
+                  key={`marquee-2-${i}`}
                   className="flex items-center gap-8 lg:gap-14 group text-lg md:text-3xl uppercase"
                 >
                   <span className="tracking-wider font-medium font-mono">

@@ -44,8 +44,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(u);
         const tokenResult = await u.getIdTokenResult();
         const admin = !!tokenResult.claims.admin;
+
+        // Only allow admin users to stay logged in
+        if (!admin) {
+          toast.error(
+            "You do not have admin privileges. Please contact the site owner.",
+          );
+          await signOut(auth);
+          setUser(null);
+          setIsAdmin(false);
+          deleteCookie("adminToken", { path: "/" });
+          return;
+        }
+
         setIsAdmin(admin);
         setCookie("adminToken", tokenResult.token, { path: "/" });
+
         if (pathname.startsWith(ADMIN_LOGIN_ROUTE)) {
           router.replace("/");
         }
@@ -61,6 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const originalFetch = window.fetch;
 
+    // Intercept fetch to handle 401 unauthorized responses
     window.fetch = async (...args: Parameters<typeof fetch>) => {
       try {
         const response = await originalFetch(...args);
@@ -96,17 +111,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loginWithGoogle = async () => {
     const result = await signInWithPopup(auth, googleProvider);
-    setUser(result.user);
     const tokenResult = await result.user.getIdTokenResult();
-    setIsAdmin(!!tokenResult.claims.admin);
+
+    // Check if user is admin before setting state
+    if (!tokenResult.claims.admin) {
+      toast.error(
+        "You do not have admin privileges. Please contact the site owner.",
+      );
+      await signOut(auth);
+      throw new Error("Unauthorized");
+    }
+
+    setUser(result.user);
+    setIsAdmin(true);
     setCookie("adminToken", tokenResult.token, { path: "/" });
   };
 
   const loginWithEmail = async (email: string, password: string) => {
     const result = await signInWithEmailAndPassword(auth, email, password);
-    setUser(result.user);
     const tokenResult = await result.user.getIdTokenResult();
-    setIsAdmin(!!tokenResult.claims.admin);
+
+    // Check if user is admin before setting state
+    if (!tokenResult.claims.admin) {
+      toast.error(
+        "You do not have admin privileges. Please contact the site owner.",
+      );
+      await signOut(auth);
+      throw new Error("Unauthorized");
+    }
+
+    setUser(result.user);
+    setIsAdmin(true);
     setCookie("adminToken", tokenResult.token, { path: "/" });
   };
 

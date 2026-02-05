@@ -85,9 +85,7 @@ function Navbar() {
               }}
               className="text-lg xl:text-2xl font-medium tracking-widest hover:scale-110 transition-all hover:text-primary cursor-pointer"
             >
-              <ContentSpan sectionKey="navbar" fieldKey="logo">
-                dalgoridim
-              </ContentSpan>
+              dalgoridim
             </Link>
           </div>
 

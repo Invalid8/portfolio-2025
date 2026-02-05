@@ -5,12 +5,12 @@ import ContentSpan from "@/components/customs/ContentEditSpan";
 import { usePageContext } from "@/lib/context/PageContent";
 import { fetchCollectionClient } from "@/lib/firebase/services";
 import type { Experience, Section } from "@/types";
-
 import { useAuth } from "@/lib/context/auth";
-import { AddExperienceModal } from "@/components/modals/AddNewItemModals";
+import { AddExperienceModal } from "@/components/modals";
 import { ExperienceCard } from "../cards/ExpereinceCard";
 import { PlusIcon } from "lucide-react";
 import { toast } from "sonner";
+import { parseDurationStart } from "@/utils/dateFormatter";
 
 export default function ExperienceSection() {
   const { sections, setSection } = usePageContext();
@@ -19,9 +19,14 @@ export default function ExperienceSection() {
   const [showAllExperiences, setShowAllExperiences] = useState(false);
 
   const experiencesCollection = sections["experiences"] || {};
-  const experiences: Experience[] = Object.values(experiencesCollection).filter(
-    isExperience,
-  );
+  const experiences: Experience[] = Object.values(experiencesCollection)
+    .filter(isExperience)
+    // Sort by start date - latest first
+    .sort((a, b) => {
+      const dateA = parseDurationStart(a.position.duration);
+      const dateB = parseDurationStart(b.position.duration);
+      return dateB.getTime() - dateA.getTime();
+    });
 
   useEffect(() => {
     if (Object.keys(experiencesCollection).length === 0) loadData();
@@ -41,6 +46,7 @@ export default function ExperienceSection() {
       });
     } catch (err) {
       console.error("Failed to load experiences:", err);
+      toast.error("Failed to load experiences");
     } finally {
       setLoading(false);
     }
@@ -63,10 +69,11 @@ export default function ExperienceSection() {
         id: String(newExp.id),
         collection: "experiences",
       });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      toast.error(err.toString());
+
+      toast.success("Experience added successfully!");
+    } catch (err) {
       console.error("Error adding experience:", err);
+      toast.error("Failed to add experience");
     }
   };
 
