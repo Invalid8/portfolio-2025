@@ -1,10 +1,10 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { ProjectModal } from "../cards/ProjectDetailsModal";
 import { usePageContext } from "@/lib/context/PageContent";
 import { Project, Section } from "@/types";
-import { useMemo, useState, useEffect, useCallback } from "react";
+import { useMemo, useState, useEffect, useCallback, useRef } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/context/auth";
 
@@ -30,14 +30,37 @@ export function ProjectModalWrapper({
   projectId: string;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const { sections, setSection } = usePageContext();
   const { isAdmin, isEditing } = useAuth();
   const [currentProject, setCurrentProject] = useState(initialProject);
   const [isNavigating, setIsNavigating] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
+  const closeTimeoutRef = useRef<NodeJS.Timeout>(null);
+  const scrollPositionRef = useRef(0);
 
   useEffect(() => {
     projectCache.set(projectId, initialProject);
+    scrollPositionRef.current = window.scrollY;
   }, [projectId, initialProject]);
+
+  useEffect(() => {
+    if (pathname === "/" || !pathname.startsWith("/project/")) {
+      setIsOpen(false);
+    } else if (pathname.startsWith("/project/")) {
+      setIsOpen(true);
+    }
+  }, [pathname]);
+
+  useEffect(() => {
+    return () => {
+      if (closeTimeoutRef.current) {
+        clearTimeout(closeTimeoutRef.current);
+      }
+      setIsOpen(false);
+      document.body.style.overflow = "";
+    };
+  }, []);
 
   const projectsCollection = useMemo(
     () => sections["projects"] || {},
@@ -105,15 +128,18 @@ export function ProjectModalWrapper({
   );
 
   const handleClose = useCallback(() => {
-    router.push("/", { scroll: false });
-    router.refresh();
+    setIsOpen(false);
 
-    setTimeout(() => {
-      const projectsSection = document.getElementById("Projects");
-      if (projectsSection) {
-        projectsSection.scrollIntoView({ behavior: "smooth" });
-      }
-    }, 100);
+    closeTimeoutRef.current = setTimeout(() => {
+      router.push("/", { scroll: false });
+
+      setTimeout(() => {
+        window.scrollTo({
+          top: scrollPositionRef.current,
+          behavior: "instant",
+        });
+      }, 50);
+    }, 300);
   }, [router]);
 
   const updateProjectContent = useCallback(
@@ -151,6 +177,10 @@ export function ProjectModalWrapper({
     },
     [projectsCollection, isAdmin, isEditing, setSection],
   );
+
+  if (!isOpen) {
+    return null;
+  }
 
   return (
     <>

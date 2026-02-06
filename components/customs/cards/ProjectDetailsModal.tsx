@@ -75,6 +75,10 @@ export function ProjectModal({
       if (e.key === "Escape") {
         e.preventDefault();
         e.stopPropagation();
+        isAnimating.current = false;
+        if (modalRef.current) {
+          gsap.killTweensOf(modalRef.current);
+        }
         onClose();
       } else if (e.key === "ArrowLeft" && hasPrevious && !isAnimating.current) {
         e.preventDefault();
@@ -91,11 +95,31 @@ export function ProjectModal({
     (e: React.MouseEvent<HTMLDivElement>) => {
       if (e.target === e.currentTarget) {
         e.stopPropagation();
+        isAnimating.current = false;
+        if (modalRef.current) {
+          gsap.killTweensOf(modalRef.current);
+        }
         onClose();
       }
     },
     [onClose],
   );
+
+  useEffect(() => {
+    return () => {
+      if (modalRef.current) {
+        gsap.killTweensOf(modalRef.current);
+      }
+      if (imageRef.current) {
+        gsap.killTweensOf(imageRef.current);
+      }
+      if (contentRef.current) {
+        gsap.killTweensOf(contentRef.current);
+      }
+      document.body.style.overflow = "";
+      isAnimating.current = false;
+    };
+  }, []);
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
