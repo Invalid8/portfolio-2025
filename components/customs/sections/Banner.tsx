@@ -11,7 +11,6 @@ export default function Banner() {
   const bannerSection = sections["portfolio"]?.["banner"] || {};
   const skills: Skill[] = bannerSection.skills || [];
 
-  // Define static list as fallback
   const staticList = [
     "Development",
     "UI/UX",
@@ -29,11 +28,8 @@ export default function Banner() {
     "Node.js",
   ];
 
-  // Get skill values from backend
   const skillValues = skills.map((x) => x.value);
 
-  // Combine and ensure we have enough items for marquee
-  // Repeat the list multiple times to ensure smooth scrolling
   const baseList = skillValues.length > 0 ? skillValues : staticList;
   const fullList = [
     ...baseList,
@@ -48,15 +44,14 @@ export default function Banner() {
   return (
     <div className="size-full min-h-[calc(100svh-60px)] sm:min-h-[calc(100svh)] sm:p-5 p-3 flex flex-col justify-center relative">
       <div className="md:px-[8%] xl:px-[10%] xl:max-w-7/10 z-10 space-y-6">
-        <h1 className="text-5xl sm:text-[clamp(4rem,10vw,7rem)] sm:leading-[clamp(4rem,10vw,7rem)] font-semibold">
-          <ContentSpan
-            sectionKey="banner"
-            fieldKey="titleLine"
-            className="font-bold"
-          >
-            {bannerSection.titleLine || "Frontend~~br~~^^Developer^^"}
-          </ContentSpan>
-        </h1>
+        <ContentSpan
+          sectionKey="banner"
+          fieldKey="titleLine"
+          as="h1"
+          className="text-5xl sm:text-[clamp(4rem,10vw,7rem)] sm:leading-[clamp(4rem,10vw,7rem)] font-semibold font-bold"
+        >
+          {bannerSection.titleLine || "Frontend~~br~~^^Developer^^"}
+        </ContentSpan>
 
         <p className="text-base sm:text-lg xl:text-2xl leading-relaxed max-w-2xl">
           <ContentSpan

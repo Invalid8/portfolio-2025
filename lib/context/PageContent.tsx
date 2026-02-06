@@ -9,6 +9,7 @@ import {
 } from "react";
 import { uploadToCloudinary } from "../cloudinary/upload";
 import { NestedSections, Section } from "@/types";
+import { toast } from "sonner";
 
 export interface PendingImage {
   file: File | null;
@@ -70,16 +71,25 @@ export const PageProvider = ({
   const editField = useCallback(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (collection: string, sectionKey: string, fieldKey: string, value: any) => {
-      setSections((prev) => ({
-        ...prev,
-        [collection]: {
-          ...prev[collection],
-          [sectionKey]: {
-            ...prev[collection][sectionKey],
-            [fieldKey]: value,
+      setSections((prev) => {
+        const currentSection = prev[collection]?.[sectionKey];
+
+        if (!currentSection) {
+          console.error(`Section not found: ${collection}/${sectionKey}`);
+          return prev;
+        }
+
+        return {
+          ...prev,
+          [collection]: {
+            ...prev[collection],
+            [sectionKey]: {
+              ...currentSection,
+              [fieldKey]: value,
+            },
           },
-        },
-      }));
+        };
+      });
 
       setDirtySections((prev) => {
         const next = new Set(prev);
@@ -115,54 +125,67 @@ export const PageProvider = ({
       if (saving) return;
       setSaving(true);
 
-      const section = sections[collection]?.[sectionKey];
-      if (!section?.id || !section?.collection) {
-        setSaving(false);
-        return;
-      }
+      try {
+        const section = sections[collection]?.[sectionKey];
+        if (!section?.id || !section?.collection) {
+          console.error(`Invalid section: ${collection}/${sectionKey}`);
+          setSaving(false);
+          return;
+        }
 
-      const images = pendingImages.filter(
-        (img) => img.collection === collection && img.sectionKey === sectionKey,
-      );
-
-      let updatedSection: Section = { ...section };
-
-      for (const img of images) {
-        const url = img.isExternal
-          ? img.localUrl
-          : await uploadToCloudinary(img.file!);
-
-        updatedSection = { ...updatedSection, [img.fieldKey]: url };
-      }
-
-      await fetch(
-        `/api/admin/firebase/${updatedSection.collection}/${updatedSection.id}`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(updatedSection),
-        },
-      );
-
-      setSections((prev) => ({
-        ...prev,
-        [collection]: { ...prev[collection], [sectionKey]: updatedSection },
-      }));
-
-      setPendingImages((prev) =>
-        prev.filter(
+        const images = pendingImages.filter(
           (img) =>
-            !(img.collection === collection && img.sectionKey === sectionKey),
-        ),
-      );
+            img.collection === collection && img.sectionKey === sectionKey,
+        );
 
-      setDirtySections((prev) => {
-        const next = new Set(prev);
-        next.delete(dirtyKey(collection, sectionKey));
-        return next;
-      });
+        let updatedSection: Section = { ...section };
 
-      setSaving(false);
+        for (const img of images) {
+          const url = img.isExternal
+            ? img.localUrl
+            : await uploadToCloudinary(img.file!);
+
+          updatedSection = { ...updatedSection, [img.fieldKey]: url };
+        }
+
+        const response = await fetch(
+          `/api/admin/firebase/${updatedSection.collection}/${updatedSection.id}`,
+          {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(updatedSection),
+          },
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to save section");
+        }
+
+        setSections((prev) => ({
+          ...prev,
+          [collection]: { ...prev[collection], [sectionKey]: updatedSection },
+        }));
+
+        setPendingImages((prev) =>
+          prev.filter(
+            (img) =>
+              !(img.collection === collection && img.sectionKey === sectionKey),
+          ),
+        );
+
+        setDirtySections((prev) => {
+          const next = new Set(prev);
+          next.delete(dirtyKey(collection, sectionKey));
+          return next;
+        });
+
+        toast.success("Changes saved successfully!");
+      } catch (error) {
+        console.error("Save failed:", error);
+        toast.error("Failed to save changes");
+      } finally {
+        setSaving(false);
+      }
     },
     [sections, pendingImages, saving],
   );
@@ -171,45 +194,63 @@ export const PageProvider = ({
     if (saving || dirtySections.size === 0) return;
     setSaving(true);
 
-    const updatedSections: NestedSections = { ...sections };
+    try {
+      const updatedSections: NestedSections = { ...sections };
 
-    for (const img of pendingImages) {
-      const url = img.isExternal
-        ? img.localUrl
-        : await uploadToCloudinary(img.file!);
+      for (const img of pendingImages) {
+        const url = img.isExternal
+          ? img.localUrl
+          : await uploadToCloudinary(img.file!);
 
-      if (!updatedSections[img.collection])
-        updatedSections[img.collection] = {};
+        if (!updatedSections[img.collection])
+          updatedSections[img.collection] = {};
 
-      if (!updatedSections[img.collection][img.sectionKey]) {
+        if (!updatedSections[img.collection][img.sectionKey]) {
+          updatedSections[img.collection][img.sectionKey] = {
+            id: img.docId,
+            collection: img.collection,
+          };
+        }
+
         updatedSections[img.collection][img.sectionKey] = {
-          id: img.docId,
-          collection: img.collection,
+          ...updatedSections[img.collection][img.sectionKey],
+          [img.fieldKey]: url,
         };
       }
 
-      updatedSections[img.collection][img.sectionKey] = {
-        ...updatedSections[img.collection][img.sectionKey],
-        [img.fieldKey]: url,
-      };
+      for (const entry of dirtySections) {
+        const [collection, key] = entry.split(":");
+        const section = updatedSections[collection]?.[key];
+
+        if (!section?.id || !section?.collection) {
+          console.error(`Invalid section for save: ${entry}`);
+          continue;
+        }
+
+        const response = await fetch(
+          `/api/admin/firebase/${section.collection}/${section.id}`,
+          {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(section),
+          },
+        );
+
+        if (!response.ok) {
+          throw new Error(`Failed to save ${entry}`);
+        }
+      }
+
+      setSections(updatedSections);
+      setPendingImages([]);
+      setDirtySections(new Set());
+      toast.success("All changes saved successfully!");
+    } catch (error) {
+      console.error("Save all failed:", error);
+      toast.error("Failed to save changes");
+    } finally {
+      setSaving(false);
     }
-
-    for (const entry of dirtySections) {
-      const [collection, key] = entry.split(":");
-      const section = updatedSections[collection]?.[key];
-      if (!section?.id || !section?.collection) continue;
-
-      await fetch(`/api/admin/firebase/${section.collection}/${section.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(section),
-      });
-    }
-
-    setSections(updatedSections);
-    setPendingImages([]);
-    setDirtySections(new Set());
-    setSaving(false);
   }, [sections, pendingImages, dirtySections, saving]);
 
   return (

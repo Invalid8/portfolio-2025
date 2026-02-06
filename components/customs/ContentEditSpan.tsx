@@ -27,6 +27,7 @@ interface ContentSpanProps {
   fieldKey: string;
   className?: string;
   children: React.ReactNode;
+  as?: "span" | "h1" | "h2" | "h3" | "p" | "div";
 }
 
 interface ParagraphElement extends SlateElement {
@@ -95,15 +96,6 @@ function parseSpecialString(input: string): CustomText[] {
   return out;
 }
 
-function createInitialValue(raw: string): Descendant[] {
-  return [
-    {
-      type: "paragraph",
-      children: parseSpecialString(raw),
-    } as ParagraphElement,
-  ];
-}
-
 function serialize(nodes: Descendant[]): string {
   return nodes
     .map((n) => {
@@ -129,11 +121,7 @@ function serialize(nodes: Descendant[]): string {
 }
 
 const renderElement = (props: RenderElementProps) => {
-  return (
-    <span {...props.attributes} style={{ display: "inline" }}>
-      {props.children}
-    </span>
-  );
+  return <span {...props.attributes}>{props.children}</span>;
 };
 
 const renderLeaf = ({ leaf, attributes, children }: RenderLeafProps) => {
@@ -173,24 +161,21 @@ const renderLeaf = ({ leaf, attributes, children }: RenderLeafProps) => {
     );
   }
 
-  return (
-    <span
-      {...attributes}
-      style={{
-        display: "inline",
-        padding: 0,
-        margin: 0,
-      }}
-    >
-      {el}
-    </span>
-  );
+  return <span {...attributes}>{el}</span>;
 };
 
-function RenderStatic({ raw }: { raw: string }) {
+function RenderStatic({
+  raw,
+  as: Component = "span",
+  className,
+}: {
+  raw: string;
+  as?: "span" | "h1" | "h2" | "h3" | "p" | "div";
+  className?: string;
+}) {
   const nodes = parseSpecialString(raw);
 
-  return (
+  const content = (
     <>
       {nodes.map((l, i) => {
         if (l.break) return <br key={i} />;
@@ -226,14 +211,12 @@ function RenderStatic({ raw }: { raw: string }) {
           );
         }
 
-        return (
-          <span key={i} className="inline">
-            {el}
-          </span>
-        );
+        return <span key={i}>{el}</span>;
       })}
     </>
   );
+
+  return <Component className={className}>{content}</Component>;
 }
 
 export default function ContentSpan({
@@ -242,6 +225,7 @@ export default function ContentSpan({
   fieldKey,
   className,
   children,
+  as = "span",
 }: ContentSpanProps) {
   const { sections, editField } = usePageContext();
   const { isEditing } = useAuth();
@@ -251,22 +235,18 @@ export default function ContentSpan({
     (typeof children === "string" ? children : "");
 
   if (!isEditing) {
-    return (
-      <span className={className}>
-        <RenderStatic raw={raw} />
-      </span>
-    );
+    return <RenderStatic raw={raw} as={as} className={className} />;
   }
 
   return (
     <EditableContentSpan
-      key={`${collection}-${sectionKey}-${fieldKey}-${raw}`}
       collection={collection}
       sectionKey={sectionKey}
       fieldKey={fieldKey}
       className={className}
       raw={raw}
       editField={editField}
+      as={as}
     />
   );
 }
@@ -278,6 +258,7 @@ function EditableContentSpan({
   className,
   raw,
   editField,
+  as: Component = "span",
 }: {
   collection?: string;
   sectionKey: string;
@@ -290,9 +271,11 @@ function EditableContentSpan({
     fieldKey: string,
     value: string,
   ) => void;
+  as?: "span" | "h1" | "h2" | "h3" | "p" | "div";
 }) {
   const { isEditing } = useAuth();
   const [isFocused, setIsFocused] = useState(false);
+  const [localValue, setLocalValue] = useState(raw);
   const savedRawRef = useRef(raw);
 
   const editor = useMemo(
@@ -300,24 +283,31 @@ function EditableContentSpan({
     [],
   );
 
-  const [value, setValue] = useState<Descendant[]>(() =>
-    createInitialValue(raw),
-  );
+  const initialValue = useMemo(() => {
+    return [
+      {
+        type: "paragraph",
+        children: parseSpecialString(localValue),
+      } as ParagraphElement,
+    ];
+  }, [localValue]);
 
   const handleChange = useCallback((newValue: Descendant[]) => {
-    setValue(newValue);
+    const newText = serialize(newValue);
+    setLocalValue(newText);
   }, []);
 
   const handleBlur = useCallback(() => {
     setIsFocused(false);
-    const serialized = serialize(value);
-    if (serialized !== savedRawRef.current) {
-      savedRawRef.current = serialized;
-      editField(collection!, sectionKey, fieldKey, serialized);
+    if (localValue !== savedRawRef.current) {
+      savedRawRef.current = localValue;
+      editField(collection!, sectionKey, fieldKey, localValue);
     }
-  }, [value, collection, sectionKey, fieldKey, editField]);
+  }, [localValue, collection, sectionKey, fieldKey, editField]);
 
-  const handleFocus = useCallback(() => setIsFocused(true), []);
+  const handleFocus = useCallback(() => {
+    setIsFocused(true);
+  }, []);
 
   const handleDOMBeforeInput = useCallback(
     (e: Event) => {
@@ -331,36 +321,33 @@ function EditableContentSpan({
   );
 
   return (
-    <Slate editor={editor} initialValue={value} onChange={handleChange}>
-      <Editable
-        as="span"
-        renderElement={renderElement}
-        renderLeaf={renderLeaf}
-        onBlur={handleBlur}
-        onFocus={handleFocus}
-        onDOMBeforeInput={handleDOMBeforeInput}
-        className={cn(
-          className,
-          "transition-all duration-200 cursor-text",
-          isFocused &&
-            "ring-2 ring-primary/50 ring-offset-2 ring-offset-neutral-900 rounded-sm px-1",
-          !isFocused &&
-            isEditing &&
-            "hover:ring-1 hover:ring-primary/30 hover:ring-offset-1 hover:ring-offset-neutral-900 hover:rounded-sm hover:px-1",
-        )}
-        style={{
-          display: "inline",
-          padding: 0,
-          margin: 0,
-          outline: "none",
-          fontFamily: "inherit",
-          fontSize: "inherit",
-          lineHeight: "inherit",
-          whiteSpace: "pre-wrap",
-          wordBreak: "break-word",
-        }}
-        placeholder={isEditing ? "Click to edit..." : ""}
-      />
-    </Slate>
+    <Component
+      className={cn(
+        className,
+        "relative",
+        isFocused &&
+          "ring-2 ring-primary/50 ring-offset-2 ring-offset-neutral-900 rounded-sm px-2",
+        !isFocused &&
+          isEditing &&
+          "hover:ring-1 hover:ring-primary/30 hover:ring-offset-1 hover:ring-offset-neutral-900 hover:rounded-sm hover:px-2",
+      )}
+    >
+      <Slate
+        editor={editor}
+        initialValue={initialValue}
+        onChange={handleChange}
+        key={`${collection}-${sectionKey}-${fieldKey}`}
+      >
+        <Editable
+          renderElement={renderElement}
+          renderLeaf={renderLeaf}
+          onBlur={handleBlur}
+          onFocus={handleFocus}
+          onDOMBeforeInput={handleDOMBeforeInput}
+          className="outline-none w-full"
+          placeholder={isEditing ? "Click to edit..." : ""}
+        />
+      </Slate>
+    </Component>
   );
 }
