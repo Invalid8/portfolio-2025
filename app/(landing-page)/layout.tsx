@@ -10,7 +10,18 @@ import {
 import { serializeFirestoreData } from "@/lib/serialize";
 import { ReactNode } from "react";
 import { Experience, Project, Skill, Section, NestedSections } from "@/types";
-import { toast } from "sonner";
+
+const PORTFOLIO_SECTIONS = [
+  "navbar",
+  "banner",
+  "about",
+  "stats",
+  "images",
+  "projects-header",
+  "experience-header",
+  "skills-header",
+  "contact",
+] as const;
 
 export default async function Layout({
   children,
@@ -22,46 +33,42 @@ export default async function Layout({
   let projects: Project[] = [];
   let experiences: Experience[] = [];
   let skills: Skill[] = [];
-  let aboutData: Partial<Section> = {};
-  let navbarData: Partial<Section> = {};
-  let bannerData: Partial<Section> = {};
-  let imagesData: Partial<Section> = {};
+  const portfolioSections: Record<string, Partial<Section>> = {};
 
   try {
-    [projects, experiences, skills] = await Promise.all([
-      fetchCollectionServer<Project>("projects"),
-      fetchCollectionServer<Experience>("experiences"),
-      fetchCollectionServer<Skill>("skills"),
-    ]);
+    const [projectsData, experiencesData, skillsData, ...portfolioData] =
+      await Promise.all([
+        fetchCollectionServer<Project>("projects"),
+        fetchCollectionServer<Experience>("experiences"),
+        fetchCollectionServer<Skill>("skills"),
+        ...PORTFOLIO_SECTIONS.map((section) =>
+          fetchByIdServer("portfolio", section),
+        ),
+      ]);
 
-    projects = serializeFirestoreData(projects);
-    experiences = serializeFirestoreData(experiences);
-    skills = serializeFirestoreData(skills);
+    projects = serializeFirestoreData(projectsData);
+    experiences = serializeFirestoreData(experiencesData);
+    skills = serializeFirestoreData(skillsData);
 
-    aboutData =
-      serializeFirestoreData(await fetchByIdServer("portfolio", "about")) || {};
-    navbarData =
-      serializeFirestoreData(await fetchByIdServer("portfolio", "navbar")) ||
-      {};
-    bannerData =
-      serializeFirestoreData(await fetchByIdServer("portfolio", "banner")) ||
-      {};
-    imagesData =
-      serializeFirestoreData(await fetchByIdServer("portfolio", "images")) ||
-      {};
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (err: any) {
-    toast.error(err.toString());
+    PORTFOLIO_SECTIONS.forEach((section, index) => {
+      portfolioSections[section] =
+        serializeFirestoreData(portfolioData[index]) || {};
+    });
+  } catch (err) {
     console.error("Failed to load layout data:", err);
   }
 
   const initialSections: NestedSections = {
-    portfolio: {
-      about: { id: "about", collection: "portfolio", ...aboutData },
-      navbar: { id: "navbar", collection: "portfolio", ...navbarData },
-      banner: { id: "banner", collection: "portfolio", ...bannerData },
-      images: { id: "images", collection: "portfolio", ...imagesData },
-    },
+    portfolio: Object.fromEntries(
+      PORTFOLIO_SECTIONS.map((key) => [
+        key,
+        {
+          id: key,
+          collection: "portfolio",
+          ...portfolioSections[key],
+        },
+      ]),
+    ),
     projects: Object.fromEntries(
       projects.map((p) => [
         `project-${p.id}`,
