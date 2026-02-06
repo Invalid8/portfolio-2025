@@ -5,10 +5,14 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import ContentSpan from "@/components/customs/ContentEditSpan";
 import { SOCIAL_LINKS, SECTIONS } from "@/lib/constants";
+import { usePathname } from "next/navigation";
 
 function Navbar() {
   const [passed, setPassed] = useState(false);
   const [activeSection, setActiveSection] = useState("");
+  const pathname = usePathname();
+
+  const isHome = pathname === "/";
 
   useEffect(() => {
     function handleScroll() {
@@ -125,28 +129,30 @@ function Navbar() {
         </nav>
       </header>
 
-      <aside className="fixed top-1/2 -translate-y-1/2 left-8 hidden lg:flex flex-col items-center gap-8 z-998">
-        {SECTIONS.map((section) => (
-          <button
-            key={section}
-            onClick={() => scrollToSection(section)}
-            title={section}
-            className="group relative"
-          >
-            <div
-              className={cn(
-                "w-2 h-2 rounded-full transition-all",
-                activeSection === section
-                  ? "bg-primary scale-150"
-                  : "bg-neutral-600 hover:bg-primary/50 hover:scale-125",
-              )}
-            />
-            <span className="absolute left-6 top-1/2 -translate-y-1/2 text-xs font-medium uppercase tracking-wider whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity text-neutral-400 group-hover:text-primary pointer-events-none">
-              {section}
-            </span>
-          </button>
-        ))}
-      </aside>
+      {isHome && (
+        <aside className="fixed top-1/2 -translate-y-1/2 left-8 hidden lg:flex flex-col items-center gap-8 z-998">
+          {SECTIONS.map((section) => (
+            <button
+              key={section}
+              onClick={() => scrollToSection(section)}
+              title={section}
+              className="group relative"
+            >
+              <div
+                className={cn(
+                  "w-2 h-2 rounded-full transition-all",
+                  activeSection === section
+                    ? "bg-primary scale-150"
+                    : "bg-neutral-600 hover:bg-primary/50 hover:scale-125",
+                )}
+              />
+              <span className="absolute left-6 top-1/2 -translate-y-1/2 text-xs font-medium uppercase tracking-wider whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity text-neutral-400 group-hover:text-primary pointer-events-none">
+                {section}
+              </span>
+            </button>
+          ))}
+        </aside>
+      )}
     </>
   );
 }

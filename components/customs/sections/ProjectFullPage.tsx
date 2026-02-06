@@ -71,7 +71,7 @@ export function ProjectFullPage({
 
   return (
     <div className="min-h-screen bg-neutral-950 text-white mt-(--nav-h)">
-      <div className="max-w-6xl mx-auto px-6 py-12">
+      <div className="max-w-6xl mx-auto px-6 py-6">
         <Link
           href="/#Projects"
           className="inline-flex items-center gap-2 text-neutral-400 hover:text-white transition-colors mb-8"

@@ -40,7 +40,7 @@ export function ExperienceCard({ experience }: { experience: Experience }) {
                 >
                   {experience.company.name}
                 </ContentSpan>
-                <ExternalLinkIcon className="w-4 h-4 opacity-0 group-hover/link:opacity-100 transition-opacity" />
+                <ExternalLinkIcon className="w-4 h-4 group-hover/link:opacity-100 transition-opacity" />
               </Link>
             ) : (
               <span className="text-primary font-medium">
