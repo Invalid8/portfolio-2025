@@ -105,35 +105,36 @@ export function ProjectFullPage({
               </span>
             </div>
 
-            <h1 className="text-5xl lg:text-6xl font-bold">
-              <ContentSpan
-                sectionKey={`project-${project.id}`}
-                fieldKey="title"
-              >
-                {project.title}
-              </ContentSpan>
-            </h1>
+            <ContentSpan
+              sectionKey={`project-${project.id}`}
+              fieldKey="title"
+              as="h1"
+              className="text-5xl lg:text-6xl font-bold"
+            >
+              {project.title}
+            </ContentSpan>
 
-            <p className="text-xl text-neutral-300 leading-relaxed">
-              <ContentSpan
-                sectionKey={`project-${project.id}`}
-                fieldKey="description"
-              >
-                {project.description}
-              </ContentSpan>
-            </p>
+            <ContentSpan
+              as="p"
+              className="text-xl text-neutral-300 leading-relaxed"
+              sectionKey={`project-${project.id}`}
+              fieldKey="description"
+            >
+              {project.description}
+            </ContentSpan>
 
             <div className="grid grid-cols-2 gap-4 pt-6 pb-8 border-y border-neutral-700">
               <div>
                 <span className="text-neutral-500 text-sm">Role</span>
-                <p className="text-neutral-200 font-medium mt-1">
-                  <ContentSpan
-                    sectionKey={`project-${project.id}`}
-                    fieldKey="role"
-                  >
-                    {project.role}
-                  </ContentSpan>
-                </p>
+
+                <ContentSpan
+                  as="p"
+                  className="text-neutral-200 font-medium mt-1"
+                  sectionKey={`project-${project.id}`}
+                  fieldKey="role"
+                >
+                  {project.role}
+                </ContentSpan>
               </div>
               <div>
                 <span className="text-neutral-500 text-sm">Completed</span>

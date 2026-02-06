@@ -315,35 +315,35 @@ export function ProjectModal({
               </span>
             </div>
 
-            <h2 className="text-4xl lg:text-5xl font-bold">
-              <ContentSpan
-                sectionKey={`project-${project.id}`}
-                fieldKey="title"
-              >
-                {project.title}
-              </ContentSpan>
-            </h2>
+            <ContentSpan
+              sectionKey={`project-${project.id}`}
+              className="text-4xl lg:text-5xl font-bold"
+              fieldKey="title"
+              as="h2"
+            >
+              {project.title}
+            </ContentSpan>
 
-            <p className="text-xl text-neutral-300 leading-relaxed">
-              <ContentSpan
-                sectionKey={`project-${project.id}`}
-                fieldKey="description"
-              >
-                {project.description}
-              </ContentSpan>
-            </p>
+            <ContentSpan
+              sectionKey={`project-${project.id}`}
+              fieldKey="description"
+              className="text-xl text-neutral-300 leading-relaxed"
+              as="p"
+            >
+              {project.description}
+            </ContentSpan>
 
             <div className="grid grid-cols-2 gap-4 pt-6 pb-8 border-y border-neutral-700">
               <div>
                 <span className="text-neutral-500 text-sm">Role</span>
-                <p className="text-neutral-200 font-medium mt-1">
-                  <ContentSpan
-                    sectionKey={`project-${project.id}`}
-                    fieldKey="role"
-                  >
-                    {project.role}
-                  </ContentSpan>
-                </p>
+                <ContentSpan
+                  sectionKey={`project-${project.id}`}
+                  fieldKey="role"
+                  className="text-neutral-200 font-medium mt-1"
+                  as="p"
+                >
+                  {project.role}
+                </ContentSpan>
               </div>
               <div>
                 <span className="text-neutral-500 text-sm">Completed</span>

@@ -114,16 +114,23 @@ export default function Projects() {
       <div className="max-w-7xl mx-auto space-y-16">
         <div className="space-y-4 flex items-start justify-between gap-3">
           <div>
-            <h2 className="text-4xl lg:text-6xl font-bold">
-              <ContentSpan sectionKey="projects-header" fieldKey="title">
-                SELECTED WORKS
-              </ContentSpan>
-            </h2>
-            <p className="text-lg text-neutral-400 max-w-2xl mt-4">
-              <ContentSpan sectionKey="projects-header" fieldKey="subtitle">
-                A showcase of projects where creativity meets functionality.
-              </ContentSpan>
-            </p>
+            <ContentSpan
+              sectionKey="projects-header"
+              fieldKey="title"
+              as="h2"
+              className="text-4xl lg:text-6xl font-bold"
+            >
+              SELECTED WORKS
+            </ContentSpan>
+
+            <ContentSpan
+              sectionKey="projects-header"
+              fieldKey="subtitle"
+              as="p"
+              className="text-lg text-neutral-400 max-w-2xl mt-4"
+            >
+              A showcase of projects where creativity meets functionality.
+            </ContentSpan>
           </div>
 
           {isAdmin && isEditing && <AddProjectModal onAdd={handleAddProject} />}

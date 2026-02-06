@@ -18,14 +18,14 @@ export function ExperienceCard({ experience }: { experience: Experience }) {
             </ContentSpan>
           </div>
 
-          <h3 className="text-xl lg:text-2xl font-bold mb-2">
-            <ContentSpan
-              sectionKey={`experience-${experience.id}`}
-              fieldKey="position.title"
-            >
-              {experience.position.title}
-            </ContentSpan>
-          </h3>
+          <ContentSpan
+            sectionKey={`experience-${experience.id}`}
+            fieldKey="position.title"
+            className="text-xl lg:text-2xl font-bold mb-2"
+            as="h3"
+          >
+            {experience.position.title}
+          </ContentSpan>
 
           <div className="flex flex-wrap items-center gap-2 mb-4 text-neutral-300">
             {experience.company.link ? (
@@ -69,14 +69,14 @@ export function ExperienceCard({ experience }: { experience: Experience }) {
             )}
           </div>
 
-          <p className="text-neutral-300 leading-relaxed">
-            <ContentSpan
-              sectionKey={`experience-${experience.id}`}
-              fieldKey="position.role"
-            >
-              {experience.position.role}
-            </ContentSpan>
-          </p>
+          <ContentSpan
+            sectionKey={`experience-${experience.id}`}
+            fieldKey="position.role"
+            className="text-neutral-300 leading-relaxed"
+            as="p"
+          >
+            {experience.position.role}
+          </ContentSpan>
         </div>
       </div>
 

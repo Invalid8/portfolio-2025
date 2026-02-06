@@ -96,17 +96,24 @@ export default function Contact() {
           <div className="space-y-8">
             <div className="space-y-4">
               <div className="relative">
-                <h2 className="text-4xl lg:text-6xl font-bold">
-                  <ContentSpan sectionKey="contact" fieldKey="title">
-                    {contactSection?.title}
-                  </ContentSpan>
-                </h2>
-              </div>
-              <p className="text-lg text-neutral-400 max-w-xl">
-                <ContentSpan sectionKey="contact" fieldKey="subtitle">
-                  {contactSection?.subtitle}
+                <ContentSpan
+                  className="text-4xl lg:text-6xl font-bold"
+                  sectionKey="contact"
+                  fieldKey="title"
+                  as="h2"
+                >
+                  {contactSection?.title}
                 </ContentSpan>
-              </p>
+              </div>
+
+              <ContentSpan
+                sectionKey="contact"
+                fieldKey="subtitle"
+                as="p"
+                className="text-lg text-neutral-400 max-w-xl"
+              >
+                {contactSection?.subtitle}
+              </ContentSpan>
             </div>
 
             <div className="flex flex-col gap-4">
@@ -264,11 +271,15 @@ function ContactItem({
       </div>
       <div>
         <p className="text-sm text-neutral-500 mb-1">{label}</p>
-        <p className="text-neutral-200 group-hover:text-primary transition-colors">
-          <ContentSpan sectionKey={sectionKey} fieldKey={fieldKey}>
-            {value}
-          </ContentSpan>
-        </p>
+
+        <ContentSpan
+          as="p"
+          sectionKey={sectionKey}
+          fieldKey={fieldKey}
+          className="text-neutral-200 group-hover:text-primary transition-colors"
+        >
+          {value}
+        </ContentSpan>
       </div>
     </div>
   );

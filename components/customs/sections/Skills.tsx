@@ -154,17 +154,24 @@ export default function SkillsSection() {
       <div className="max-w-7xl mx-auto space-y-16">
         <div className="space-y-4 flex items-start justify-between gap-3">
           <div className="space-y-1">
-            <h2 className="text-4xl lg:text-6xl font-bold">
-              <ContentSpan sectionKey="skills-header" fieldKey="title">
-                SKILLS & TECHNOLOGIES
-              </ContentSpan>
-            </h2>
-            <p className="text-lg text-neutral-400 max-w-2xl">
-              <ContentSpan sectionKey="skills-header" fieldKey="subtitle">
-                Technologies and tools I work with to build exceptional digital
-                experiences.
-              </ContentSpan>
-            </p>
+            <ContentSpan
+              as="h2"
+              className="text-4xl lg:text-6xl font-bold"
+              sectionKey="skills-header"
+              fieldKey="title"
+            >
+              SKILLS & TECHNOLOGIES
+            </ContentSpan>
+
+            <ContentSpan
+              as="p"
+              className="text-lg text-neutral-400 max-w-2xl"
+              sectionKey="skills-header"
+              fieldKey="subtitle"
+            >
+              Technologies and tools I work with to build exceptional digital
+              experiences.
+            </ContentSpan>
           </div>
           {isAdmin && isEditing && <AddSkillModal onAdd={handleAddSkill} />}
         </div>

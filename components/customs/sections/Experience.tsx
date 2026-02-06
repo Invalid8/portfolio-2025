@@ -97,21 +97,30 @@ export default function ExperienceSection() {
   }
 
   return (
-    <section id="Experience" className="min-h-svh w-full py-20 sm:px-5 px-3 md:px-10">
+    <section
+      id="Experience"
+      className="min-h-svh w-full py-20 sm:px-5 px-3 md:px-10"
+    >
       <div className="max-w-7xl mx-auto space-y-16">
         <div className="space-y-4 flex items-start justify-between gap-3">
           <div className="space-y-1">
-            <h2 className="text-4xl lg:text-6xl font-bold">
-              <ContentSpan sectionKey="experience-header" fieldKey="title">
-                EXPERIENCE
-              </ContentSpan>
-            </h2>
-            <p className="text-lg text-neutral-400 max-w-2xl">
-              <ContentSpan sectionKey="experience-header" fieldKey="subtitle">
-                My professional journey building exceptional digital
-                experiences.
-              </ContentSpan>
-            </p>
+            <ContentSpan
+              sectionKey="experience-header"
+              fieldKey="title"
+              as="h2"
+              className="text-4xl lg:text-6xl font-bold"
+            >
+              EXPERIENCE
+            </ContentSpan>
+
+            <ContentSpan
+              sectionKey="experience-header"
+              fieldKey="subtitle"
+              as="p"
+              className="text-lg text-neutral-400 max-w-2xl"
+            >
+              My professional journey building exceptional digital experiences.
+            </ContentSpan>
           </div>
 
           {isAdmin && isEditing && (
