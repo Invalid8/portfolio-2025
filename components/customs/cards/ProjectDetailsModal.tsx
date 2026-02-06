@@ -36,7 +36,6 @@ export function ProjectModal({
   const modalRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-  const imageContainerRef = useRef<HTMLDivElement>(null);
   const isInitialMount = useRef(true);
   const isAnimating = useRef(false);
   const previousProjectId = useRef(project.id);
@@ -50,23 +49,52 @@ export function ProjectModal({
   const projectYear = formatYear(project.date);
   const projectMonthYear = formatMonthYear(project.date);
 
-  // Handle ESC key and navigation
+  const handlePrevious = useCallback(() => {
+    if (hasPrevious && !isAnimating.current) {
+      onNavigate(projects[currentIndex - 1]);
+    }
+  }, [hasPrevious, currentIndex, projects, onNavigate]);
+
+  const handleNext = useCallback(() => {
+    if (hasNext && !isAnimating.current) {
+      onNavigate(projects[currentIndex + 1]);
+    }
+  }, [hasNext, currentIndex, projects, onNavigate]);
+
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      if (
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable
+      ) {
+        return;
+      }
+
       if (e.key === "Escape") {
         e.preventDefault();
+        e.stopPropagation();
         onClose();
-      }
-      if (e.key === "ArrowLeft" && hasPrevious && !isAnimating.current) {
+      } else if (e.key === "ArrowLeft" && hasPrevious && !isAnimating.current) {
         e.preventDefault();
-        onNavigate(projects[currentIndex - 1]);
-      }
-      if (e.key === "ArrowRight" && hasNext && !isAnimating.current) {
+        handlePrevious();
+      } else if (e.key === "ArrowRight" && hasNext && !isAnimating.current) {
         e.preventDefault();
-        onNavigate(projects[currentIndex + 1]);
+        handleNext();
       }
     },
-    [onClose, currentIndex, hasPrevious, hasNext, projects, onNavigate],
+    [onClose, hasPrevious, hasNext, handlePrevious, handleNext],
+  );
+
+  const handleBackdropClick = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (e.target === e.currentTarget) {
+        e.stopPropagation();
+        onClose();
+      }
+    },
+    [onClose],
   );
 
   useEffect(() => {
@@ -81,12 +109,11 @@ export function ProjectModal({
       isInitialMount.current = false;
     }
 
-    // Add keyboard listeners
-    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("keydown", handleKeyDown, true);
 
     return () => {
       document.body.style.overflow = "";
-      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("keydown", handleKeyDown, true);
     };
   }, [handleKeyDown]);
 
@@ -157,18 +184,6 @@ export function ProjectModal({
     }
   }, [project.id]);
 
-  const handlePrevious = () => {
-    if (hasPrevious && !isAnimating.current) {
-      onNavigate(projects[currentIndex - 1]);
-    }
-  };
-
-  const handleNext = () => {
-    if (hasNext && !isAnimating.current) {
-      onNavigate(projects[currentIndex + 1]);
-    }
-  };
-
   const handleMediaUpdate = async (
     medias: { link: string; type: "image" | "video" }[],
   ) => {
@@ -188,13 +203,6 @@ export function ProjectModal({
     } catch (error) {
       console.error("Failed to update medias:", error);
       throw error;
-    }
-  };
-
-  // Handle backdrop click
-  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget) {
-      onClose();
     }
   };
 
@@ -248,10 +256,7 @@ export function ProjectModal({
         className="relative w-full max-w-7xl sm:h-[90vh] h-screen bg-neutral-900 sm:rounded-2xl border border-neutral-700 shadow-2xl flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        <div
-          ref={imageContainerRef}
-          className="relative bg-neutral-950 flex items-center justify-center p-6 sm:p-8 lg:p-12 lg:w-1/2 lg:h-full w-full min-h-[40vh] sm:min-h-[50vh] lg:min-h-0 lg:flex-shrink-0"
-        >
+        <div className="relative bg-neutral-950 flex items-center justify-center p-6 sm:p-8 lg:p-12 lg:w-1/2 lg:h-full w-full min-h-[40vh] sm:min-h-[50vh] lg:min-h-0 lg:flex-shrink-0">
           <div className="absolute inset-0 bg-gradient-to-br from-neutral-950 via-neutral-900/50 to-neutral-950 z-0"></div>
           <div
             ref={imageRef}

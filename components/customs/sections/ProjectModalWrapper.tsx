@@ -105,7 +105,15 @@ export function ProjectModalWrapper({
   );
 
   const handleClose = useCallback(() => {
-    router.push("/#Projects", { scroll: false });
+    router.push("/", { scroll: false });
+    router.refresh();
+
+    setTimeout(() => {
+      const projectsSection = document.getElementById("Projects");
+      if (projectsSection) {
+        projectsSection.scrollIntoView({ behavior: "smooth" });
+      }
+    }, 100);
   }, [router]);
 
   const updateProjectContent = useCallback(
@@ -147,7 +155,7 @@ export function ProjectModalWrapper({
   return (
     <>
       {isNavigating && (
-        <div className="fixed inset-0 z-[10001] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[10002] flex items-center justify-center bg-black/50 backdrop-blur-sm pointer-events-none">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent" />
         </div>
       )}
