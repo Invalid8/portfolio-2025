@@ -1,12 +1,13 @@
 /* eslint-disable @next/next/no-img-element */
 import { Project } from "@/types";
 import { ExternalLinkIcon, GithubIcon, PlusIcon } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 export function ProjectCard({ project }: { project: Project }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
     if (!cardRef.current) return;
@@ -16,19 +17,18 @@ export function ProjectCard({ project }: { project: Project }) {
       const rect = cardRef.current.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
-
       cardRef.current.style.setProperty("--mouse-x", `${x}px`);
       cardRef.current.style.setProperty("--mouse-y", `${y}px`);
     };
 
     const card = cardRef.current;
     card.addEventListener("mousemove", handleMouseMove);
+
     return () => card.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
   const handleMouseEnter = () => {
     router.prefetch(`/project/${project.id}`);
-
     fetch(`/api/projects/${project.id}`, {
       method: "GET",
       headers: { "Content-Type": "application/json" },
@@ -46,11 +46,35 @@ export function ProjectCard({ project }: { project: Project }) {
       }}
     >
       <div className="absolute inset-0">
-        <img
-          src={project.thumbnail}
-          alt={project.title}
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-        />
+        {!imageError ? (
+          <img
+            src={project.thumbnail}
+            alt={project.title}
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+            onError={() => setImageError(true)}
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-neutral-800">
+            <div className="text-center space-y-2">
+              <div className="w-20 h-20 mx-auto rounded-full bg-neutral-700/50 flex items-center justify-center">
+                <svg
+                  className="w-10 h-10 text-neutral-500"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
+                </svg>
+              </div>
+              <p className="text-sm text-neutral-500">No image</p>
+            </div>
+          </div>
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent opacity-90 group-hover:opacity-95 transition-opacity" />
       </div>
 

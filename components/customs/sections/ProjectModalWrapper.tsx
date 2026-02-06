@@ -36,12 +36,19 @@ export function ProjectModalWrapper({
   const [currentProject, setCurrentProject] = useState(initialProject);
   const [isNavigating, setIsNavigating] = useState(false);
   const [isOpen, setIsOpen] = useState(true);
-  const closeTimeoutRef = useRef<NodeJS.Timeout>(null);
+  const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const scrollPositionRef = useRef(0);
+  const hasStoredScrollRef = useRef(false);
 
   useEffect(() => {
     projectCache.set(projectId, initialProject);
-    scrollPositionRef.current = window.scrollY;
+
+    if (!hasStoredScrollRef.current) {
+      scrollPositionRef.current = window.scrollY;
+      hasStoredScrollRef.current = true;
+
+      sessionStorage.setItem("projectModalScrollY", String(window.scrollY));
+    }
   }, [projectId, initialProject]);
 
   useEffect(() => {
@@ -129,17 +136,8 @@ export function ProjectModalWrapper({
 
   const handleClose = useCallback(() => {
     setIsOpen(false);
-
-    closeTimeoutRef.current = setTimeout(() => {
-      router.push("/", { scroll: false });
-
-      setTimeout(() => {
-        window.scrollTo({
-          top: scrollPositionRef.current,
-          behavior: "instant",
-        });
-      }, 50);
-    }, 300);
+    document.body.style.overflow = "";
+    router.back();
   }, [router]);
 
   const updateProjectContent = useCallback(
