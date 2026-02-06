@@ -1,22 +1,6 @@
 "use client";
 
-import React, { useMemo, useCallback, useState, useRef } from "react";
-import {
-  createEditor,
-  BaseEditor,
-  Descendant,
-  Text,
-  Element as SlateElement,
-  Transforms,
-} from "slate";
-import {
-  Slate,
-  Editable,
-  withReact,
-  ReactEditor,
-  RenderLeafProps,
-  RenderElementProps,
-} from "slate-react";
+import React, { useRef, useEffect, useState, useCallback } from "react";
 import { usePageContext } from "@/lib/context/PageContent";
 import { useAuth } from "@/lib/context/auth";
 import { cn } from "@/lib/utils";
@@ -30,12 +14,8 @@ interface ContentSpanProps {
   as?: "span" | "h1" | "h2" | "h3" | "p" | "div";
 }
 
-interface ParagraphElement extends SlateElement {
-  type: "paragraph";
-  children: CustomText[];
-}
-
-type CustomText = Text & {
+type CustomText = {
+  text: string;
   bold?: boolean;
   italic?: boolean;
   strike?: boolean;
@@ -78,8 +58,9 @@ function parseSpecialString(input: string): CustomText[] {
         out.push({ text: m[1], link: m[2] });
       } else {
         const inner = parseSpecialString(m[1]);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        inner.forEach((n) => ((n as any)[p.mark] = true));
+        inner.forEach(
+          (n) => ((n as unknown as Record<string, boolean>)[p.mark] = true),
+        );
         out.push(...inner);
       }
 
@@ -95,74 +76,6 @@ function parseSpecialString(input: string): CustomText[] {
 
   return out;
 }
-
-function serialize(nodes: Descendant[]): string {
-  return nodes
-    .map((n) => {
-      if (!("children" in n)) return "";
-      return (
-        n.children
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .map((l: any) => {
-            if (l.break) return "~~br~~";
-            let t = l.text;
-            if (l.link) t = `[${t}](${l.link})`;
-            if (l.underline) t = `__${t}__`;
-            if (l.primary) t = `^^${t}^^`;
-            if (l.strike) t = `~~${t}~~`;
-            if (l.italic) t = `*${t}*`;
-            if (l.bold) t = `**${t}**`;
-            return t;
-          })
-          .join("")
-      );
-    })
-    .join("\n");
-}
-
-const renderElement = (props: RenderElementProps) => {
-  return <span {...props.attributes}>{props.children}</span>;
-};
-
-const renderLeaf = ({ leaf, attributes, children }: RenderLeafProps) => {
-  const l = leaf as CustomText;
-
-  if (l.break) return <br {...attributes} />;
-
-  let el = children;
-
-  if (l.bold) el = <strong>{el}</strong>;
-  if (l.italic) el = <em>{el}</em>;
-  if (l.strike) el = <s>{el}</s>;
-
-  if (l.primary || l.underline) {
-    el = (
-      <span
-        style={{
-          color: l.primary ? "var(--color-primary)" : undefined,
-          textDecoration: l.underline ? "underline" : undefined,
-        }}
-      >
-        {el}
-      </span>
-    );
-  }
-
-  if (l.link) {
-    el = (
-      <a
-        href={l.link}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline hover:underline"
-      >
-        {el}
-      </a>
-    );
-  }
-
-  return <span {...attributes}>{el}</span>;
-};
 
 function RenderStatic({
   raw,
@@ -275,79 +188,81 @@ function EditableContentSpan({
 }) {
   const { isEditing } = useAuth();
   const [isFocused, setIsFocused] = useState(false);
-  const [localValue, setLocalValue] = useState(raw);
-  const savedRawRef = useRef(raw);
+  const [editValue, setEditValue] = useState(raw);
+  const contentRef = useRef<HTMLElement>(null);
+  const rawRef = useRef(raw);
 
-  const editor = useMemo(
-    () => withReact(createEditor() as BaseEditor & ReactEditor),
-    [],
-  );
+  useEffect(() => {
+    if (!isFocused && rawRef.current !== raw) {
+      rawRef.current = raw;
+    }
+  }, [raw, isFocused]);
 
-  const initialValue = useMemo(() => {
-    return [
-      {
-        type: "paragraph",
-        children: parseSpecialString(localValue),
-      } as ParagraphElement,
-    ];
-  }, [localValue]);
+  useEffect(() => {
+    if (!isFocused && rawRef.current !== editValue) {
+      setEditValue(rawRef.current);
+    }
+  }, [isFocused, editValue]);
 
-  const handleChange = useCallback((newValue: Descendant[]) => {
-    const newText = serialize(newValue);
-    setLocalValue(newText);
+  const handleInput = useCallback(() => {
+    if (contentRef.current) {
+      setEditValue(contentRef.current.textContent || "");
+    }
   }, []);
 
   const handleBlur = useCallback(() => {
     setIsFocused(false);
-    if (localValue !== savedRawRef.current) {
-      savedRawRef.current = localValue;
-      editField(collection!, sectionKey, fieldKey, localValue);
+    if (editValue !== raw) {
+      editField(collection!, sectionKey, fieldKey, editValue);
     }
-  }, [localValue, collection, sectionKey, fieldKey, editField]);
+  }, [editValue, raw, collection, sectionKey, fieldKey, editField]);
 
   const handleFocus = useCallback(() => {
     setIsFocused(true);
-  }, []);
-
-  const handleDOMBeforeInput = useCallback(
-    (e: Event) => {
-      const inputEvent = e as InputEvent;
-      if (inputEvent.inputType === "insertLineBreak") {
-        e.preventDefault();
-        Transforms.insertText(editor, "\n");
-      }
-    },
-    [editor],
-  );
+    if (contentRef.current) {
+      contentRef.current.textContent = editValue;
+      setTimeout(() => {
+        if (contentRef.current) {
+          const range = document.createRange();
+          const sel = window.getSelection();
+          range.selectNodeContents(contentRef.current);
+          range.collapse(false);
+          sel?.removeAllRanges();
+          sel?.addRange(range);
+        }
+      }, 0);
+    }
+  }, [editValue]);
 
   return (
     <Component
+      key={isFocused ? "editing" : "static"}
+      ref={
+        contentRef as React.RefObject<
+          HTMLElement &
+            HTMLSpanElement &
+            HTMLHeadingElement &
+            HTMLParagraphElement &
+            HTMLDivElement
+        >
+      }
       className={cn(
         className,
-        "relative",
+        "outline-none transition-all duration-200",
+        "whitespace-pre-wrap break-words overflow-wrap-anywhere",
         isFocused &&
           "ring-2 ring-primary/50 ring-offset-2 ring-offset-neutral-900 rounded-sm px-2",
         !isFocused &&
           isEditing &&
-          "hover:ring-1 hover:ring-primary/30 hover:ring-offset-1 hover:ring-offset-neutral-900 hover:rounded-sm hover:px-2",
+          "hover:ring-1 hover:ring-primary/30 hover:ring-offset-1 hover:ring-offset-neutral-900 hover:rounded-sm hover:px-2 cursor-text",
       )}
+      contentEditable={isEditing}
+      suppressContentEditableWarning
+      onInput={handleInput}
+      onBlur={handleBlur}
+      onFocus={handleFocus}
     >
-      <Slate
-        editor={editor}
-        initialValue={initialValue}
-        onChange={handleChange}
-        key={`${collection}-${sectionKey}-${fieldKey}`}
-      >
-        <Editable
-          renderElement={renderElement}
-          renderLeaf={renderLeaf}
-          onBlur={handleBlur}
-          onFocus={handleFocus}
-          onDOMBeforeInput={handleDOMBeforeInput}
-          className="outline-none w-full"
-          placeholder={isEditing ? "Click to edit..." : ""}
-        />
-      </Slate>
+      {!isFocused && <RenderStatic raw={editValue} as="span" />}
     </Component>
   );
 }

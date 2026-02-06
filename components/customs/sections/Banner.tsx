@@ -48,33 +48,30 @@ export default function Banner() {
           sectionKey="banner"
           fieldKey="titleLine"
           as="h1"
-          className="text-5xl sm:text-[clamp(4rem,10vw,7rem)] sm:leading-[clamp(4rem,10vw,7rem)] font-semibold font-bold"
+          className="text-5xl sm:text-[clamp(4rem,10vw,6rem)] sm:leading-[clamp(4rem,10vw,6rem)] font-bold"
         >
           {bannerSection.titleLine || "Frontend~~br~~^^Developer^^"}
         </ContentSpan>
 
-        <p className="text-base sm:text-lg xl:text-2xl leading-relaxed max-w-2xl">
-          <ContentSpan
-            sectionKey="banner"
-            fieldKey="subtitle"
-            className="space-y-0"
-          >
-            {bannerSection.subtitle ||
-              `A Nigerian based **^^Frontend Developer^^** passionate about building accessible and user friendly **^^websites^^**.`}
-          </ContentSpan>
+        <ContentSpan
+          sectionKey="banner"
+          fieldKey="subtitle"
+          className="space-y-0 text-base sm:text-lg xl:text-2xl leading-relaxed max-w-2xl"
+          as="p"
+        >
+          {bannerSection.subtitle ||
+            `A Nigerian based **^^Frontend Developer^^** passionate about building accessible and user friendly **^^websites^^**.`}
+        </ContentSpan>
 
-          <br />
-          <br />
-
-          <ContentSpan
-            sectionKey="banner"
-            fieldKey="resume"
-            className="space-y-0"
-          >
-            {bannerSection.resume ||
-              `^^__**[My Resume](https://drive.google.com/file/d/1ixmuBYgzXQdXrTn1n9aoz4SWYRU715h-/view)**__^^`}
-          </ContentSpan>
-        </p>
+        <ContentSpan
+          sectionKey="banner"
+          fieldKey="resume"
+          className="space-y-0 text-base sm:text-lg xl:text-2xl leading-relaxed max-w-2xl"
+          as="p"
+        >
+          {bannerSection.resume ||
+            `^^__**[My Resume](https://drive.google.com/file/d/1ixmuBYgzXQdXrTn1n9aoz4SWYRU715h-/view)**__^^`}
+        </ContentSpan>
       </div>
 
       {showMarquee && (
