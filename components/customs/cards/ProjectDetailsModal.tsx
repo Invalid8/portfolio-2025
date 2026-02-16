@@ -307,6 +307,7 @@ export function ProjectModal({
             <div>
               <span className="inline-block px-4 py-1.5 bg-primary/10 text-primary rounded-full text-sm font-medium uppercase tracking-wider mb-6">
                 <ContentSpan
+                  collection="projects"
                   sectionKey={`project-${project.id}`}
                   fieldKey="type"
                 >
@@ -316,6 +317,7 @@ export function ProjectModal({
             </div>
 
             <ContentSpan
+              collection="projects"
               sectionKey={`project-${project.id}`}
               className="text-4xl lg:text-5xl font-bold"
               fieldKey="title"
@@ -325,6 +327,7 @@ export function ProjectModal({
             </ContentSpan>
 
             <ContentSpan
+              collection="projects"
               sectionKey={`project-${project.id}`}
               fieldKey="description"
               className="text-xl text-neutral-300 leading-relaxed"
@@ -337,6 +340,7 @@ export function ProjectModal({
               <div>
                 <span className="text-neutral-500 text-sm">Role</span>
                 <ContentSpan
+                  collection="projects"
                   sectionKey={`project-${project.id}`}
                   fieldKey="role"
                   className="text-neutral-200 font-medium mt-1"
@@ -347,12 +351,24 @@ export function ProjectModal({
               </div>
               <div>
                 <span className="text-neutral-500 text-sm">Completed</span>
-                <p
-                  className="text-neutral-200 font-medium mt-1"
-                  title={projectMonthYear}
-                >
-                  {projectYear || "N/A"}
-                </p>
+                {isEditing ? (
+                  <ContentSpan
+                    collection="projects"
+                    as="p"
+                    className="text-neutral-200 font-medium mt-1"
+                    sectionKey={`project-${project.id}`}
+                    fieldKey="date"
+                  >
+                    {project.date}
+                  </ContentSpan>
+                ) : (
+                  <p
+                    className="text-neutral-200 font-medium mt-1"
+                    title={projectMonthYear}
+                  >
+                    {projectYear || "N/A"}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -386,7 +402,7 @@ export function ProjectModal({
             )}
 
             <div className="flex flex-col sm:flex-row gap-4 pt-8">
-              {project.link && (
+              {!isEditing && project.link ? (
                 <Link
                   href={project.link}
                   target="_blank"
@@ -395,8 +411,21 @@ export function ProjectModal({
                   <ExternalLinkIcon className="w-5 h-5" />
                   Visit Live Site
                 </Link>
-              )}
-              {project.github && (
+              ) : isEditing ? (
+                <div className="flex-1 space-y-2">
+                  <span className="text-sm text-neutral-500">Live Link:</span>
+                  <ContentSpan
+                    collection="projects"
+                    sectionKey={`project-${project.id}`}
+                    fieldKey="link"
+                    className="block px-6 py-4 bg-primary/10 text-primary rounded-lg border border-primary/30"
+                  >
+                    {project.link || "https://"}
+                  </ContentSpan>
+                </div>
+              ) : null}
+
+              {!isEditing && project.github ? (
                 <Link
                   href={project.github}
                   target="_blank"
@@ -405,7 +434,19 @@ export function ProjectModal({
                   <GithubIcon className="w-5 h-5" />
                   View Code
                 </Link>
-              )}
+              ) : isEditing ? (
+                <div className="flex-1 space-y-2">
+                  <span className="text-sm text-neutral-500">GitHub Link:</span>
+                  <ContentSpan
+                    collection="projects"
+                    sectionKey={`project-${project.id}`}
+                    fieldKey="github"
+                    className="block px-6 py-4 bg-neutral-800/50 text-neutral-300 rounded-lg border border-neutral-700"
+                  >
+                    {project.github || "https://"}
+                  </ContentSpan>
+                </div>
+              ) : null}
             </div>
 
             <div className="flex lg:hidden gap-4 pt-4 pb-8">

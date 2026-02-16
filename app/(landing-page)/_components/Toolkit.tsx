@@ -9,12 +9,13 @@ import {
   SaveIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  LogOutIcon,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
 
 function Toolkit() {
-  const { isEditing, toggleEdit, isAdmin } = useAuth();
+  const { isEditing, toggleEdit, isAdmin, user, logout } = useAuth();
   const { hasUnsavedChanges, saveAll } = usePageContext();
   const [isSaving, setIsSaving] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
@@ -41,6 +42,16 @@ function Toolkit() {
       toast.error("Failed to save changes");
     } finally {
       setIsSaving(false);
+    }
+  }
+
+  async function handleLogout() {
+    try {
+      await logout();
+      toast.success("Logged out successfully");
+    } catch (error) {
+      console.error("Logout failed:", error);
+      toast.error("Failed to logout");
     }
   }
 
@@ -102,6 +113,21 @@ function Toolkit() {
                 ) : (
                   <SaveIcon />
                 )}
+              </button>
+            </>
+          )}
+
+          {user && (
+            <>
+              <span className="h-6 w-0.5 bg-primary/30"></span>
+
+              <button
+                onClick={handleLogout}
+                title="Logout"
+                aria-label="Logout"
+                className="p-3 text-red-500 cursor-pointer hover:bg-white/4 transition-colors rounded-full size-12 min-w-8 fij"
+              >
+                <LogOutIcon />
               </button>
             </>
           )}

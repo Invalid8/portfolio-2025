@@ -132,6 +132,19 @@ function RenderStatic({
   return <Component className={className}>{content}</Component>;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getNestedValue(obj: any, path: string): any {
+  const keys = path.split(".");
+  let current = obj;
+
+  for (const key of keys) {
+    if (current?.[key] === undefined) return undefined;
+    current = current[key];
+  }
+
+  return current;
+}
+
 export default function ContentSpan({
   collection = "portfolio",
   sectionKey,
@@ -143,8 +156,9 @@ export default function ContentSpan({
   const { sections, editField } = usePageContext();
   const { isEditing } = useAuth();
 
+  const section = sections[collection]?.[sectionKey];
   const raw =
-    sections[collection]?.[sectionKey]?.[fieldKey] ??
+    getNestedValue(section, fieldKey) ??
     (typeof children === "string" ? children : "");
 
   if (!isEditing) {

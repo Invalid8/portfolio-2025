@@ -14,7 +14,6 @@ import {
   User,
 } from "firebase/auth";
 import { setCookie, deleteCookie } from "cookies-next";
-import { LogOutIcon } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { ADMIN_LOGIN_ROUTE } from "../constants";
@@ -45,7 +44,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const tokenResult = await u.getIdTokenResult();
         const admin = !!tokenResult.claims.admin;
 
-        // Only allow admin users to stay logged in
         if (!admin) {
           toast.error(
             "You do not have admin privileges. Please contact the site owner.",
@@ -75,7 +73,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const originalFetch = window.fetch;
 
-    // Intercept fetch to handle 401 unauthorized responses
     window.fetch = async (...args: Parameters<typeof fetch>) => {
       try {
         const response = await originalFetch(...args);
@@ -113,7 +110,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const result = await signInWithPopup(auth, googleProvider);
     const tokenResult = await result.user.getIdTokenResult();
 
-    // Check if user is admin before setting state
     if (!tokenResult.claims.admin) {
       toast.error(
         "You do not have admin privileges. Please contact the site owner.",
@@ -131,7 +127,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const result = await signInWithEmailAndPassword(auth, email, password);
     const tokenResult = await result.user.getIdTokenResult();
 
-    // Check if user is admin before setting state
     if (!tokenResult.claims.admin) {
       toast.error(
         "You do not have admin privileges. Please contact the site owner.",
@@ -167,15 +162,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         toggleEdit,
       }}
     >
-      {user && (
-        <button
-          className="flex items-center gap-2 text-red-500 cursor-pointer fixed right-8 bottom-24 z-9999 p-3 bg-neutral-800/50 backdrop-blur rounded-full hover:bg-neutral-800 transition-colors"
-          onClick={logout}
-          title="Logout"
-        >
-          <LogOutIcon />
-        </button>
-      )}
       {children}
     </AuthContext.Provider>
   );

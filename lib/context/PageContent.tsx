@@ -79,14 +79,29 @@ export const PageProvider = ({
           return prev;
         }
 
+        const keys = fieldKey.split(".");
+        const updated = { ...currentSection };
+
+        if (keys.length === 1) {
+          updated[fieldKey] = value;
+        } else {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          let current: any = updated;
+          for (let i = 0; i < keys.length - 1; i++) {
+            if (!current[keys[i]]) {
+              current[keys[i]] = {};
+            }
+            current[keys[i]] = { ...current[keys[i]] };
+            current = current[keys[i]];
+          }
+          current[keys[keys.length - 1]] = value;
+        }
+
         return {
           ...prev,
           [collection]: {
             ...prev[collection],
-            [sectionKey]: {
-              ...currentSection,
-              [fieldKey]: value,
-            },
+            [sectionKey]: updated,
           },
         };
       });
@@ -145,7 +160,20 @@ export const PageProvider = ({
             ? img.localUrl
             : await uploadToCloudinary(img.file!);
 
-          updatedSection = { ...updatedSection, [img.fieldKey]: url };
+          const keys = img.fieldKey.split(".");
+          if (keys.length === 1) {
+            updatedSection = { ...updatedSection, [img.fieldKey]: url };
+          } else {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            let current: any = updatedSection;
+            for (let i = 0; i < keys.length - 1; i++) {
+              if (!current[keys[i]]) {
+                current[keys[i]] = {};
+              }
+              current = current[keys[i]];
+            }
+            current[keys[keys.length - 1]] = url;
+          }
         }
 
         const response = await fetch(
@@ -212,10 +240,24 @@ export const PageProvider = ({
           };
         }
 
-        updatedSections[img.collection][img.sectionKey] = {
-          ...updatedSections[img.collection][img.sectionKey],
-          [img.fieldKey]: url,
-        };
+        const keys = img.fieldKey.split(".");
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let current: any = updatedSections[img.collection][img.sectionKey];
+
+        if (keys.length === 1) {
+          updatedSections[img.collection][img.sectionKey] = {
+            ...current,
+            [img.fieldKey]: url,
+          };
+        } else {
+          for (let i = 0; i < keys.length - 1; i++) {
+            if (!current[keys[i]]) {
+              current[keys[i]] = {};
+            }
+            current = current[keys[i]];
+          }
+          current[keys[keys.length - 1]] = url;
+        }
       }
 
       for (const entry of dirtySections) {

@@ -2,8 +2,11 @@ import ContentSpan from "@/components/customs/ContentEditSpan";
 import { Experience } from "@/types";
 import { MapPinIcon, ExternalLinkIcon, CalendarIcon } from "lucide-react";
 import Link from "next/link";
+import { useAuth } from "@/lib/context/auth";
 
 export function ExperienceCard({ experience }: { experience: Experience }) {
+  const { isEditing } = useAuth();
+
   return (
     <div className="group relative bg-neutral-800/30 backdrop-blur border border-neutral-700/50 rounded-2xl p-6 lg:p-8 hover:border-primary/30 hover:bg-neutral-800/50 transition-all">
       <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
@@ -11,6 +14,7 @@ export function ExperienceCard({ experience }: { experience: Experience }) {
           <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary/10 rounded-lg text-primary font-medium text-sm mb-4">
             <CalendarIcon className="w-4 h-4" />
             <ContentSpan
+              collection="experiences"
               sectionKey={`experience-${experience.id}`}
               fieldKey="position.duration"
             >
@@ -19,6 +23,7 @@ export function ExperienceCard({ experience }: { experience: Experience }) {
           </div>
 
           <ContentSpan
+            collection="experiences"
             sectionKey={`experience-${experience.id}`}
             fieldKey="position.title"
             className="text-xl lg:text-2xl font-bold mb-2"
@@ -28,28 +33,43 @@ export function ExperienceCard({ experience }: { experience: Experience }) {
           </ContentSpan>
 
           <div className="flex flex-wrap items-center gap-2 mb-4 text-neutral-300">
-            {experience.company.link ? (
+            {!isEditing && experience.company.link ? (
               <Link
                 href={experience.company.link}
                 target="_blank"
                 className="text-primary hover:underline font-medium flex items-center gap-2 group/link"
               >
-                <ContentSpan
-                  sectionKey={`experience-${experience.id}`}
-                  fieldKey="company.name"
-                >
-                  {experience.company.name}
-                </ContentSpan>
+                {experience.company.name}
                 <ExternalLinkIcon className="w-4 h-4 group-hover/link:opacity-100 transition-opacity" />
               </Link>
+            ) : isEditing ? (
+              <div className="flex flex-col gap-2 w-full">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-neutral-500 min-w-[60px]">Name:</span>
+                  <ContentSpan
+                    collection="experiences"
+                    sectionKey={`experience-${experience.id}`}
+                    fieldKey="company.name"
+                    className="text-primary font-medium"
+                  >
+                    {experience.company.name}
+                  </ContentSpan>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-neutral-500 min-w-[60px]">Link:</span>
+                  <ContentSpan
+                    collection="experiences"
+                    sectionKey={`experience-${experience.id}`}
+                    fieldKey="company.link"
+                    className="text-primary font-medium flex-1"
+                  >
+                    {experience.company.link || "https://"}
+                  </ContentSpan>
+                </div>
+              </div>
             ) : (
               <span className="text-primary font-medium">
-                <ContentSpan
-                  sectionKey={`experience-${experience.id}`}
-                  fieldKey="company.name"
-                >
-                  {experience.company.name}
-                </ContentSpan>
+                {experience.company.name}
               </span>
             )}
 
@@ -59,6 +79,7 @@ export function ExperienceCard({ experience }: { experience: Experience }) {
                 <span className="flex items-center gap-1 text-sm text-neutral-400">
                   <MapPinIcon className="w-4 h-4" />
                   <ContentSpan
+                    collection="experiences"
                     sectionKey={`experience-${experience.id}`}
                     fieldKey="company.location"
                   >
@@ -70,6 +91,7 @@ export function ExperienceCard({ experience }: { experience: Experience }) {
           </div>
 
           <ContentSpan
+            collection="experiences"
             sectionKey={`experience-${experience.id}`}
             fieldKey="position.role"
             className="text-neutral-300 leading-relaxed"

@@ -97,6 +97,7 @@ export function ProjectFullPage({
             <div>
               <span className="inline-block px-4 py-1.5 bg-primary/10 text-primary rounded-full text-sm font-medium uppercase tracking-wider mb-4">
                 <ContentSpan
+                  collection="projects"
                   sectionKey={`project-${project.id}`}
                   fieldKey="type"
                 >
@@ -106,6 +107,7 @@ export function ProjectFullPage({
             </div>
 
             <ContentSpan
+              collection="projects"
               sectionKey={`project-${project.id}`}
               fieldKey="title"
               as="h1"
@@ -115,6 +117,7 @@ export function ProjectFullPage({
             </ContentSpan>
 
             <ContentSpan
+              collection="projects"
               as="p"
               className="text-xl text-neutral-300 leading-relaxed"
               sectionKey={`project-${project.id}`}
@@ -126,8 +129,8 @@ export function ProjectFullPage({
             <div className="grid grid-cols-2 gap-4 pt-6 pb-8 border-y border-neutral-700">
               <div>
                 <span className="text-neutral-500 text-sm">Role</span>
-
                 <ContentSpan
+                  collection="projects"
                   as="p"
                   className="text-neutral-200 font-medium mt-1"
                   sectionKey={`project-${project.id}`}
@@ -138,17 +141,29 @@ export function ProjectFullPage({
               </div>
               <div>
                 <span className="text-neutral-500 text-sm">Completed</span>
-                <p
-                  className="text-neutral-200 font-medium mt-1"
-                  title={projectMonthYear}
-                >
-                  {projectYear || "N/A"}
-                </p>
+                {isEditing ? (
+                  <ContentSpan
+                    collection="projects"
+                    as="p"
+                    className="text-neutral-200 font-medium mt-1"
+                    sectionKey={`project-${project.id}`}
+                    fieldKey="date"
+                  >
+                    {project.date}
+                  </ContentSpan>
+                ) : (
+                  <p
+                    className="text-neutral-200 font-medium mt-1"
+                    title={projectMonthYear}
+                  >
+                    {projectYear || "N/A"}
+                  </p>
+                )}
               </div>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              {project.link && (
+              {!isEditing && project.link ? (
                 <Link
                   href={project.link}
                   target="_blank"
@@ -157,8 +172,21 @@ export function ProjectFullPage({
                   <ExternalLinkIcon className="w-5 h-5" />
                   Visit Live Site
                 </Link>
-              )}
-              {project.github && (
+              ) : isEditing ? (
+                <div className="flex-1 space-y-2">
+                  <span className="text-sm text-neutral-500">Live Link:</span>
+                  <ContentSpan
+                    collection="projects"
+                    sectionKey={`project-${project.id}`}
+                    fieldKey="link"
+                    className="block px-6 py-4 bg-primary/10 text-primary rounded-lg border border-primary/30"
+                  >
+                    {project.link || "https://"}
+                  </ContentSpan>
+                </div>
+              ) : null}
+
+              {!isEditing && project.github ? (
                 <Link
                   href={project.github}
                   target="_blank"
@@ -167,7 +195,19 @@ export function ProjectFullPage({
                   <GithubIcon className="w-5 h-5" />
                   View Code
                 </Link>
-              )}
+              ) : isEditing ? (
+                <div className="flex-1 space-y-2">
+                  <span className="text-sm text-neutral-500">GitHub Link:</span>
+                  <ContentSpan
+                    collection="projects"
+                    sectionKey={`project-${project.id}`}
+                    fieldKey="github"
+                    className="block px-6 py-4 bg-neutral-800/50 text-neutral-300 rounded-lg border border-neutral-700"
+                  >
+                    {project.github || "https://"}
+                  </ContentSpan>
+                </div>
+              ) : null}
             </div>
           </div>
         </div>
