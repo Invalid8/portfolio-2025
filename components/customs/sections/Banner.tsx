@@ -1,9 +1,9 @@
 "use client";
 
 import ContentSpan from "@/components/customs/ContentEditSpan";
-import AngledMarquee from "@/components/customs/AngledMarquee";
 import { usePageContext } from "@/lib/context/PageContent";
 import { Skill } from "@/types";
+import ScribbleNote from "@/components/customs/ScribbleNote";
 
 export default function Banner() {
   const { sections } = usePageContext();
@@ -12,112 +12,142 @@ export default function Banner() {
   const skills: Skill[] = bannerSection.skills || [];
 
   const staticList = [
-    "Development",
-    "UI/UX",
-    "SEO",
-    "Next JS",
     "React",
+    "Next.js",
+    "TypeScript",
+    "TailwindCSS",
+    "Node.js",
+    "Firebase",
     "Svelte",
-    "Vue Js",
+    "GraphQL",
     "CSS",
     "HTML",
-    "TypeScript",
     "JavaScript",
-    "TailwindCSS",
-    "Firebase",
-    "Node.js",
+    "UI/UX",
+    "SEO",
+    "Git",
+    "Figma",
+    "Vite",
   ];
-
   const skillValues = skills.map((x) => x.value);
-
   const baseList = skillValues.length > 0 ? skillValues : staticList;
-  const fullList = [
-    ...baseList,
-    ...baseList,
-    ...baseList,
-    ...staticList,
-    ...staticList,
-  ];
-
-  const showMarquee = fullList.length > 0;
+  const tickerList = [...baseList, ...staticList, ...baseList, ...staticList];
 
   return (
-    <div className="size-full min-h-[calc(100svh-60px)] sm:min-h-[calc(100svh)] sm:p-5 p-3 flex flex-col justify-center relative">
-      <div className="md:px-[8%] xl:px-[10%] xl:max-w-7/10 z-10 space-y-6">
-        <ContentSpan
-          sectionKey="banner"
-          fieldKey="titleLine"
-          as="h1"
-          className="text-5xl sm:text-[clamp(4rem,10vw,6rem)] sm:leading-[clamp(4rem,10vw,6rem)] font-bold"
-        >
-          {"Frontend~~br~~^^Developer^^"}
-        </ContentSpan>
+    <>
+      <style>{`
+        @keyframes _fadeUp {
+          from { opacity: 0; transform: translateY(28px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes _ticker {
+          from { transform: translateX(0); }
+          to   { transform: translateX(-50%); }
+        }
+        .b-tag  { animation: _fadeUp 0.65s cubic-bezier(0.16,1,0.3,1) 0.05s both; }
+        .b-h1   { animation: _fadeUp 0.75s cubic-bezier(0.16,1,0.3,1) 0.18s both; }
+        .b-sub  { animation: _fadeUp 0.75s cubic-bezier(0.16,1,0.3,1) 0.32s both; }
+        .b-cta  { animation: _fadeUp 0.75s cubic-bezier(0.16,1,0.3,1) 0.44s both; }
+        .b-tick { animation: _ticker 55s linear infinite; }
+      `}</style>
 
-        <ContentSpan
-          sectionKey="banner"
-          fieldKey="subtitle"
-          className="space-y-0 text-base sm:text-lg xl:text-2xl leading-relaxed max-w-2xl"
-          as="p"
-        >
-          {`A Nigerian based **^^Frontend Developer^^** passionate about building accessible and user friendly **^^websites^^**.`}
-        </ContentSpan>
-
-        <ContentSpan
-          sectionKey="banner"
-          fieldKey="resume"
-          className="space-y-0 text-base sm:text-lg xl:text-2xl leading-relaxed max-w-2xl"
-          as="p"
-        >
-          {`^^__**[My Resume](https://drive.google.com/file/d/1ixmuBYgzXQdXrTn1n9aoz4SWYRU715h-/view)**__^^`}
-        </ContentSpan>
-      </div>
-
-      {showMarquee && (
-        <div className="absolute inset-0 size-full overflow-hidden max-w-[100vw] pointer-events-none hidden md:block">
-          <AngledMarquee
-            angle={-22}
-            bgColor="#1f2937"
-            zIndex={5}
-            className="h-22 md:h-24 overflow-hidden"
-          >
-            <ul className="inline-flex gap-8 lg:gap-14 justify-center items-center">
-              {fullList.map((item, i) => (
-                <li
-                  key={`marquee-1-${i}`}
-                  className="flex items-center gap-8 lg:gap-14 group text-lg md:text-3xl uppercase"
-                >
-                  <span className="tracking-wider font-medium font-mono">
-                    {item}
-                  </span>
-                  <span className="group-not-last:block hidden size-3 min-w-1.5 bg-primary rounded-full"></span>
-                </li>
-              ))}
-            </ul>
-          </AngledMarquee>
-
-          <AngledMarquee
-            angle={60}
-            bgColor="var(--primary)"
-            zIndex={4}
-            speed={60}
-            className="h-22 md:h-24 overflow-hidden"
-          >
-            <ul className="inline-flex gap-8 lg:gap-14 justify-center items-center">
-              {fullList.map((item, i) => (
-                <li
-                  key={`marquee-2-${i}`}
-                  className="flex items-center gap-8 lg:gap-14 group text-lg md:text-3xl uppercase"
-                >
-                  <span className="tracking-wider font-medium font-mono">
-                    {item}
-                  </span>
-                  <span className="group-not-last:block hidden size-3 min-w-1.5 bg-neutral-800 rounded-full"></span>
-                </li>
-              ))}
-            </ul>
-          </AngledMarquee>
+      <div className="relative min-h-svh w-full flex flex-col overflow-hidden">
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage:
+                "linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)",
+              backgroundSize: "80px 80px",
+            }}
+          />
+          <div
+            className="absolute -top-24 -right-24 w-[560px] h-[560px] rounded-full"
+            style={{
+              background:
+                "radial-gradient(circle, oklch(64.66% 0.19548 40.184 / 0.13) 0%, transparent 65%)",
+              filter: "blur(90px)",
+            }}
+          />
         </div>
-      )}
-    </div>
+
+        <div className="relative z-10 flex flex-col justify-center flex-1 px-6 sm:px-12 md:px-20 xl:px-28 pt-32 pb-14 2xl:px-[10%] 2xl:pr-[15%] mx-auto w-full">
+          <div className="flex items-center gap-10 xl:gap-16">
+            <div className="flex-1 min-w-0">
+              <div className="b-tag mb-9" />
+
+              <div className="b-h1 mb-8">
+                <ContentSpan
+                  sectionKey="banner"
+                  fieldKey="titleLine"
+                  as="h1"
+                  className="text-[clamp(3.5rem,8vw,7rem)] font-black leading-none tracking-tighter uppercase"
+                >
+                  {"Frontend~~br~~^^Developer^^"}
+                </ContentSpan>
+              </div>
+
+              <div className="b-sub max-w-2xl">
+                <ContentSpan
+                  sectionKey="banner"
+                  fieldKey="subtitle"
+                  as="p"
+                  className="text-base md:text-2xl leading-relaxed text-neutral-300"
+                >
+                  {`A Nigerian based **^^Frontend Developer^^** passionate about building accessible and user friendly **^^websites^^**.`}
+                </ContentSpan>
+              </div>
+
+              <div className="b-cta mt-8">
+                <ContentSpan
+                  sectionKey="banner"
+                  fieldKey="resume"
+                  as="span"
+                  className="inline-flex text-lg md:text-2xl uppercase tracking-widest underline-offset-8"
+                >
+                  {`^^__**[My Resume](https://drive.google.com/file/d/1ixmuBYgzXQdXrTn1n9aoz4SWYRU715h-/view)**__^^`}
+                </ContentSpan>
+              </div>
+            </div>
+
+            <ScribbleNote />
+          </div>
+        </div>
+
+        <div className="relative z-10 border-t border-neutral-800/50 overflow-hidden hidden md:block">
+          <div className="py-3.5 flex whitespace-nowrap">
+            <span className="b-tick inline-flex items-center gap-8 flex-shrink-0">
+              {tickerList.map((item, i) => (
+                <span
+                  key={i}
+                  className="inline-flex items-center gap-8 flex-shrink-0"
+                >
+                  <span className="text-[11px] font-mono tracking-[0.22em] uppercase text-neutral-600">
+                    {item}
+                  </span>
+                  <span className="w-1 h-1 rounded-full bg-primary/35 flex-shrink-0" />
+                </span>
+              ))}
+            </span>
+            <span
+              className="b-tick inline-flex items-center gap-8 flex-shrink-0"
+              aria-hidden
+            >
+              {tickerList.map((item, i) => (
+                <span
+                  key={i}
+                  className="inline-flex items-center gap-8 flex-shrink-0"
+                >
+                  <span className="text-[11px] font-mono tracking-[0.22em] uppercase text-neutral-600">
+                    {item}
+                  </span>
+                  <span className="w-1 h-1 rounded-full bg-primary/35 flex-shrink-0" />
+                </span>
+              ))}
+            </span>
+          </div>
+        </div>
+      </div>
+    </>
   );
 }

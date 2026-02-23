@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import ContentSpan from "@/components/customs/ContentEditSpan";
 import { useAuth } from "@/lib/context/auth";
 import { usePageContext } from "@/lib/context/PageContent";
@@ -8,7 +8,6 @@ import { Skill, Section } from "@/types";
 import { AddSkillModal, EditSkillModal } from "@/components/modals";
 import { EmptyState } from "@/components/customs/EmptyState";
 import { PlusIcon, Trash2Icon, Edit2Icon, CodeIcon } from "lucide-react";
-import gsap from "gsap";
 import { toast } from "sonner";
 
 function isSkill(section: Section): section is Section & Skill {
@@ -26,10 +25,9 @@ export default function SkillsSection() {
   const { sections, setSection } = usePageContext();
   const { isAdmin, isEditing } = useAuth();
   const [skills, setSkills] = useState<Skill[]>([]);
-  const [showAllSkills, setShowAllSkills] = useState(false);
+  const [showAll, setShowAll] = useState(false);
   const [editingSkill, setEditingSkill] = useState<Skill | null>(null);
   const [loading, setLoading] = useState(true);
-  const skillsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const skillsCollection = sections["skills"] || {};
@@ -40,107 +38,64 @@ export default function SkillsSection() {
     setLoading(false);
   }, [sections]);
 
-  useEffect(() => {
-    if (skillsRef.current && skills.length) {
-      const cards = skillsRef.current.querySelectorAll(".skill-card");
-      gsap.fromTo(
-        cards,
-        { opacity: 0, scale: 0.8 },
-        {
-          opacity: 1,
-          scale: 1,
-          duration: 0.4,
-          stagger: 0.05,
-          ease: "back.out(1.2)",
-          scrollTrigger: {
-            trigger: skillsRef.current,
-            start: "top 80%",
-          },
-        },
-      );
-    }
-  }, [skills]);
-
   const handleAddSkill = async (skillData: Partial<Skill>) => {
     try {
-      const response = await fetch("/api/admin/firebase/skills", {
+      const res = await fetch("/api/admin/firebase/skills", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(skillData),
       });
-
-      if (!response.ok) throw new Error("Failed to add skill");
-
-      const newSkill: Skill = await response.json();
+      if (!res.ok) throw new Error("Failed to add skill");
+      const newSkill: Skill = await res.json();
       setSection("skills", `skill-${newSkill.id}`, {
         ...newSkill,
         collection: "skills",
         id: String(newSkill.id),
       });
-      toast.success("Skill added successfully!");
-    } catch (error) {
-      console.error("Error adding skill:", error);
+      toast.success("Skill added!");
+    } catch (err) {
       toast.error("Failed to add skill");
-      throw error;
+      throw err;
     }
   };
 
-  const handleEditSkill = async (
-    skillId: string | number,
-    skillData: Partial<Skill>,
-  ) => {
+  const handleEditSkill = async (skillId: string | number, skillData: Partial<Skill>) => {
     try {
-      const response = await fetch(`/api/admin/firebase/skills/${skillId}`, {
+      const res = await fetch(`/api/admin/firebase/skills/${skillId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(skillData),
       });
-
-      if (!response.ok) throw new Error("Failed to update skill");
-
+      if (!res.ok) throw new Error("Failed to update skill");
       setSection("skills", `skill-${skillId}`, {
         ...skillData,
         collection: "skills",
         id: String(skillId),
       });
-      toast.success("Skill updated successfully!");
-    } catch (error) {
-      console.error("Error updating skill:", error);
+      toast.success("Skill updated!");
+    } catch (err) {
       toast.error("Failed to update skill");
-      throw error;
+      throw err;
     }
   };
 
   const handleDeleteSkill = async (skillId: string) => {
-    if (!confirm("Are you sure you want to delete this skill?")) return;
-
+    if (!confirm("Delete this skill?")) return;
     try {
-      const response = await fetch(`/api/admin/firebase/skills/${skillId}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) throw new Error("Failed to delete skill");
-
-      const updatedSkills = { ...sections.skills };
-      delete updatedSkills[`skill-${skillId}`];
-
+      const res = await fetch(`/api/admin/firebase/skills/${skillId}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed to delete skill");
       setSection("skills", `skill-${skillId}`, {} as Section);
-
-      toast.success("Skill deleted successfully!");
-    } catch (error) {
-      console.error("Error deleting skill:", error);
+      toast.success("Skill deleted!");
+    } catch {
       toast.error("Failed to delete skill");
     }
   };
 
-  const displayedSkills = showAllSkills ? skills : skills.slice(0, 12);
+  const displayed = showAll ? skills : skills.slice(0, 12);
 
   if (loading) {
     return (
-      <div
-        id="Skills"
-        className="min-h-svh w-full flex justify-center items-center"
-      >
+      <div id="Skills" className="min-h-svh w-full flex justify-center items-center">
         <div className="animate-pulse text-2xl">Loading skills...</div>
       </div>
     );
@@ -149,28 +104,41 @@ export default function SkillsSection() {
   return (
     <section
       id="Skills"
-      className="w-full py-20 px-3 sm:px-5 md:px-10 bg-neutral-900/20"
+      className="relative w-full py-24 px-4 sm:px-8 md:px-12 xl:px-20 overflow-hidden"
     >
-      <div className="max-w-7xl mx-auto space-y-16">
-        <div className="space-y-4 flex items-start justify-between gap-3">
-          <div className="space-y-1">
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div
+          className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[700px] h-[400px] rounded-full"
+          style={{
+            background: "radial-gradient(circle, oklch(64.66% 0.19548 40.184 / 0.05) 0%, transparent 65%)",
+            filter: "blur(80px)",
+          }}
+        />
+      </div>
+
+      <div className="relative z-10 max-w-6xl mx-auto">
+
+        <div className="flex items-end justify-between gap-4 mb-16">
+          <div>
+            <div className="flex items-center gap-3 mb-5">
+              {/* <span className="w-8 h-px bg-primary" /> */}
+              <span className="text-primary text-xs font-mono tracking-[0.35em] uppercase">Stack</span>
+            </div>
             <ContentSpan
               as="h2"
-              className="text-4xl lg:text-6xl font-bold"
+              className="text-5xl lg:text-6xl xl:text-7xl font-bold leading-none tracking-tight"
               sectionKey="skills-header"
               fieldKey="title"
             >
-              SKILLS & TECHNOLOGIES
+              SKILLS &<br />TECHNOLOGIES
             </ContentSpan>
-
             <ContentSpan
               as="p"
-              className="text-lg text-neutral-400 max-w-2xl"
+              className="text-base text-neutral-400 max-w-xl mt-3"
               sectionKey="skills-header"
               fieldKey="subtitle"
             >
-              Technologies and tools I work with to build exceptional digital
-              experiences.
+              Technologies and tools I use to build exceptional digital experiences.
             </ContentSpan>
           </div>
           {isAdmin && isEditing && <AddSkillModal onAdd={handleAddSkill} />}
@@ -179,26 +147,14 @@ export default function SkillsSection() {
         {skills.length === 0 ? (
           <EmptyState
             title="No Skills Yet"
-            description="Showcase your technical expertise by adding skills and technologies you work with. Let your abilities shine!"
-            icon={
-              <CodeIcon
-                className="w-16 h-16 text-neutral-600"
-                strokeWidth={1.5}
-              />
-            }
-            action={
-              isAdmin && isEditing ? (
-                <AddSkillModal onAdd={handleAddSkill} />
-              ) : null
-            }
+            description="Showcase your technical expertise by adding your skills."
+            icon={<CodeIcon className="w-16 h-16 text-neutral-600" strokeWidth={1.5} />}
+            action={isAdmin && isEditing ? <AddSkillModal onAdd={handleAddSkill} /> : null}
           />
         ) : (
-          <div className="space-y-8">
-            <div
-              ref={skillsRef}
-              className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4"
-            >
-              {displayedSkills.map((skill) => (
+          <>
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
+              {displayed.map((skill) => (
                 <SkillCard
                   key={skill.id}
                   skill={skill}
@@ -211,25 +167,17 @@ export default function SkillsSection() {
             </div>
 
             {skills.length > 12 && (
-              <div className="flex justify-center pt-4">
+              <div className="mt-10 flex justify-center">
                 <button
-                  onClick={() => setShowAllSkills(!showAllSkills)}
-                  className="group flex items-center gap-3 px-8 py-4 bg-neutral-800/50 backdrop-blur border border-neutral-700/50 rounded-full hover:border-primary/50 hover:bg-neutral-800/70 transition-all"
+                  onClick={() => setShowAll(!showAll)}
+                  className="flex items-center gap-3 px-8 py-3 rounded-full border border-neutral-700 text-sm font-mono tracking-widest uppercase text-neutral-400 hover:text-primary hover:border-primary/50 transition-all"
                 >
-                  <PlusIcon
-                    className={`w-5 h-5 transition-transform ${
-                      showAllSkills ? "rotate-45" : ""
-                    }`}
-                  />
-                  <span className="font-medium">
-                    {showAllSkills
-                      ? "Show Less"
-                      : `View All Skills (${skills.length})`}
-                  </span>
+                  <PlusIcon className={`w-4 h-4 transition-transform ${showAll ? "rotate-45" : ""}`} />
+                  {showAll ? "Show Less" : `All Skills (${skills.length})`}
                 </button>
               </div>
             )}
-          </div>
+          </>
         )}
       </div>
 
@@ -256,47 +204,38 @@ function SkillCard({
   onEdit: () => void;
   onDelete: () => void;
 }) {
-  const [showActions, setShowActions] = useState(false);
-
   return (
-    <div
-      className="skill-card group relative bg-neutral-800/30 backdrop-blur border border-neutral-700/50 rounded-xl p-4 hover:border-primary/30 hover:bg-neutral-800/50 transition-all cursor-pointer"
-      onMouseEnter={() => setShowActions(true)}
-      onMouseLeave={() => setShowActions(false)}
-    >
-      {skill.img && (
-        <div className="mb-3 flex items-center justify-center">
-          <img
-            src={skill.img}
-            alt={skill.value}
-            className="w-12 h-12 object-contain transition-transform group-hover:scale-110"
-            style={{ filter: "brightness(0.9)" }}
-          />
-        </div>
-      )}
-      <h4 className="font-medium text-sm text-center mb-2 group-hover:text-primary transition-colors">
-        {skill.value}
-      </h4>
+    <div className="group relative flex flex-col items-center gap-3 p-4 rounded-2xl border border-neutral-800/60 bg-neutral-900/30 hover:border-primary/30 hover:bg-neutral-900/60 transition-all duration-300 cursor-default">
+      <div
+        className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+        style={{
+          background: "radial-gradient(circle at 50% 0%, oklch(64.66% 0.19548 40.184 / 0.08) 0%, transparent 70%)",
+        }}
+      />
 
-      {isAdmin && isEditing && showActions && (
-        <div className="absolute top-2 right-2 flex gap-1 bg-neutral-900/90 rounded-lg p-1">
+      {skill.img && (
+        <img
+          src={skill.img}
+          alt={skill.value}
+          className="relative z-10 w-10 h-10 object-contain group-hover:scale-110 transition-transform duration-300"
+        />
+      )}
+
+      <span className="relative z-10 text-xs font-mono text-neutral-400 group-hover:text-neutral-200 text-center leading-tight transition-colors">
+        {skill.value}
+      </span>
+
+      {isAdmin && isEditing && (
+        <div className="absolute top-2 right-2 z-20 hidden group-hover:flex gap-1 bg-neutral-900/95 rounded-lg p-1 border border-neutral-800">
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onEdit();
-            }}
-            className="p-1.5 bg-neutral-800 hover:bg-primary/20 rounded transition-colors"
-            title="Edit skill"
+            onClick={onEdit}
+            className="p-1.5 hover:bg-primary/20 rounded transition-colors"
           >
             <Edit2Icon className="w-3 h-3 text-primary" />
           </button>
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete();
-            }}
-            className="p-1.5 bg-neutral-800 hover:bg-red-500/20 rounded transition-colors"
-            title="Delete skill"
+            onClick={onDelete}
+            className="p-1.5 hover:bg-red-500/20 rounded transition-colors"
           >
             <Trash2Icon className="w-3 h-3 text-red-500" />
           </button>

@@ -1,16 +1,14 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import ContentSpan from "@/components/customs/ContentEditSpan";
 import { usePageContext } from "@/lib/context/PageContent";
 import { useAuth } from "@/lib/context/auth";
 import { Project, Section } from "@/types";
 import { AddProjectModal } from "@/components/modals";
 import { EmptyState } from "@/components/customs/EmptyState";
-import { cn } from "@/lib/utils";
-import gsap from "gsap";
-import { ProjectCard } from "../cards/ProjectCard";
-import { PlusIcon, RocketIcon } from "lucide-react";
+import { uploadToCloudinary } from "@/lib/cloudinary/upload";
+import { RocketIcon, ArrowUpRightIcon, ExternalLinkIcon, GithubIcon } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
 
@@ -30,45 +28,37 @@ export default function Projects() {
   const { sections, setSection } = usePageContext();
   const { isAdmin, isEditing } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
-  const [showAllProjects, setShowAllProjects] = useState(false);
   const [loading, setLoading] = useState(true);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [showAll, setShowAll] = useState(false);
 
-  const projectsCollection = useMemo(
-    () => sections["projects"] || {},
-    [sections],
-  );
+  const projectsCollection = useMemo(() => sections["projects"] || {}, [sections]);
 
   useEffect(() => {
-    const projectList = Object.values(projectsCollection).filter(isProject);
-    setProjects(projectList);
+    setProjects(Object.values(projectsCollection).filter(isProject));
     setLoading(false);
   }, [projectsCollection]);
 
-  useEffect(() => {
-    if (containerRef.current && projects.length) {
-      const cards = containerRef.current.querySelectorAll(".project-card");
-
-      gsap.fromTo(
-        cards,
-        { opacity: 0, y: 40 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.6,
-          stagger: 0.1,
-          ease: "power2.out",
-          scrollTrigger: {
-            trigger: containerRef.current,
-            start: "top 80%",
-          },
-        },
-      );
-    }
-  }, [projects]);
-
-  const handleAddProject = async (projectData: FormData) => {
+  const handleAddProject = async (formData: FormData) => {
     try {
+      const thumbnailFile = formData.get("thumbnailFile") as File | null;
+      let thumbnailUrl = formData.get("thumbnail") as string;
+      if (thumbnailFile && thumbnailFile.size > 0) {
+        thumbnailUrl = await uploadToCloudinary(thumbnailFile);
+      }
+
+      const projectData = {
+        title: formData.get("title") as string,
+        description: formData.get("description") as string,
+        type: formData.get("type") as string,
+        role: formData.get("role") as string,
+        link: formData.get("link") as string,
+        github: formData.get("github") as string,
+        date: formData.get("date") as string,
+        thumbnail: thumbnailUrl,
+        medias: JSON.parse((formData.get("medias") as string) || "[]"),
+        content: (formData.get("content") as string) || "",
+      };
+
       const response = await fetch("/api/admin/firebase/projects", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -78,7 +68,6 @@ export default function Projects() {
       if (!response.ok) throw new Error("Failed to add project");
 
       const newProject: Project = await response.json();
-
       setSection("projects", `project-${newProject.id}`, {
         ...newProject,
         collection: "projects",
@@ -92,27 +81,21 @@ export default function Projects() {
     }
   };
 
-  const featuredProjects = projects.slice(0, 4);
-  const displayedProjects = showAllProjects ? projects : featuredProjects;
+  const displayed = showAll ? projects : projects.slice(0, 6);
 
   if (loading) {
     return (
-      <div
-        id="Projects"
-        className="min-h-svh w-full flex justify-center items-center"
-      >
+      <div id="Projects" className="min-h-svh w-full flex justify-center items-center">
         <div className="animate-pulse text-2xl">Loading projects...</div>
       </div>
     );
   }
 
   return (
-    <section
-      id="Projects"
-      className="min-h-svh w-full py-20 sm:px-5 px-3 md:px-10 relative overflow-hidden"
-    >
-      <div className="max-w-7xl mx-auto space-y-16">
-        <div className="space-y-4 flex items-start justify-between gap-3">
+    <section id="Projects" className="w-full py-20 px-4 sm:px-8 md:px-12 relative">
+      <div className="max-w-6xl mx-auto">
+
+        <div className="flex items-end justify-between gap-4 mb-14">
           <div>
             <ContentSpan
               sectionKey="projects-header"
@@ -122,72 +105,142 @@ export default function Projects() {
             >
               SELECTED WORKS
             </ContentSpan>
-
             <ContentSpan
               sectionKey="projects-header"
               fieldKey="subtitle"
               as="p"
-              className="text-lg text-neutral-400 max-w-2xl mt-4"
+              className="text-base text-neutral-400 max-w-2xl mt-3"
             >
               A showcase of projects where creativity meets functionality.
             </ContentSpan>
           </div>
-
           {isAdmin && isEditing && <AddProjectModal onAdd={handleAddProject} />}
         </div>
 
         {projects.length === 0 ? (
           <EmptyState
             title="No Projects Yet"
-            description="Start showcasing your work by adding your first project. Your portfolio is waiting to shine!"
-            icon={
-              <RocketIcon
-                className="w-16 h-16 text-neutral-600"
-                strokeWidth={1.5}
-              />
-            }
-            action={
-              isAdmin && isEditing ? (
-                <AddProjectModal onAdd={handleAddProject} />
-              ) : null
-            }
+            description="Start showcasing your work by adding your first project."
+            icon={<RocketIcon className="w-16 h-16 text-neutral-600" strokeWidth={1.5} />}
+            action={isAdmin && isEditing ? <AddProjectModal onAdd={handleAddProject} /> : null}
           />
         ) : (
           <>
-            <div
-              ref={containerRef}
-              className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8"
-            >
-              {displayedProjects.map((project) => (
-                <Link key={project.id} href={`/project/${project.id}`}>
-                  <ProjectCard project={project} />
-                </Link>
+            <div className="divide-y divide-neutral-800/50">
+              {displayed.map((project, i) => (
+                <ProjectRow key={project.id} project={project} index={i} />
               ))}
             </div>
 
-            {projects.length > 4 && (
-              <div className="flex justify-center pt-8">
+            {projects.length > 6 && (
+              <div className="mt-10 flex justify-center">
                 <button
-                  onClick={() => setShowAllProjects(!showAllProjects)}
-                  className="group flex items-center gap-3 px-8 py-4 bg-neutral-800/50 backdrop-blur border border-neutral-700/50 rounded-full hover:border-primary/50 hover:bg-neutral-800/70 transition-all"
+                  onClick={() => setShowAll(!showAll)}
+                  className="flex items-center gap-3 px-8 py-3 rounded-full border border-neutral-700 text-sm font-mono tracking-widest uppercase text-neutral-400 hover:text-primary hover:border-primary/50 transition-all"
                 >
-                  <PlusIcon
-                    className={cn(
-                      "w-5 h-5 transition-transform",
-                      showAllProjects && "rotate-45",
-                    )}
-                  />
-                  <span className="font-medium">
-                    {showAllProjects
-                      ? "Show Less"
-                      : `View All Projects (${projects.length})`}
-                  </span>
+                  {showAll ? "Show Less" : `All Projects (${projects.length})`}
                 </button>
               </div>
             )}
           </>
         )}
+
       </div>
     </section>
+  );
+}
+
+function ProjectRow({ project, index }: { project: Project; index: number }) {
+  const [hovered, setHovered] = useState(false);
+  const [imageError, setImageError] = useState(false);
+  const [pos, setPos] = useState({ x: 0, y: 0 });
+  const rowRef = useRef<HTMLAnchorElement>(null);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (!rowRef.current) return;
+    const rect = rowRef.current.getBoundingClientRect();
+    setPos({
+      x: e.clientX - rect.left + 20,
+      y: Math.min(e.clientY - rect.top - 70, rect.height - 10),
+    });
+  };
+
+  return (
+    <Link
+      ref={rowRef}
+      href={`/project/${project.id}`}
+      className="group relative flex items-center gap-5 lg:gap-8 py-5 lg:py-7 cursor-pointer"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onMouseMove={handleMouseMove}
+    >
+      {/* floating image preview */}
+      <div
+        className="pointer-events-none absolute z-50 w-52 h-32 rounded-xl overflow-hidden border border-white/10 shadow-2xl"
+        style={{
+          left: pos.x,
+          top: pos.y,
+          opacity: hovered ? 1 : 0,
+          transform: hovered ? "scale(1) translateY(0)" : "scale(0.92) translateY(6px)",
+          transition: "opacity 0.15s ease, transform 0.15s ease",
+        }}
+      >
+        {!imageError && project.thumbnail ? (
+          <img
+            src={project.thumbnail}
+            alt={project.title}
+            className="w-full h-full object-cover"
+            onError={() => setImageError(true)}
+          />
+        ) : (
+          <div className="w-full h-full bg-neutral-800 flex items-center justify-center">
+            <RocketIcon className="w-8 h-8 text-neutral-600" />
+          </div>
+        )}
+      </div>
+
+      {/* index number */}
+      <span className="hidden sm:block text-xs font-mono text-neutral-700 group-hover:text-primary/60 transition-colors w-7 flex-shrink-0 select-none tabular-nums">
+        {String(index + 1).padStart(2, "0")}
+      </span>
+
+      {/* title + type */}
+      <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-5">
+        <span className="text-xl md:text-2xl lg:text-3xl font-bold group-hover:text-primary transition-colors duration-200 truncate">
+          {project.title}
+        </span>
+        <span className="hidden sm:block h-px flex-1 bg-neutral-800 group-hover:bg-primary/20 transition-colors duration-300" />
+        <span className="text-xs font-mono uppercase tracking-widest text-neutral-500 group-hover:text-neutral-300 transition-colors flex-shrink-0">
+          {project.type}
+        </span>
+      </div>
+
+      {/* action icons (desktop, fade in on hover) */}
+      <div className="hidden md:flex items-center gap-1 flex-shrink-0">
+        {project.link && (
+          <span
+            role="button"
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); window.open(project.link, "_blank"); }}
+            className="p-2 rounded-lg text-neutral-600 hover:text-white hover:bg-neutral-800 transition-all opacity-0 group-hover:opacity-100"
+            title="Live Site"
+          >
+            <ExternalLinkIcon className="w-4 h-4" />
+          </span>
+        )}
+        {project.github && (
+          <span
+            role="button"
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); window.open(project.github, "_blank"); }}
+            className="p-2 rounded-lg text-neutral-600 hover:text-white hover:bg-neutral-800 transition-all opacity-0 group-hover:opacity-100"
+            title="GitHub"
+          >
+            <GithubIcon className="w-4 h-4" />
+          </span>
+        )}
+      </div>
+
+      {/* arrow */}
+      <ArrowUpRightIcon className="w-5 h-5 flex-shrink-0 text-neutral-700 group-hover:text-primary group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-200" />
+    </Link>
   );
 }

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Montserrat, Geist_Mono, Inter } from "next/font/google";
+import { Montserrat, Geist_Mono, Inter, Caveat } from "next/font/google";
+
 import "./globals.css";
 import { AuthProvider } from "@/lib/context/auth";
 import { Analytics } from "@vercel/analytics/next";
@@ -13,6 +14,12 @@ const geistSans = Inter({
 
 const bebasNeue = Montserrat({
   variable: "--font-bebas-neue",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const caveat = Caveat({
+  variable: "--font-caveat",
   subsets: ["latin"],
   display: "swap",
 });
@@ -93,7 +100,7 @@ export default function RootLayout({
         <link rel="manifest" href="/manifest.json" />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${bebasNeue.variable} antialiased dark overflow-x-hidden min-h-svh`}
+        className={`${geistSans.variable} ${geistMono.variable} ${bebasNeue.variable} ${caveat.variable} antialiased dark overflow-x-hidden min-h-svh`}
       >
         <AuthProvider>{children}</AuthProvider>
         <Analytics />
