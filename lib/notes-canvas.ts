@@ -14,6 +14,7 @@ export const DISCLAIMER_KEY = "scribble-disclaimer-dismissed-10";
 
 export type StyleState = {
   color: string;
+  highlight: string;
   bold: boolean;
   italic: boolean;
   underline: boolean;
@@ -41,6 +42,7 @@ export function parseHtmlToLines(html: string): Line[] {
   const doc = parser.parseFromString(`<div>${html}</div>`, "text/html");
   const root = doc.querySelector("div")!;
   const lines: Line[] = [[]];
+
   function walk(node: Node, style: StyleState) {
     if (node.nodeType === Node.TEXT_NODE) {
       const text = node.textContent ?? "";
@@ -51,14 +53,21 @@ export function parseHtmlToLines(html: string): Line[] {
     const el = node as Element;
     const tag = el.tagName.toLowerCase();
     const next: StyleState = { ...style };
+
     if (tag === "b" || tag === "strong") next.bold = true;
     if (tag === "i" || tag === "em") next.italic = true;
     if (tag === "u") next.underline = true;
     if (tag === "s" || tag === "strike") next.strike = true;
-    if (tag === "font") { const c = el.getAttribute("color"); if (c) next.color = c; }
+    if (tag === "font") {
+      const c = el.getAttribute("color");
+      if (c) next.color = c;
+    }
     if (tag === "span") {
       const s = (el as HTMLElement).style;
       if (s.color) next.color = s.color;
+      if (s.backgroundColor && s.backgroundColor !== "transparent" && s.backgroundColor !== "rgba(0, 0, 0, 0)") {
+        next.highlight = s.backgroundColor;
+      }
       if (s.fontWeight === "bold" || Number(s.fontWeight) >= 700) next.bold = true;
       if (s.fontStyle === "italic") next.italic = true;
       if (s.textDecoration?.includes("underline")) next.underline = true;
@@ -70,7 +79,8 @@ export function parseHtmlToLines(html: string): Line[] {
     for (const child of Array.from(el.childNodes)) walk(child, next);
     if (isBlock) lines.push([]);
   }
-  walk(root, { color: "#1a1a2e", bold: false, italic: false, underline: false, strike: false });
+
+  walk(root, { color: "#1a1a2e", highlight: "", bold: false, italic: false, underline: false, strike: false });
   while (lines.length > 0 && lines[lines.length - 1].length === 0) lines.pop();
   return lines;
 }
@@ -107,35 +117,48 @@ export function drawNoteCanvas(
   const parsedLines = parseHtmlToLines(html);
   const mc = document.createElement("canvas");
   const mCtx = mc.getContext("2d")!;
+
   type RowSeg = StyleState & { text: string; w: number };
   type DrawCall = StyleState & { text: string; x: number; y: number; w: number };
   const calls: DrawCall[] = [];
   let rowCount = 0;
+
   const commitRow = (row: RowSeg[]) => {
     let rx = PAD_LEFT;
     const baseline = HEADER_H + (rowCount + 1) * LINE_H - Math.round(LINE_H * 0.18);
     for (const s of row) { calls.push({ ...s, x: rx, y: baseline }); rx += s.w; }
     rowCount++;
   };
+
   for (const line of parsedLines) {
     if (line.length === 0) { rowCount++; continue; }
     let row: RowSeg[] = [], rowW = 0;
     const words: (StyleState & { word: string })[] = [];
     for (const seg of line) for (const w of seg.text.split(/(\s+)/)) if (w) words.push({ ...seg, word: w });
+
     for (const token of words) {
       mCtx.font = buildFont(token.bold, token.italic, fontSize, fontFamily);
       const tw = mCtx.measureText(token.word).width;
       if (rowW + tw > TEXT_W && rowW > 0) { commitRow(row); row = []; rowW = 0; }
       const last = row[row.length - 1];
-      if (last && last.color === token.color && last.bold === token.bold && last.italic === token.italic && last.underline === token.underline && last.strike === token.strike) {
+      if (
+        last &&
+        last.color === token.color &&
+        last.highlight === token.highlight &&
+        last.bold === token.bold &&
+        last.italic === token.italic &&
+        last.underline === token.underline &&
+        last.strike === token.strike
+      ) {
         last.text += token.word; last.w += tw;
       } else {
-        row.push({ color: token.color, bold: token.bold, italic: token.italic, underline: token.underline, strike: token.strike, text: token.word, w: tw });
+        row.push({ color: token.color, highlight: token.highlight, bold: token.bold, italic: token.italic, underline: token.underline, strike: token.strike, text: token.word, w: tw });
       }
       rowW += tw;
     }
     if (row.length > 0) commitRow(row);
   }
+
   const NOTE_H = HEADER_H + (rowCount + 1) * LINE_H + PAD_BOTTOM;
   const canvas = document.createElement("canvas");
   canvas.width = NOTE_W * SCALE;
@@ -144,20 +167,24 @@ export function drawNoteCanvas(
   ctx.scale(SCALE, SCALE);
   ctx.save();
   applyTornClip(ctx, NOTE_W, NOTE_H);
+
   ctx.fillStyle = "#fdf9f0";
   ctx.fillRect(0, 0, NOTE_W, NOTE_H);
+
   const hg = ctx.createLinearGradient(0, 0, 0, HEADER_H);
   hg.addColorStop(0, "#ede0c4");
   hg.addColorStop(0.6, "#f5ecd8");
   hg.addColorStop(1, "#fdf9f0");
   ctx.fillStyle = hg;
   ctx.fillRect(0, 0, NOTE_W, HEADER_H);
+
   ctx.strokeStyle = "#d4c9a8";
   ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.moveTo(0, HEADER_H);
   ctx.lineTo(NOTE_W, HEADER_H);
   ctx.stroke();
+
   ctx.strokeStyle = "#c8d8e8";
   ctx.lineWidth = 1;
   for (let i = 1; HEADER_H + i * LINE_H < NOTE_H; i++) {
@@ -167,12 +194,14 @@ export function drawNoteCanvas(
     ctx.lineTo(NOTE_W, y);
     ctx.stroke();
   }
+
   ctx.strokeStyle = "#e8a0a0";
   ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.moveTo(57, 0);
   ctx.lineTo(57, NOTE_H);
   ctx.stroke();
+
   ctx.fillStyle = "#1a1410";
   ctx.shadowColor = "rgba(0,0,0,0.55)";
   ctx.shadowBlur = 6;
@@ -187,10 +216,23 @@ export function drawNoteCanvas(
   ctx.shadowColor = "transparent";
   ctx.shadowBlur = 0;
   ctx.shadowOffsetY = 0;
+
   for (const d of calls) {
+    if (d.highlight && d.highlight !== "transparent") {
+      ctx.fillStyle = d.highlight;
+      const metrics = (() => {
+        ctx.font = buildFont(d.bold, d.italic, fontSize, fontFamily);
+        return ctx.measureText(d.text);
+      })();
+      const ascent = metrics.actualBoundingBoxAscent ?? fontSize * 0.8;
+      const descent = metrics.actualBoundingBoxDescent ?? fontSize * 0.2;
+      ctx.fillRect(d.x, d.y - ascent - 2, d.w, ascent + descent + 4);
+    }
+
     ctx.font = buildFont(d.bold, d.italic, fontSize, fontFamily);
     ctx.fillStyle = d.color;
     ctx.fillText(d.text, d.x, d.y);
+
     if (d.underline) {
       ctx.strokeStyle = d.color;
       ctx.lineWidth = 1.2;
@@ -209,6 +251,7 @@ export function drawNoteCanvas(
       ctx.stroke();
     }
   }
+
   ctx.restore();
   return canvas;
 }

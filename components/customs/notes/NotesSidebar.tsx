@@ -76,7 +76,10 @@ export default function NotesSidebar() {
                     if (e.key === "Escape") setEditingTitle(false);
                   }}
                 />
-                <button onClick={handleCommit} className="text-primary hover:opacity-80">
+                <button
+                  onClick={handleCommit}
+                  className="text-primary hover:opacity-80"
+                >
                   <CheckIcon size={18} />
                 </button>
               </div>
@@ -108,7 +111,11 @@ export default function NotesSidebar() {
           onClick={() => setCollapsed(!collapsed)}
           className="p-2.5 rounded-lg hover:bg-white/5 transition hidden md:flex"
         >
-          {collapsed ? <PanelLeftOpen size={20} /> : <PanelLeftClose size={20} />}
+          {collapsed ? (
+            <PanelLeftOpen size={20} />
+          ) : (
+            <PanelLeftClose size={20} />
+          )}
         </button>
 
         <button
@@ -145,25 +152,28 @@ export default function NotesSidebar() {
                   {isActive && (
                     <span className="absolute left-0 top-4 bottom-4 w-1 bg-primary rounded-r" />
                   )}
-
                   <div className="flex items-start justify-between gap-1">
-                    <span className={`text-base font-medium truncate ${isActive ? "text-white" : "text-zinc-300"}`}>
+                    <span
+                      className={`text-base font-medium truncate ${isActive ? "text-white" : "text-zinc-300"}`}
+                    >
                       {note.title}
                     </span>
-                    <div
+                    <button
                       onClick={(e) => removeNote(note.id, e)}
                       className="opacity-0 group-hover:opacity-100 transition text-zinc-500 hover:text-red-500 shrink-0"
                     >
                       <TrashIcon size={16} />
-                    </div>
+                    </button>
                   </div>
-
                   <p className="text-sm text-zinc-500 truncate mt-2">
                     {preview || "Write something..."}
                   </p>
-
                   <div className="flex items-center gap-2 mt-2 text-xs text-zinc-600">
-                    <span>{note.tabs.length === 1 ? "1 page" : `${note.tabs.length} pages`}</span>
+                    <span>
+                      {note.tabs.length === 1
+                        ? "1 page"
+                        : `${note.tabs.length} pages`}
+                    </span>
                     <span>•</span>
                     <span>{timeAgo(note.updatedAt)}</span>
                   </div>

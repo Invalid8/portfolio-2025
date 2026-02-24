@@ -10,7 +10,6 @@ import {
 } from "@/lib/notes-canvas";
 import { useNotes } from "@/lib/context/notes-context";
 import NoteToolbar from "@/components/customs/notes/NoteToolbar";
-import NotesSharePanel from "@/components/customs/notes/NotesSharePanel";
 
 export default function NotesEditor() {
   const {
@@ -26,7 +25,6 @@ export default function NotesEditor() {
     addTab,
     removeTab,
     commitTabTitle,
-    showMobileSidebar,
     toggleMobileSidebar,
   } = useNotes();
 
@@ -34,6 +32,7 @@ export default function NotesEditor() {
   const [editingTabId, setEditingTabId] = useState<string | null>(null);
   const [tabDraft, setTabDraft] = useState("");
   const [showShare, setShowShare] = useState(false);
+  const [pageColor, setPageColor] = useState("#fdf9f0");
   const tabInputRef = useRef<HTMLInputElement>(null);
   const noteWrapperRef = useRef<HTMLDivElement>(null);
 
@@ -75,7 +74,14 @@ export default function NotesEditor() {
     const updated = { ...activeNote, tabs: updatedTabs };
     setActiveNote(updated);
     persistNote(updated);
-  }, [activeNote, activeTab, activeTabId, persistNote, setActiveNote, contentRef]);
+  }, [
+    activeNote,
+    activeTab,
+    activeTabId,
+    persistNote,
+    setActiveNote,
+    contentRef,
+  ]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
@@ -84,9 +90,18 @@ export default function NotesEditor() {
       return;
     }
     if (e.metaKey || e.ctrlKey) {
-      if (e.key === "b") { e.preventDefault(); document.execCommand("bold"); }
-      if (e.key === "i") { e.preventDefault(); document.execCommand("italic"); }
-      if (e.key === "u") { e.preventDefault(); document.execCommand("underline"); }
+      if (e.key === "b") {
+        e.preventDefault();
+        document.execCommand("bold");
+      }
+      if (e.key === "i") {
+        e.preventDefault();
+        document.execCommand("italic");
+      }
+      if (e.key === "u") {
+        e.preventDefault();
+        document.execCommand("underline");
+      }
     }
   }, []);
 
@@ -151,9 +166,17 @@ export default function NotesEditor() {
       const fontFamily = cssFontName || "Caveat";
       await ensureFontLoaded(fontFamily, fontSize);
       const actualWidth = noteWrapperRef.current?.offsetWidth ?? 680;
-      const canvas = drawNoteCanvas(activeTab.html, fontSize, fontFamily, actualWidth);
+      const canvas = drawNoteCanvas(
+        activeTab.html,
+        fontSize,
+        fontFamily,
+        actualWidth,
+      );
       canvas.toBlob((blob) => {
-        if (!blob) { setCapturing(false); return; }
+        if (!blob) {
+          setCapturing(false);
+          return;
+        }
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
@@ -176,7 +199,10 @@ export default function NotesEditor() {
   if (!loaded) {
     return (
       <div className="flex-1 flex items-center justify-center">
-        <Loader2Icon className="w-5 h-5 animate-spin" style={{ color: "#333" }} />
+        <Loader2Icon
+          className="w-5 h-5 animate-spin"
+          style={{ color: "#333" }}
+        />
       </div>
     );
   }
@@ -192,15 +218,6 @@ export default function NotesEditor() {
         .scribble-content font { font-family: var(--font-caveat), cursive !important; }
         .note-tab { font-family: var(--font-caveat), cursive; }
       `}</style>
-
-      {showShare && activeNote && activeTab && (
-        <NotesSharePanel
-          noteTitle={activeNote.title}
-          noteHtml={activeTab.html}
-          noteFontSize={fontSize}
-          onClose={() => setShowShare(false)}
-        />
-      )}
 
       <div
         className="flex-1 flex flex-col items-center overflow-hidden h-full"
@@ -221,12 +238,13 @@ export default function NotesEditor() {
           <NoteToolbar
             onColor={applyColor}
             onHighlight={applyHighlight}
+            onPageColor={setPageColor}
             onFormat={execFormat}
             onAlign={applyAlign}
             fontSize={fontSize}
+            pageColor={pageColor}
             onSizeChange={handleSizeChange}
             onScreenshot={handleScreenshot}
-            onShare={() => setShowShare(true)}
             capturing={capturing}
             expanded={expanded}
             onToggleExpand={toggleExpanded}
@@ -247,7 +265,7 @@ export default function NotesEditor() {
           <div
             className="relative overflow-hidden flex-1 min-h-0"
             style={{
-              background: "#fdf9f0",
+              background: pageColor,
               clipPath: TORN_BOTTOM,
             }}
           >
@@ -255,7 +273,8 @@ export default function NotesEditor() {
               className="absolute top-0 left-0 right-0 pointer-events-none"
               style={{
                 height: HEADER_H,
-                background: "linear-gradient(180deg, #ede0c4 0%, #f5ecd8 60%, #fdf9f0 100%)",
+                background:
+                  "linear-gradient(180deg, #ede0c4 0%, #f5ecd8 60%, #fdf9f0 100%)",
                 borderBottom: "2px solid #d4c9a8",
                 zIndex: 2,
               }}
@@ -275,7 +294,11 @@ export default function NotesEditor() {
                       const updatedTabs = activeNote.tabs.map((t) =>
                         t.id === activeTabId ? { ...t, html } : t,
                       );
-                      persistNote({ ...activeNote, tabs: updatedTabs, activeTabId: tab.id });
+                      persistNote({
+                        ...activeNote,
+                        tabs: updatedTabs,
+                        activeTabId: tab.id,
+                      });
                     }
                     setActiveTabId(tab.id);
                   }}
@@ -284,10 +307,13 @@ export default function NotesEditor() {
                     height: 34,
                     marginTop: "auto",
                     borderRadius: "5px 5px 0 0",
-                    background: tab.id === activeTabId ? "#fdf9f0" : "rgba(0,0,0,0.05)",
+                    background:
+                      tab.id === activeTabId ? "#fdf9f0" : "rgba(0,0,0,0.05)",
                     border: "1px solid",
-                    borderColor: tab.id === activeTabId ? "#d4c9a8" : "transparent",
-                    borderBottom: tab.id === activeTabId ? "2px solid #fdf9f0" : "none",
+                    borderColor:
+                      tab.id === activeTabId ? "#d4c9a8" : "transparent",
+                    borderBottom:
+                      tab.id === activeTabId ? "2px solid #fdf9f0" : "none",
                     fontSize: 15,
                     color: tab.id === activeTabId ? "#1a1a2e" : "#9a8f80",
                     minWidth: 56,
@@ -325,8 +351,12 @@ export default function NotesEditor() {
                       onClick={(e) => removeTab(tab.id, e)}
                       className="opacity-0 group-hover:opacity-100 transition-opacity ml-0.5"
                       style={{ color: "#aaa" }}
-                      onMouseEnter={(e) => (e.currentTarget.style.color = "#e55")}
-                      onMouseLeave={(e) => (e.currentTarget.style.color = "#aaa")}
+                      onMouseEnter={(e) =>
+                        (e.currentTarget.style.color = "#e55")
+                      }
+                      onMouseLeave={(e) =>
+                        (e.currentTarget.style.color = "#aaa")
+                      }
                     >
                       <XIcon className="w-3 h-3" />
                     </button>
@@ -365,7 +395,8 @@ export default function NotesEditor() {
                     height: 16,
                     background: "#1a1410",
                     marginBottom: `${lineHeight * 4 - 16}px`,
-                    boxShadow: "inset 0 2px 5px rgba(0,0,0,0.6), 0 1px 2px rgba(255,255,255,0.1)",
+                    boxShadow:
+                      "inset 0 2px 5px rgba(0,0,0,0.6), 0 1px 2px rgba(255,255,255,0.1)",
                   }}
                 />
               ))}

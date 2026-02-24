@@ -2,14 +2,14 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { ShrinkIcon, PenLineIcon, ArrowUpRightIcon } from "lucide-react";
+import { PenLineIcon, ArrowUpRightIcon } from "lucide-react";
 import {
   TORN_BOTTOM,
   HEADER_H,
   ensureFontLoaded,
   drawNoteCanvas,
 } from "@/lib/notes-canvas";
-import NoteToolbar from "@/components/customs/notes/NoteToolbar";
+import ScribbleToolbar from "@/components/customs/notes/ScribbleToolbar";
 import Link from "next/link";
 
 const STORAGE_KEY = "portfolio-scribble-note";
@@ -210,7 +210,7 @@ export default function ScribbleNote({ mobileOnly = false }: Props) {
               alignItems: "center",
               justifyContent: "center",
               padding: 16,
-              background: "rgba(8, 6, 4, 0.26)",
+              background: "rgba(8,6,4,0.26)",
               backdropFilter: "blur(16px)",
               WebkitBackdropFilter: "blur(16px)",
             }}
@@ -219,10 +219,7 @@ export default function ScribbleNote({ mobileOnly = false }: Props) {
             }}
           >
             <style>{`
-            @keyframes noteIn {
-              from { opacity:0; transform: scale(0.93); }
-              to { opacity:1; transform: scale(1); }
-            }
+            @keyframes noteIn { from { opacity:0; transform:scale(0.93); } to { opacity:1; transform:scale(1); } }
             .scribble-content * { font-family: var(--font-caveat), cursive !important; }
             .scribble-content strong { font-weight: 700; }
             .scribble-content em { font-style: italic; }
@@ -244,15 +241,13 @@ export default function ScribbleNote({ mobileOnly = false }: Props) {
                 animation: "noteIn 0.28s cubic-bezier(0.16,1,0.3,1) both",
               }}
             >
-              <NoteToolbar
+              <ScribbleToolbar
                 onColor={applyColor}
                 onFormat={execFormat}
                 fontSize={fontSize}
                 onSizeChange={handleSizeChange}
                 onScreenshot={handleScreenshot}
                 capturing={capturing}
-                expanded={false}
-                onToggleExpand={() => {}}
                 extra={
                   <Link
                     href="/notes"
@@ -310,9 +305,7 @@ export default function ScribbleNote({ mobileOnly = false }: Props) {
                     zIndex: 2,
                     display: "flex",
                     alignItems: "center",
-                    justifyContent: "space-between",
                     paddingLeft: 80,
-                    paddingRight: 16,
                   }}
                 >
                   <span
@@ -321,7 +314,6 @@ export default function ScribbleNote({ mobileOnly = false }: Props) {
                       fontSize: 18,
                       color: "#c4b898",
                       userSelect: "none",
-                      pointerEvents: "none",
                     }}
                   >
                     quick note

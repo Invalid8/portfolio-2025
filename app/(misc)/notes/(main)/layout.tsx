@@ -3,6 +3,7 @@ import { NotesProvider } from "@/lib/context/notes-context";
 import { NotesAuthProvider } from "@/lib/context/notes-auth";
 import NotesSidebar from "@/components/customs/notes/NotesSidebar";
 import NotesDisclaimerWrapper from "@/components/customs/notes/NotesDisclaimerWrapper";
+import NotesSharePanelWrapper from "@/components/customs/notes/NotesSharePanelWrapper";
 import Link from "next/link";
 
 export default function NotesLayout({ children }: { children: ReactNode }) {
@@ -26,6 +27,7 @@ export default function NotesLayout({ children }: { children: ReactNode }) {
               </p>
             </div>
           </main>
+          <NotesSharePanelWrapper />
         </div>
       </NotesProvider>
     </NotesAuthProvider>
