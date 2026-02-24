@@ -210,7 +210,7 @@ export default function ScribbleNote({ mobileOnly = false }: Props) {
               alignItems: "center",
               justifyContent: "center",
               padding: 16,
-              background: "rgba(8, 6, 4, 0.541)",
+              background: "rgba(8,6,4,0.93)",
               backdropFilter: "blur(16px)",
               WebkitBackdropFilter: "blur(16px)",
             }}
@@ -219,17 +219,17 @@ export default function ScribbleNote({ mobileOnly = false }: Props) {
             }}
           >
             <style>{`
-        @keyframes noteIn {
-          from { opacity:0; transform: scale(0.93); }
-          to { opacity:1; transform: scale(1); }
-        }
-        .scribble-content * { font-family: var(--font-caveat), cursive !important; }
-        .scribble-content strong { font-weight: 700; }
-        .scribble-content em { font-style: italic; }
-        .scribble-content u { text-decoration: underline; }
-        .scribble-content s { text-decoration: line-through; }
-        .scribble-content font { font-family: var(--font-caveat), cursive !important; }
-      `}</style>
+            @keyframes noteIn {
+              from { opacity:0; transform: scale(0.93); }
+              to { opacity:1; transform: scale(1); }
+            }
+            .scribble-content * { font-family: var(--font-caveat), cursive !important; }
+            .scribble-content strong { font-weight: 700; }
+            .scribble-content em { font-style: italic; }
+            .scribble-content u { text-decoration: underline; }
+            .scribble-content s { text-decoration: line-through; }
+            .scribble-content font { font-family: var(--font-caveat), cursive !important; }
+          `}</style>
 
             <div
               ref={noteWrapperRef}
@@ -285,7 +285,6 @@ export default function ScribbleNote({ mobileOnly = false }: Props) {
                   clipPath: TORN_BOTTOM,
                 }}
               >
-                {/* Header band */}
                 <div
                   style={{
                     position: "absolute",
@@ -297,7 +296,6 @@ export default function ScribbleNote({ mobileOnly = false }: Props) {
                       "linear-gradient(180deg, #ede0c4 0%, #f5ecd8 60%, #fdf9f0 100%)",
                     borderBottom: "2px solid #d4c9a8",
                     zIndex: 2,
-                    pointerEvents: "none",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "space-between",
@@ -311,6 +309,7 @@ export default function ScribbleNote({ mobileOnly = false }: Props) {
                       fontSize: 18,
                       color: "#c4b898",
                       userSelect: "none",
+                      pointerEvents: "none",
                     }}
                   >
                     quick note
@@ -319,7 +318,6 @@ export default function ScribbleNote({ mobileOnly = false }: Props) {
                     href="/notes"
                     onClick={() => setOpen(false)}
                     style={{
-                      pointerEvents: "all",
                       display: "flex",
                       alignItems: "center",
                       gap: 3,
@@ -348,7 +346,6 @@ export default function ScribbleNote({ mobileOnly = false }: Props) {
                   </Link>
                 </div>
 
-                {/* Ring holes */}
                 <div
                   style={{
                     position: "absolute",
@@ -381,7 +378,6 @@ export default function ScribbleNote({ mobileOnly = false }: Props) {
                   ))}
                 </div>
 
-                {/* Editable area */}
                 <div
                   ref={contentRef}
                   contentEditable
@@ -441,7 +437,7 @@ export default function ScribbleNote({ mobileOnly = false }: Props) {
       <>
         <button
           onClick={() => setOpen(true)}
-          className="lg:hidden inline-flex w-fit items-center gap-2 px-4 py-2.5 rounded-full border border-neutral-700 text-sm font-mono tracking-wider text-neutral-400 hover:border-primary/50 hover:text-primary transition-all active:scale-95"
+          className="lg:hidden inline-flex items-center w-fit gap-2 px-4 py-2.5 rounded-full border border-neutral-700 text-sm font-mono tracking-wider text-neutral-400 hover:border-primary/50 hover:text-primary transition-all active:scale-95"
         >
           <PenLineIcon className="w-4 h-4" />
           Quick Note
@@ -458,10 +454,6 @@ export default function ScribbleNote({ mobileOnly = false }: Props) {
           font-family: var(--font-caveat), cursive;
           font-size: 15px; line-height: 26px; height: 26px;
           color: #2a2440; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        }
-        @keyframes noteIn {
-          from { opacity:0; transform: scale(0.93) rotate(-0.4deg); }
-          to { opacity:1; transform: scale(1) rotate(-0.4deg); }
         }
       `}</style>
 
