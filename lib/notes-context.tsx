@@ -28,9 +28,11 @@ type NotesCtx = {
   loaded: boolean;
   showDisclaimer: boolean;
   expanded: boolean;
+  showMobileSidebar: boolean;
   contentRef: React.RefObject<HTMLDivElement | null>;
   dismissDisclaimer: () => void;
   toggleExpanded: () => void;
+  toggleMobileSidebar: () => void;
   persistNote: (note: Note) => Promise<Note>;
   selectNote: (note: Note) => void;
   addNote: () => Promise<void>;
@@ -57,6 +59,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
   const [activeTabId, setActiveTabId] = useState<string>("");
   const [loaded, setLoaded] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const [showDisclaimer, setShowDisclaimer] = useState(() => {
     if (typeof window === "undefined") return false;
     try {
@@ -103,6 +106,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const toggleExpanded = useCallback(() => setExpanded((v) => !v), []);
+  const toggleMobileSidebar = useCallback(() => setShowMobileSidebar((v) => !v), []);
 
   const persistNote = useCallback(async (note: Note): Promise<Note> => {
     const updated = { ...note, updatedAt: Date.now() };
@@ -128,6 +132,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       }
       setActiveNote(note);
       setActiveTabId(note.activeTabId);
+      setShowMobileSidebar(false);
       window.history.replaceState(null, "", `/notes/${note.slug}`);
     },
     [activeNote, activeTabId, persistNote],
@@ -139,6 +144,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
     setNotes((prev) => [fresh, ...prev]);
     setActiveNote(fresh);
     setActiveTabId(fresh.activeTabId);
+    setShowMobileSidebar(false);
     window.history.replaceState(null, "", `/notes/${fresh.slug}`);
   }, []);
 
@@ -152,11 +158,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
           if (remaining.length > 0) {
             setActiveNote(remaining[0]);
             setActiveTabId(remaining[0].activeTabId);
-            window.history.replaceState(
-              null,
-              "",
-              `/notes/${remaining[0].slug}`,
-            );
+            window.history.replaceState(null, "", `/notes/${remaining[0].slug}`);
           } else {
             (async () => {
               const fresh = makeNewNote("My Notes");
@@ -249,9 +251,11 @@ export function NotesProvider({ children }: { children: ReactNode }) {
         loaded,
         showDisclaimer,
         expanded,
+        showMobileSidebar,
         contentRef,
         dismissDisclaimer,
         toggleExpanded,
+        toggleMobileSidebar,
         persistNote,
         selectNote,
         addNote,

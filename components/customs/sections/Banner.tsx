@@ -98,7 +98,7 @@ export default function Banner() {
                 </ContentSpan>
               </div>
 
-              <div className="b-cta mt-8">
+              <div className="b-cta mt-8 flex flex-col gap-4">
                 <ContentSpan
                   sectionKey="banner"
                   fieldKey="resume"
@@ -107,6 +107,8 @@ export default function Banner() {
                 >
                   {`^^__**[My Resume](https://drive.google.com/file/d/1ixmuBYgzXQdXrTn1n9aoz4SWYRU715h-/view)**__^^`}
                 </ContentSpan>
+
+                <ScribbleNote mobileOnly />
               </div>
             </div>
 

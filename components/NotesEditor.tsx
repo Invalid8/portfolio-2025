@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Loader2Icon, PlusIcon, XIcon } from "lucide-react";
+import { Loader2Icon, PlusIcon, XIcon, MenuIcon } from "lucide-react";
 import {
   TORN_BOTTOM,
   HEADER_H,
@@ -25,12 +25,15 @@ export default function NotesEditor() {
     addTab,
     removeTab,
     commitTabTitle,
+    showMobileSidebar,
+    toggleMobileSidebar,
   } = useNotes();
 
   const [capturing, setCapturing] = useState(false);
   const [editingTabId, setEditingTabId] = useState<string | null>(null);
   const [tabDraft, setTabDraft] = useState("");
   const tabInputRef = useRef<HTMLInputElement>(null);
+  const noteWrapperRef = useRef<HTMLDivElement>(null);
 
   const activeTab = activeNote?.tabs.find((t) => t.id === activeTabId) ?? null;
   const fontSize = activeNote?.fontSize ?? 20;
@@ -122,7 +125,8 @@ export default function NotesEditor() {
         .trim();
       const fontFamily = cssFontName || "Caveat";
       await ensureFontLoaded(fontFamily, fontSize);
-      const canvas = drawNoteCanvas(activeTab.html, fontSize, fontFamily);
+      const actualWidth = noteWrapperRef.current?.offsetWidth ?? 680;
+      const canvas = drawNoteCanvas(activeTab.html, fontSize, fontFamily, actualWidth);
       canvas.toBlob((blob) => {
         if (!blob) { setCapturing(false); return; }
         const url = URL.createObjectURL(blob);
@@ -164,15 +168,15 @@ export default function NotesEditor() {
         .note-tab { font-family: var(--font-caveat), cursive; }
       `}</style>
 
-      {/* Fills the entire remaining height from the layout */}
       <div
         className="flex-1 flex flex-col items-center overflow-hidden h-full"
         style={{
-          padding: expanded ? "16px 24px" : "24px 40px",
+          padding: expanded ? "12px 16px" : "16px 16px",
           transition: "padding 0.3s ease",
         }}
       >
         <div
+          ref={noteWrapperRef}
           className="flex flex-col w-full flex-1 min-h-0"
           style={{
             maxWidth: expanded ? "100%" : 680,
@@ -189,9 +193,20 @@ export default function NotesEditor() {
             capturing={capturing}
             expanded={expanded}
             onToggleExpand={toggleExpanded}
+            mobileMenuButton={
+              <button
+                onClick={toggleMobileSidebar}
+                className="p-2 rounded transition-all cursor-pointer md:hidden"
+                style={{ color: "#666" }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = "#ddd")}
+                onMouseLeave={(e) => (e.currentTarget.style.color = "#666")}
+                title="Notes list"
+              >
+                <MenuIcon className="w-4 h-4" />
+              </button>
+            }
           />
 
-          {/* Paper — flex-1 + min-h-0 so it stretches to fill */}
           <div
             className="relative overflow-hidden flex-1 min-h-0"
             style={{
@@ -199,7 +214,6 @@ export default function NotesEditor() {
               clipPath: TORN_BOTTOM,
             }}
           >
-            {/* Header gradient band */}
             <div
               className="absolute top-0 left-0 right-0 pointer-events-none"
               style={{
@@ -210,7 +224,6 @@ export default function NotesEditor() {
               }}
             />
 
-            {/* Tabs row */}
             <div
               className="absolute top-0 left-14 right-0 flex items-end gap-0.5 px-2 pointer-events-auto"
               style={{ zIndex: 3, height: HEADER_H }}
@@ -302,7 +315,6 @@ export default function NotesEditor() {
               </button>
             </div>
 
-            {/* Spiral holes */}
             <div
               className="absolute top-0 bottom-0 left-0 w-14 flex flex-col items-center pointer-events-none z-10"
               style={{ paddingTop: HEADER_H + lineHeight }}
@@ -322,7 +334,6 @@ export default function NotesEditor() {
               ))}
             </div>
 
-            {/* Editable content — h-full so it fills the paper */}
             <div
               ref={contentRef}
               contentEditable

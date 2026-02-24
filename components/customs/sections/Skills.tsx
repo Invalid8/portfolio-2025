@@ -59,7 +59,10 @@ export default function SkillsSection() {
     }
   };
 
-  const handleEditSkill = async (skillId: string | number, skillData: Partial<Skill>) => {
+  const handleEditSkill = async (
+    skillId: string | number,
+    skillData: Partial<Skill>,
+  ) => {
     try {
       const res = await fetch(`/api/admin/firebase/skills/${skillId}`, {
         method: "PATCH",
@@ -82,7 +85,9 @@ export default function SkillsSection() {
   const handleDeleteSkill = async (skillId: string) => {
     if (!confirm("Delete this skill?")) return;
     try {
-      const res = await fetch(`/api/admin/firebase/skills/${skillId}`, { method: "DELETE" });
+      const res = await fetch(`/api/admin/firebase/skills/${skillId}`, {
+        method: "DELETE",
+      });
       if (!res.ok) throw new Error("Failed to delete skill");
       setSection("skills", `skill-${skillId}`, {} as Section);
       toast.success("Skill deleted!");
@@ -95,7 +100,10 @@ export default function SkillsSection() {
 
   if (loading) {
     return (
-      <div id="Skills" className="min-h-svh w-full flex justify-center items-center">
+      <div
+        id="Skills"
+        className="min-h-svh w-full flex justify-center items-center"
+      >
         <div className="animate-pulse text-2xl">Loading skills...</div>
       </div>
     );
@@ -110,19 +118,20 @@ export default function SkillsSection() {
         <div
           className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[700px] h-[400px] rounded-full"
           style={{
-            background: "radial-gradient(circle, oklch(64.66% 0.19548 40.184 / 0.05) 0%, transparent 65%)",
+            background:
+              "radial-gradient(circle, oklch(64.66% 0.19548 40.184 / 0.05) 0%, transparent 65%)",
             filter: "blur(80px)",
           }}
         />
       </div>
 
       <div className="relative z-10 max-w-6xl mx-auto">
-
         <div className="flex items-end justify-between gap-4 mb-16">
           <div>
             <div className="flex items-center gap-3 mb-5">
-              {/* <span className="w-8 h-px bg-primary" /> */}
-              <span className="text-primary text-xs font-mono tracking-[0.35em] uppercase">Stack</span>
+              <span className="text-primary text-xs font-mono tracking-[0.35em] uppercase">
+                Stack
+              </span>
             </div>
             <ContentSpan
               as="h2"
@@ -130,7 +139,8 @@ export default function SkillsSection() {
               sectionKey="skills-header"
               fieldKey="title"
             >
-              SKILLS &<br />TECHNOLOGIES
+              SKILLS &<br />
+              TECHNOLOGIES
             </ContentSpan>
             <ContentSpan
               as="p"
@@ -138,7 +148,8 @@ export default function SkillsSection() {
               sectionKey="skills-header"
               fieldKey="subtitle"
             >
-              Technologies and tools I use to build exceptional digital experiences.
+              Technologies and tools I use to build exceptional digital
+              experiences.
             </ContentSpan>
           </div>
           {isAdmin && isEditing && <AddSkillModal onAdd={handleAddSkill} />}
@@ -148,8 +159,17 @@ export default function SkillsSection() {
           <EmptyState
             title="No Skills Yet"
             description="Showcase your technical expertise by adding your skills."
-            icon={<CodeIcon className="w-16 h-16 text-neutral-600" strokeWidth={1.5} />}
-            action={isAdmin && isEditing ? <AddSkillModal onAdd={handleAddSkill} /> : null}
+            icon={
+              <CodeIcon
+                className="w-16 h-16 text-neutral-600"
+                strokeWidth={1.5}
+              />
+            }
+            action={
+              isAdmin && isEditing ? (
+                <AddSkillModal onAdd={handleAddSkill} />
+              ) : null
+            }
           />
         ) : (
           <>
@@ -172,7 +192,9 @@ export default function SkillsSection() {
                   onClick={() => setShowAll(!showAll)}
                   className="flex items-center gap-3 px-8 py-3 rounded-full border border-neutral-700 text-sm font-mono tracking-widest uppercase text-neutral-400 hover:text-primary hover:border-primary/50 transition-all"
                 >
-                  <PlusIcon className={`w-4 h-4 transition-transform ${showAll ? "rotate-45" : ""}`} />
+                  <PlusIcon
+                    className={`w-4 h-4 transition-transform ${showAll ? "rotate-45" : ""}`}
+                  />
                   {showAll ? "Show Less" : `All Skills (${skills.length})`}
                 </button>
               </div>
@@ -209,7 +231,8 @@ function SkillCard({
       <div
         className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
         style={{
-          background: "radial-gradient(circle at 50% 0%, oklch(64.66% 0.19548 40.184 / 0.08) 0%, transparent 70%)",
+          background:
+            "radial-gradient(circle at 50% 0%, oklch(64.66% 0.19548 40.184 / 0.08) 0%, transparent 70%)",
         }}
       />
 

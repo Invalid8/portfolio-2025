@@ -112,15 +112,6 @@ export default function Contact() {
                 isEditing={isEditing}
               />
 
-              {/* <ContactItem
-                icon={<PhoneIcon className="w-4 h-4" />}
-                label="Phone"
-                value={contactSection?.phone}
-                href={`tel:${contactSection?.phone?.replace(/\s+/g, "")}`}
-                sectionKey="contact"
-                fieldKey="phone"
-                isEditing={isEditing}
-              /> */}
               <ContactItem
                 icon={<MapPinIcon className="w-4 h-4" />}
                 label="Location"

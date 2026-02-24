@@ -19,6 +19,7 @@ type Props = {
   capturing: boolean;
   expanded: boolean;
   onToggleExpand: () => void;
+  mobileMenuButton?: React.ReactNode;
   extra?: React.ReactNode;
 };
 
@@ -39,27 +40,35 @@ export default function NoteToolbar({
   capturing,
   expanded,
   onToggleExpand,
+  mobileMenuButton,
   extra,
 }: Props) {
   return (
     <div
-      className="flex items-center gap-2 px-4 py-3 rounded-t-xl flex-wrap"
+      className="flex items-center gap-1.5 px-3 py-2 rounded-t-xl flex-wrap"
       style={{
         background: "#111109",
         border: "1px solid rgba(255,255,255,0.08)",
         borderBottom: "1px solid rgba(255,255,255,0.05)",
-        minHeight: 52,
+        minHeight: 48,
       }}
     >
-      <div className="flex items-center gap-2 shrink-0">
+      {mobileMenuButton && (
+        <>
+          {mobileMenuButton}
+          {sep}
+        </>
+      )}
+
+      <div className="flex items-center gap-1.5 shrink-0">
         {COLORS.map((c) => (
           <button
             key={c.value}
             onClick={() => onColor(c.value)}
             className="rounded-full shrink-0 transition-all hover:scale-125 cursor-pointer"
             style={{
-              width: 14,
-              height: 14,
+              width: 13,
+              height: 13,
               background: c.value,
               boxShadow: "0 0 0 1px rgba(255,255,255,0.1)",
             }}
@@ -67,7 +76,9 @@ export default function NoteToolbar({
           />
         ))}
       </div>
+
       {sep}
+
       <button
         onClick={() => onFormat("bold")}
         className={tbBtn}
@@ -108,10 +119,12 @@ export default function NoteToolbar({
       >
         <StrikethroughIcon className="w-4 h-4" />
       </button>
+
       {sep}
-      <div className="flex items-center gap-2">
+
+      <div className="flex items-center gap-1.5">
         <span
-          className="text-[10px] font-mono uppercase tracking-widest"
+          className="text-[10px] font-mono uppercase tracking-widest hidden sm:block"
           style={{ color: "#444" }}
         >
           Size
@@ -122,7 +135,7 @@ export default function NoteToolbar({
           max={40}
           value={fontSize}
           onChange={(e) => onSizeChange(Number(e.target.value))}
-          className="w-20"
+          className="w-16 sm:w-20"
           style={{ accentColor: "#e85d26" }}
         />
         <span
@@ -132,15 +145,15 @@ export default function NoteToolbar({
           {fontSize}
         </span>
       </div>
+
       {sep}
+
       <button
         onClick={onScreenshot}
         disabled={capturing}
         className={tbBtn}
         style={{ color: "#666" }}
-        onMouseEnter={(e) => {
-          if (!capturing) e.currentTarget.style.color = "#ddd";
-        }}
+        onMouseEnter={(e) => { if (!capturing) e.currentTarget.style.color = "#ddd"; }}
         onMouseLeave={(e) => (e.currentTarget.style.color = "#666")}
         title="Save as image"
       >
@@ -150,17 +163,15 @@ export default function NoteToolbar({
           <CameraIcon className="w-4 h-4" />
         )}
       </button>
+
       {sep}
+
       <button
         onClick={onToggleExpand}
         className={tbBtn}
         style={{ color: expanded ? "#e85d26" : "#666" }}
-        onMouseEnter={(e) =>
-          (e.currentTarget.style.color = expanded ? "#e85d26" : "#ddd")
-        }
-        onMouseLeave={(e) =>
-          (e.currentTarget.style.color = expanded ? "#e85d26" : "#666")
-        }
+        onMouseEnter={(e) => (e.currentTarget.style.color = expanded ? "#e85d26" : "#ddd")}
+        onMouseLeave={(e) => (e.currentTarget.style.color = expanded ? "#e85d26" : "#666")}
         title={expanded ? "Exit fullscreen" : "Fullscreen"}
       >
         {expanded ? (
@@ -169,6 +180,7 @@ export default function NoteToolbar({
           <Maximize2Icon className="w-4 h-4" />
         )}
       </button>
+
       {extra && (
         <>
           {sep}

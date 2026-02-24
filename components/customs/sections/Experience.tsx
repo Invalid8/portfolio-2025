@@ -115,7 +115,6 @@ export default function ExperienceSection() {
         <div className="flex items-end justify-between gap-4 mb-16">
           <div>
             <div className="flex items-center gap-3 mb-5">
-              {/* <span className="w-8 h-px bg-primary" /> */}
               <span className="text-primary text-xs font-mono tracking-[0.35em] uppercase">
                 Career
               </span>

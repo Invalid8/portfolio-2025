@@ -10,7 +10,7 @@ export default function NotesLayout({ children }: { children: ReactNode }) {
       <NotesDisclaimerWrapper />
       <div className="flex h-screen overflow-hidden" style={{ background: "#0c0a08" }}>
         <NotesSidebar />
-        <main className="flex-1 overflow-hidden flex flex-col relative">
+        <main className="flex-1 overflow-hidden flex flex-col relative min-w-0">
           {children}
           <div className="absolute bottom-4 right-6 font-bold text-lg pointer-events-none">
             <p className="pointer-events-auto">

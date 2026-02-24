@@ -1,15 +1,16 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { ShrinkIcon, NotebookIcon, PenLineIcon } from "lucide-react";
+import { createPortal } from "react-dom";
+import { ShrinkIcon, PenLineIcon, ArrowUpRightIcon } from "lucide-react";
 import {
   TORN_BOTTOM,
   HEADER_H,
-  DISCLAIMER_KEY,
   ensureFontLoaded,
   drawNoteCanvas,
 } from "@/lib/notes-canvas";
 import NoteToolbar from "@/components/customs/notes/NoteToolbar";
+import Link from "next/link";
 
 const STORAGE_KEY = "portfolio-scribble-note";
 const DEFAULT_HTML =
@@ -43,26 +44,21 @@ function htmlToPreviewLines(html: string): string[] {
     .slice(0, 3);
 }
 
-export default function ScribbleNote() {
+type Props = { mobileOnly?: boolean };
+
+export default function ScribbleNote({ mobileOnly = false }: Props) {
   const [html, setHtml] = useState<string>(
     () => loadStorage()?.html ?? DEFAULT_HTML,
   );
   const [fontSize, setFontSize] = useState<number>(
     () => loadStorage()?.fontSize ?? 20,
   );
-  const [expanded, setExpanded] = useState(false);
+  const [open, setOpen] = useState(false);
   const [isEmpty, setIsEmpty] = useState(false);
   const [capturing, setCapturing] = useState(false);
-  const [showDisclaimer, setShowDisclaimer] = useState(() => {
-    if (typeof window === "undefined") return false;
-    try {
-      return !localStorage.getItem(DISCLAIMER_KEY);
-    } catch {
-      return false;
-    }
-  });
 
   const contentRef = useRef<HTMLDivElement>(null);
+  const noteWrapperRef = useRef<HTMLDivElement>(null);
   const lineHeight = Math.round(fontSize * 1.72);
   const contentPadTop = HEADER_H + Math.round(lineHeight * 0.5);
   const lineGridOffset = contentPadTop % lineHeight;
@@ -76,7 +72,7 @@ export default function ScribbleNote() {
   };
 
   useEffect(() => {
-    if (expanded) {
+    if (open) {
       document.body.style.overflow = "hidden";
       if (contentRef.current) {
         contentRef.current.innerHTML = html;
@@ -95,7 +91,16 @@ export default function ScribbleNote() {
     return () => {
       document.body.style.overflow = "";
     };
-  }, [expanded]);
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [open]);
 
   const handleInput = useCallback(() => {
     if (!contentRef.current) return;
@@ -161,13 +166,6 @@ export default function ScribbleNote() {
     [html],
   );
 
-  const dismissDisclaimer = useCallback(() => {
-    try {
-      localStorage.setItem(DISCLAIMER_KEY, "1");
-    } catch {}
-    setShowDisclaimer(false);
-  }, []);
-
   const handleScreenshot = useCallback(async () => {
     if (capturing) return;
     setCapturing(true);
@@ -177,7 +175,8 @@ export default function ScribbleNote() {
         .trim();
       const fontFamily = cssFontName || "Caveat";
       await ensureFontLoaded(fontFamily, fontSize);
-      const canvas = drawNoteCanvas(html, fontSize, fontFamily);
+      const actualWidth = noteWrapperRef.current?.offsetWidth ?? 640;
+      const canvas = drawNoteCanvas(html, fontSize, fontFamily, actualWidth);
       canvas.toBlob((blob) => {
         if (!blob) {
           setCapturing(false);
@@ -199,15 +198,262 @@ export default function ScribbleNote() {
 
   const previewLines = htmlToPreviewLines(html);
 
-  return (
-    <>
-      <style>{`
+  const modal =
+    typeof window !== "undefined"
+      ? createPortal(
+          <div
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 9999,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: 16,
+              background: "rgba(8,6,4,0.93)",
+              backdropFilter: "blur(16px)",
+              WebkitBackdropFilter: "blur(16px)",
+            }}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setOpen(false);
+            }}
+          >
+            <style>{`
+        @keyframes noteIn {
+          from { opacity:0; transform: scale(0.93); }
+          to { opacity:1; transform: scale(1); }
+        }
         .scribble-content * { font-family: var(--font-caveat), cursive !important; }
         .scribble-content strong { font-weight: 700; }
         .scribble-content em { font-style: italic; }
         .scribble-content u { text-decoration: underline; }
         .scribble-content s { text-decoration: line-through; }
         .scribble-content font { font-family: var(--font-caveat), cursive !important; }
+      `}</style>
+
+            <div
+              ref={noteWrapperRef}
+              style={{
+                position: "relative",
+                display: "flex",
+                flexDirection: "column",
+                width: "100%",
+                maxWidth: "min(640px, 100%)",
+                maxHeight: "90vh",
+                filter: "drop-shadow(0 32px 80px rgba(0,0,0,0.9))",
+                animation: "noteIn 0.28s cubic-bezier(0.16,1,0.3,1) both",
+              }}
+            >
+              <NoteToolbar
+                onColor={applyColor}
+                onFormat={execFormat}
+                fontSize={fontSize}
+                onSizeChange={handleSizeChange}
+                onScreenshot={handleScreenshot}
+                capturing={capturing}
+                expanded={false}
+                onToggleExpand={() => {}}
+                extra={
+                  <button
+                    onClick={() => setOpen(false)}
+                    style={{
+                      color: "#666",
+                      padding: 8,
+                      borderRadius: 4,
+                      cursor: "pointer",
+                      background: "none",
+                      border: "none",
+                      display: "flex",
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.color = "#ddd")}
+                    onMouseLeave={(e) => (e.currentTarget.style.color = "#666")}
+                    title="Close (Esc)"
+                  >
+                    <ShrinkIcon style={{ width: 16, height: 16 }} />
+                  </button>
+                }
+              />
+
+              <div
+                style={{
+                  position: "relative",
+                  overflow: "hidden",
+                  flex: 1,
+                  background: "#fdf9f0",
+                  minHeight: 320,
+                  maxHeight: "calc(90vh - 52px)",
+                  clipPath: TORN_BOTTOM,
+                }}
+              >
+                {/* Header band */}
+                <div
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: HEADER_H,
+                    background:
+                      "linear-gradient(180deg, #ede0c4 0%, #f5ecd8 60%, #fdf9f0 100%)",
+                    borderBottom: "2px solid #d4c9a8",
+                    zIndex: 2,
+                    pointerEvents: "none",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    paddingLeft: 80,
+                    paddingRight: 16,
+                  }}
+                >
+                  <span
+                    style={{
+                      fontFamily: "var(--font-caveat), cursive",
+                      fontSize: 18,
+                      color: "#c4b898",
+                      userSelect: "none",
+                    }}
+                  >
+                    quick note
+                  </span>
+                  <Link
+                    href="/notes"
+                    onClick={() => setOpen(false)}
+                    style={{
+                      pointerEvents: "all",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 3,
+                      color: "#b8a88a",
+                      textDecoration: "none",
+                    }}
+                    onMouseEnter={(e) =>
+                      (e.currentTarget.style.color = "#8a6d3b")
+                    }
+                    onMouseLeave={(e) =>
+                      (e.currentTarget.style.color = "#b8a88a")
+                    }
+                    title="Open full notes"
+                  >
+                    <span
+                      style={{
+                        fontFamily: "var(--font-caveat), cursive",
+                        fontSize: 14,
+                        textDecoration: "underline",
+                        textUnderlineOffset: 2,
+                      }}
+                    >
+                      full notes
+                    </span>
+                    <ArrowUpRightIcon style={{ width: 12, height: 12 }} />
+                  </Link>
+                </div>
+
+                {/* Ring holes */}
+                <div
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    bottom: 0,
+                    left: 0,
+                    width: 56,
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    paddingTop: HEADER_H + lineHeight,
+                    pointerEvents: "none",
+                    zIndex: 10,
+                  }}
+                >
+                  {Array.from({ length: 14 }).map((_, i) => (
+                    <div
+                      key={i}
+                      style={{
+                        width: 16,
+                        height: 16,
+                        borderRadius: "50%",
+                        flexShrink: 0,
+                        background: "#1a1410",
+                        marginBottom: `${lineHeight * 4 - 16}px`,
+                        boxShadow:
+                          "inset 0 2px 5px rgba(0,0,0,0.6), 0 1px 2px rgba(255,255,255,0.1)",
+                      }}
+                    />
+                  ))}
+                </div>
+
+                {/* Editable area */}
+                <div
+                  ref={contentRef}
+                  contentEditable
+                  suppressContentEditableWarning
+                  onInput={handleInput}
+                  onKeyDown={handleKeyDown}
+                  spellCheck={false}
+                  className="scribble-content"
+                  style={{
+                    position: "relative",
+                    outline: "none",
+                    overflowY: "auto",
+                    fontFamily: "var(--font-caveat), cursive",
+                    color: "#1a1a2e",
+                    ...paperLines,
+                    fontSize,
+                    lineHeight: `${lineHeight}px`,
+                    paddingTop: `${contentPadTop}px`,
+                    paddingBottom: 60,
+                    paddingLeft: 76,
+                    paddingRight: 36,
+                    minHeight: 320,
+                    maxHeight: "calc(90vh - 120px)",
+                    caretColor: "#1a1a2e",
+                    wordBreak: "break-word",
+                    zIndex: 3,
+                  }}
+                />
+
+                {isEmpty && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: contentPadTop,
+                      left: 76,
+                      zIndex: 4,
+                      fontFamily: "var(--font-caveat), cursive",
+                      fontSize,
+                      lineHeight: `${lineHeight}px`,
+                      color: "#b0a898",
+                      pointerEvents: "none",
+                      userSelect: "none",
+                    }}
+                  >
+                    Write something…
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )
+      : null;
+
+  if (mobileOnly) {
+    return (
+      <>
+        <button
+          onClick={() => setOpen(true)}
+          className="lg:hidden inline-flex items-center gap-2 px-4 py-2.5 rounded-full border border-neutral-700 text-sm font-mono tracking-wider text-neutral-400 hover:border-primary/50 hover:text-primary transition-all active:scale-95"
+        >
+          <PenLineIcon className="w-4 h-4" />
+          Quick Note
+        </button>
+        {open && modal}
+      </>
+    );
+  }
+
+  return (
+    <>
+      <style>{`
         .note-preview-line {
           font-family: var(--font-caveat), cursive;
           font-size: 15px; line-height: 26px; height: 26px;
@@ -221,7 +467,7 @@ export default function ScribbleNote() {
 
       <div className="hidden lg:flex flex-col items-end justify-center flex-shrink-0 w-[200px] xl:w-[300px]">
         <button
-          onClick={() => setExpanded(true)}
+          onClick={() => setOpen(true)}
           className="group relative w-full cursor-pointer focus:outline-none"
           title="Open note"
         >
@@ -274,172 +520,7 @@ export default function ScribbleNote() {
         </button>
       </div>
 
-      {expanded && (
-        <>
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4"
-            style={{
-              background: "rgba(12,10,8,0.88)",
-              backdropFilter: "blur(8px)",
-            }}
-            onClick={(e) => {
-              if (e.target === e.currentTarget) setExpanded(false);
-            }}
-          >
-            <div
-              className="relative flex flex-col"
-              style={{
-                width: "min(640px, 96vw)",
-                maxHeight: "90vh",
-                filter: "drop-shadow(0 32px 80px rgba(0,0,0,0.8))",
-                animation: "noteIn 0.28s cubic-bezier(0.16,1,0.3,1) both",
-              }}
-            >
-              <NoteToolbar
-                onColor={applyColor}
-                onFormat={execFormat}
-                fontSize={fontSize}
-                onSizeChange={handleSizeChange}
-                onScreenshot={handleScreenshot}
-                capturing={capturing}
-                extra={
-                  <>
-                    <button
-                      onClick={() => window.open("/notes", "_blank")}
-                      className="p-2 rounded transition-all cursor-pointer"
-                      style={{ color: "#666" }}
-                      onMouseEnter={(e) =>
-                        (e.currentTarget.style.color = "#ddd")
-                      }
-                      onMouseLeave={(e) =>
-                        (e.currentTarget.style.color = "#666")
-                      }
-                      title="Open full notes (new tab)"
-                    >
-                      <NotebookIcon className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => setExpanded(false)}
-                      className="p-2 rounded transition-all cursor-pointer"
-                      style={{ color: "#666" }}
-                      onMouseEnter={(e) =>
-                        (e.currentTarget.style.color = "#ddd")
-                      }
-                      onMouseLeave={(e) =>
-                        (e.currentTarget.style.color = "#666")
-                      }
-                      title="Close"
-                    >
-                      <ShrinkIcon className="w-4 h-4" />
-                    </button>
-                  </>
-                }
-              />
-
-              <div
-                className="relative overflow-hidden"
-                style={{
-                  background: "#fdf9f0",
-                  minHeight: 380,
-                  maxHeight: "calc(90vh - 52px)",
-                  clipPath: TORN_BOTTOM,
-                }}
-              >
-                <div
-                  className="absolute top-0 left-0 right-0 pointer-events-none"
-                  style={{
-                    height: HEADER_H,
-                    background:
-                      "linear-gradient(180deg, #ede0c4 0%, #f5ecd8 60%, #fdf9f0 100%)",
-                    borderBottom: "2px solid #d4c9a8",
-                    zIndex: 2,
-                  }}
-                >
-                  <div
-                    className="absolute inset-0 flex items-center justify-center"
-                    style={{ paddingLeft: 58 }}
-                  >
-                    <span
-                      style={{
-                        fontFamily: "var(--font-caveat), cursive",
-                        fontSize: 18,
-                        color: "#c4b898",
-                        userSelect: "none",
-                        letterSpacing: "0.01em",
-                      }}
-                    >
-                      quick note
-                    </span>
-                  </div>
-                </div>
-
-                <div
-                  className="absolute top-0 bottom-0 left-0 w-14 flex flex-col items-center pointer-events-none z-10"
-                  style={{ paddingTop: HEADER_H + lineHeight }}
-                >
-                  {Array.from({ length: 14 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className="rounded-full flex-shrink-0"
-                      style={{
-                        width: 16,
-                        height: 16,
-                        background: "#1a1410",
-                        marginBottom: `${lineHeight * 4 - 16}px`,
-                        boxShadow:
-                          "inset 0 2px 5px rgba(0,0,0,0.6), 0 1px 2px rgba(255,255,255,0.1)",
-                      }}
-                    />
-                  ))}
-                </div>
-
-                <div
-                  ref={contentRef}
-                  contentEditable
-                  suppressContentEditableWarning
-                  onInput={handleInput}
-                  onKeyDown={handleKeyDown}
-                  spellCheck={false}
-                  className="scribble-content relative outline-none overflow-y-auto"
-                  style={{
-                    fontFamily: "var(--font-caveat), cursive",
-                    color: "#1a1a2e",
-                    ...paperLines,
-                    fontSize,
-                    lineHeight: `${lineHeight}px`,
-                    paddingTop: `${contentPadTop}px`,
-                    paddingBottom: "60px",
-                    paddingLeft: "76px",
-                    paddingRight: "36px",
-                    minHeight: 380,
-                    maxHeight: "calc(90vh - 120px)",
-                    caretColor: "#1a1a2e",
-                    wordBreak: "break-word",
-                    zIndex: 3,
-                  }}
-                />
-
-                {isEmpty && (
-                  <div
-                    className="absolute pointer-events-none select-none"
-                    style={{
-                      top: contentPadTop,
-                      left: 76,
-                      zIndex: 4,
-                      fontFamily: "var(--font-caveat), cursive",
-                      fontSize,
-                      lineHeight: `${lineHeight}px`,
-                      color: "#b0a898",
-                    }}
-                  >
-                    Write something…
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </>
-      )}
+      {open && modal}
     </>
   );
 }

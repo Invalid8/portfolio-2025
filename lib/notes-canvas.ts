@@ -91,8 +91,17 @@ function applyTornClip(ctx: CanvasRenderingContext2D, w: number, h: number) {
   ctx.clip();
 }
 
-export function drawNoteCanvas(html: string, fontSize: number, fontFamily: string): HTMLCanvasElement {
-  const SCALE = 2, NOTE_W = 680, PAD_LEFT = 76, PAD_RIGHT = 36, PAD_BOTTOM = 48;
+export function drawNoteCanvas(
+  html: string,
+  fontSize: number,
+  fontFamily: string,
+  noteWidth = 680,
+): HTMLCanvasElement {
+  const SCALE = 2;
+  const NOTE_W = noteWidth;
+  const PAD_LEFT = 76;
+  const PAD_RIGHT = 36;
+  const PAD_BOTTOM = 48;
   const LINE_H = Math.round(fontSize * 1.72);
   const TEXT_W = NOTE_W - PAD_LEFT - PAD_RIGHT;
   const parsedLines = parseHtmlToLines(html);
@@ -129,42 +138,75 @@ export function drawNoteCanvas(html: string, fontSize: number, fontFamily: strin
   }
   const NOTE_H = HEADER_H + (rowCount + 1) * LINE_H + PAD_BOTTOM;
   const canvas = document.createElement("canvas");
-  canvas.width = NOTE_W * SCALE; canvas.height = NOTE_H * SCALE;
+  canvas.width = NOTE_W * SCALE;
+  canvas.height = NOTE_H * SCALE;
   const ctx = canvas.getContext("2d")!;
   ctx.scale(SCALE, SCALE);
   ctx.save();
   applyTornClip(ctx, NOTE_W, NOTE_H);
-  ctx.fillStyle = "#fdf9f0"; ctx.fillRect(0, 0, NOTE_W, NOTE_H);
+  ctx.fillStyle = "#fdf9f0";
+  ctx.fillRect(0, 0, NOTE_W, NOTE_H);
   const hg = ctx.createLinearGradient(0, 0, 0, HEADER_H);
-  hg.addColorStop(0, "#ede0c4"); hg.addColorStop(0.6, "#f5ecd8"); hg.addColorStop(1, "#fdf9f0");
-  ctx.fillStyle = hg; ctx.fillRect(0, 0, NOTE_W, HEADER_H);
-  ctx.strokeStyle = "#d4c9a8"; ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.moveTo(0, HEADER_H); ctx.lineTo(NOTE_W, HEADER_H); ctx.stroke();
-  ctx.strokeStyle = "#c8d8e8"; ctx.lineWidth = 1;
+  hg.addColorStop(0, "#ede0c4");
+  hg.addColorStop(0.6, "#f5ecd8");
+  hg.addColorStop(1, "#fdf9f0");
+  ctx.fillStyle = hg;
+  ctx.fillRect(0, 0, NOTE_W, HEADER_H);
+  ctx.strokeStyle = "#d4c9a8";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(0, HEADER_H);
+  ctx.lineTo(NOTE_W, HEADER_H);
+  ctx.stroke();
+  ctx.strokeStyle = "#c8d8e8";
+  ctx.lineWidth = 1;
   for (let i = 1; HEADER_H + i * LINE_H < NOTE_H; i++) {
     const y = HEADER_H + i * LINE_H;
-    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(NOTE_W, y); ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(NOTE_W, y);
+    ctx.stroke();
   }
-  ctx.strokeStyle = "#e8a0a0"; ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.moveTo(57, 0); ctx.lineTo(57, NOTE_H); ctx.stroke();
-  ctx.fillStyle = "#1a1410"; ctx.shadowColor = "rgba(0,0,0,0.55)"; ctx.shadowBlur = 6; ctx.shadowOffsetY = 2;
+  ctx.strokeStyle = "#e8a0a0";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(57, 0);
+  ctx.lineTo(57, NOTE_H);
+  ctx.stroke();
+  ctx.fillStyle = "#1a1410";
+  ctx.shadowColor = "rgba(0,0,0,0.55)";
+  ctx.shadowBlur = 6;
+  ctx.shadowOffsetY = 2;
   let ringY = HEADER_H + LINE_H * 2;
   while (ringY < NOTE_H - LINE_H) {
-    ctx.beginPath(); ctx.arc(24, ringY, 8, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath();
+    ctx.arc(24, ringY, 8, 0, Math.PI * 2);
+    ctx.fill();
     ringY += LINE_H * 4;
   }
-  ctx.shadowColor = "transparent"; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+  ctx.shadowColor = "transparent";
+  ctx.shadowBlur = 0;
+  ctx.shadowOffsetY = 0;
   for (const d of calls) {
     ctx.font = buildFont(d.bold, d.italic, fontSize, fontFamily);
-    ctx.fillStyle = d.color; ctx.fillText(d.text, d.x, d.y);
+    ctx.fillStyle = d.color;
+    ctx.fillText(d.text, d.x, d.y);
     if (d.underline) {
-      ctx.strokeStyle = d.color; ctx.lineWidth = 1.2;
-      ctx.beginPath(); ctx.moveTo(d.x, d.y+3); ctx.lineTo(d.x+d.w, d.y+3); ctx.stroke();
+      ctx.strokeStyle = d.color;
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(d.x, d.y + 3);
+      ctx.lineTo(d.x + d.w, d.y + 3);
+      ctx.stroke();
     }
     if (d.strike) {
-      ctx.strokeStyle = d.color; ctx.lineWidth = 1.2;
+      ctx.strokeStyle = d.color;
+      ctx.lineWidth = 1.2;
       const mid = d.y - fontSize * 0.35;
-      ctx.beginPath(); ctx.moveTo(d.x, mid); ctx.lineTo(d.x+d.w, mid); ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(d.x, mid);
+      ctx.lineTo(d.x + d.w, mid);
+      ctx.stroke();
     }
   }
   ctx.restore();

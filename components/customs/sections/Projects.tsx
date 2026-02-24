@@ -174,7 +174,6 @@ function ProjectRow({ project, index }: { project: Project; index: number }) {
       onMouseLeave={() => setHovered(false)}
       onMouseMove={handleMouseMove}
     >
-      {/* floating image preview */}
       <div
         className="pointer-events-none absolute z-50 w-52 h-32 rounded-xl overflow-hidden border border-white/10 shadow-2xl"
         style={{
@@ -199,12 +198,10 @@ function ProjectRow({ project, index }: { project: Project; index: number }) {
         )}
       </div>
 
-      {/* index number */}
       <span className="hidden sm:block text-xs font-mono text-neutral-700 group-hover:text-primary/60 transition-colors w-7 flex-shrink-0 select-none tabular-nums">
         {String(index + 1).padStart(2, "0")}
       </span>
 
-      {/* title + type */}
       <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-5">
         <span className="text-xl md:text-2xl lg:text-3xl font-bold group-hover:text-primary transition-colors duration-200 truncate">
           {project.title}
@@ -215,7 +212,6 @@ function ProjectRow({ project, index }: { project: Project; index: number }) {
         </span>
       </div>
 
-      {/* action icons (desktop, fade in on hover) */}
       <div className="hidden md:flex items-center gap-1 flex-shrink-0">
         {project.link && (
           <span
@@ -239,7 +235,6 @@ function ProjectRow({ project, index }: { project: Project; index: number }) {
         )}
       </div>
 
-      {/* arrow */}
       <ArrowUpRightIcon className="w-5 h-5 flex-shrink-0 text-neutral-700 group-hover:text-primary group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-200" />
     </Link>
   );
