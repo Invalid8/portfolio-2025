@@ -27,8 +27,10 @@ type NotesCtx = {
   activeTabId: string;
   loaded: boolean;
   showDisclaimer: boolean;
+  expanded: boolean;
   contentRef: React.RefObject<HTMLDivElement | null>;
   dismissDisclaimer: () => void;
+  toggleExpanded: () => void;
   persistNote: (note: Note) => Promise<Note>;
   selectNote: (note: Note) => void;
   addNote: () => Promise<void>;
@@ -54,6 +56,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
   const [activeNote, setActiveNote] = useState<Note | null>(null);
   const [activeTabId, setActiveTabId] = useState<string>("");
   const [loaded, setLoaded] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const [showDisclaimer, setShowDisclaimer] = useState(() => {
     if (typeof window === "undefined") return false;
     try {
@@ -98,6 +101,8 @@ export function NotesProvider({ children }: { children: ReactNode }) {
     } catch {}
     setShowDisclaimer(false);
   }, []);
+
+  const toggleExpanded = useCallback(() => setExpanded((v) => !v), []);
 
   const persistNote = useCallback(async (note: Note): Promise<Note> => {
     const updated = { ...note, updatedAt: Date.now() };
@@ -243,8 +248,10 @@ export function NotesProvider({ children }: { children: ReactNode }) {
         activeTabId,
         loaded,
         showDisclaimer,
+        expanded,
         contentRef,
         dismissDisclaimer,
+        toggleExpanded,
         persistNote,
         selectNote,
         addNote,

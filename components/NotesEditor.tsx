@@ -17,6 +17,8 @@ export default function NotesEditor() {
     activeTabId,
     loaded,
     contentRef,
+    expanded,
+    toggleExpanded,
     setActiveNote,
     setActiveTabId,
     persistNote,
@@ -68,14 +70,7 @@ export default function NotesEditor() {
     const updated = { ...activeNote, tabs: updatedTabs };
     setActiveNote(updated);
     persistNote(updated);
-  }, [
-    activeNote,
-    activeTab,
-    activeTabId,
-    persistNote,
-    setActiveNote,
-    contentRef,
-  ]);
+  }, [activeNote, activeTab, activeTabId, persistNote, setActiveNote, contentRef]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
@@ -84,18 +79,9 @@ export default function NotesEditor() {
       return;
     }
     if (e.metaKey || e.ctrlKey) {
-      if (e.key === "b") {
-        e.preventDefault();
-        document.execCommand("bold");
-      }
-      if (e.key === "i") {
-        e.preventDefault();
-        document.execCommand("italic");
-      }
-      if (e.key === "u") {
-        e.preventDefault();
-        document.execCommand("underline");
-      }
+      if (e.key === "b") { e.preventDefault(); document.execCommand("bold"); }
+      if (e.key === "i") { e.preventDefault(); document.execCommand("italic"); }
+      if (e.key === "u") { e.preventDefault(); document.execCommand("underline"); }
     }
   }, []);
 
@@ -138,10 +124,7 @@ export default function NotesEditor() {
       await ensureFontLoaded(fontFamily, fontSize);
       const canvas = drawNoteCanvas(activeTab.html, fontSize, fontFamily);
       canvas.toBlob((blob) => {
-        if (!blob) {
-          setCapturing(false);
-          return;
-        }
+        if (!blob) { setCapturing(false); return; }
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
@@ -164,10 +147,7 @@ export default function NotesEditor() {
   if (!loaded) {
     return (
       <div className="flex-1 flex items-center justify-center">
-        <Loader2Icon
-          className="w-5 h-5 animate-spin"
-          style={{ color: "#333" }}
-        />
+        <Loader2Icon className="w-5 h-5 animate-spin" style={{ color: "#333" }} />
       </div>
     );
   }
@@ -184,12 +164,20 @@ export default function NotesEditor() {
         .note-tab { font-family: var(--font-caveat), cursive; }
       `}</style>
 
-      <div className="flex-1 flex flex-col items-center justify-center p-6 lg:p-10 overflow-auto">
+      {/* Fills the entire remaining height from the layout */}
+      <div
+        className="flex-1 flex flex-col items-center overflow-hidden h-full"
+        style={{
+          padding: expanded ? "16px 24px" : "24px 40px",
+          transition: "padding 0.3s ease",
+        }}
+      >
         <div
-          className="flex flex-col w-full"
+          className="flex flex-col w-full flex-1 min-h-0"
           style={{
-            maxWidth: 680,
+            maxWidth: expanded ? "100%" : 680,
             filter: "drop-shadow(0 24px 60px rgba(0,0,0,0.7))",
+            transition: "max-width 0.3s ease",
           }}
         >
           <NoteToolbar
@@ -199,28 +187,30 @@ export default function NotesEditor() {
             onSizeChange={handleSizeChange}
             onScreenshot={handleScreenshot}
             capturing={capturing}
+            expanded={expanded}
+            onToggleExpand={toggleExpanded}
           />
 
+          {/* Paper — flex-1 + min-h-0 so it stretches to fill */}
           <div
-            className="relative overflow-hidden"
+            className="relative overflow-hidden flex-1 min-h-0"
             style={{
               background: "#fdf9f0",
-              minHeight: 520,
-              maxHeight: "calc(100vh - 200px)",
               clipPath: TORN_BOTTOM,
             }}
           >
+            {/* Header gradient band */}
             <div
               className="absolute top-0 left-0 right-0 pointer-events-none"
               style={{
                 height: HEADER_H,
-                background:
-                  "linear-gradient(180deg, #ede0c4 0%, #f5ecd8 60%, #fdf9f0 100%)",
+                background: "linear-gradient(180deg, #ede0c4 0%, #f5ecd8 60%, #fdf9f0 100%)",
                 borderBottom: "2px solid #d4c9a8",
                 zIndex: 2,
               }}
             />
 
+            {/* Tabs row */}
             <div
               className="absolute top-0 left-14 right-0 flex items-end gap-0.5 px-2 pointer-events-auto"
               style={{ zIndex: 3, height: HEADER_H }}
@@ -235,11 +225,7 @@ export default function NotesEditor() {
                       const updatedTabs = activeNote.tabs.map((t) =>
                         t.id === activeTabId ? { ...t, html } : t,
                       );
-                      persistNote({
-                        ...activeNote,
-                        tabs: updatedTabs,
-                        activeTabId: tab.id,
-                      });
+                      persistNote({ ...activeNote, tabs: updatedTabs, activeTabId: tab.id });
                     }
                     setActiveTabId(tab.id);
                   }}
@@ -248,13 +234,10 @@ export default function NotesEditor() {
                     height: 34,
                     marginTop: "auto",
                     borderRadius: "5px 5px 0 0",
-                    background:
-                      tab.id === activeTabId ? "#fdf9f0" : "rgba(0,0,0,0.05)",
+                    background: tab.id === activeTabId ? "#fdf9f0" : "rgba(0,0,0,0.05)",
                     border: "1px solid",
-                    borderColor:
-                      tab.id === activeTabId ? "#d4c9a8" : "transparent",
-                    borderBottom:
-                      tab.id === activeTabId ? "2px solid #fdf9f0" : "none",
+                    borderColor: tab.id === activeTabId ? "#d4c9a8" : "transparent",
+                    borderBottom: tab.id === activeTabId ? "2px solid #fdf9f0" : "none",
                     fontSize: 15,
                     color: tab.id === activeTabId ? "#1a1a2e" : "#9a8f80",
                     minWidth: 56,
@@ -292,12 +275,8 @@ export default function NotesEditor() {
                       onClick={(e) => removeTab(tab.id, e)}
                       className="opacity-0 group-hover:opacity-100 transition-opacity ml-0.5"
                       style={{ color: "#aaa" }}
-                      onMouseEnter={(e) =>
-                        (e.currentTarget.style.color = "#e55")
-                      }
-                      onMouseLeave={(e) =>
-                        (e.currentTarget.style.color = "#aaa")
-                      }
+                      onMouseEnter={(e) => (e.currentTarget.style.color = "#e55")}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = "#aaa")}
                     >
                       <XIcon className="w-3 h-3" />
                     </button>
@@ -323,6 +302,7 @@ export default function NotesEditor() {
               </button>
             </div>
 
+            {/* Spiral holes */}
             <div
               className="absolute top-0 bottom-0 left-0 w-14 flex flex-col items-center pointer-events-none z-10"
               style={{ paddingTop: HEADER_H + lineHeight }}
@@ -330,19 +310,19 @@ export default function NotesEditor() {
               {Array.from({ length: 14 }).map((_, i) => (
                 <div
                   key={i}
-                  className="rounded-full flex-shrink-0"
+                  className="rounded-full shrink-0"
                   style={{
                     width: 16,
                     height: 16,
                     background: "#1a1410",
                     marginBottom: `${lineHeight * 4 - 16}px`,
-                    boxShadow:
-                      "inset 0 2px 5px rgba(0,0,0,0.6), 0 1px 2px rgba(255,255,255,0.1)",
+                    boxShadow: "inset 0 2px 5px rgba(0,0,0,0.6), 0 1px 2px rgba(255,255,255,0.1)",
                   }}
                 />
               ))}
             </div>
 
+            {/* Editable content — h-full so it fills the paper */}
             <div
               ref={contentRef}
               contentEditable
@@ -350,7 +330,7 @@ export default function NotesEditor() {
               onInput={handleInput}
               onKeyDown={handleKeyDown}
               spellCheck={false}
-              className="scribble-content relative outline-none overflow-y-auto"
+              className="scribble-content absolute inset-0 outline-none overflow-y-auto"
               style={{
                 fontFamily: "var(--font-caveat), cursive",
                 color: "#1a1a2e",
@@ -361,8 +341,6 @@ export default function NotesEditor() {
                 paddingBottom: "60px",
                 paddingLeft: "76px",
                 paddingRight: "36px",
-                minHeight: 520,
-                maxHeight: "calc(100vh - 260px)",
                 caretColor: "#1a1a2e",
                 wordBreak: "break-word",
                 zIndex: 1,

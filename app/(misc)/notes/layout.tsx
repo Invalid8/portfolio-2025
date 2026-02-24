@@ -8,17 +8,12 @@ export default function NotesLayout({ children }: { children: ReactNode }) {
   return (
     <NotesProvider>
       <NotesDisclaimerWrapper />
-      <div
-        className="flex h-screen overflow-hidden"
-        style={{ background: "#0c0a08" }}
-      >
+      <div className="flex h-screen overflow-hidden" style={{ background: "#0c0a08" }}>
         <NotesSidebar />
-
-        <main className="flex-1 overflow-hidden flex flex-col">
+        <main className="flex-1 overflow-hidden flex flex-col relative">
           {children}
-
-          <div className="flex items-end justify-end font-bold text-lg font bold p-6 py-4">
-            <p>
+          <div className="absolute bottom-4 right-6 font-bold text-lg pointer-events-none">
+            <p className="pointer-events-auto">
               built by{" "}
               <Link className="text-primary" href="/">
                 dalgoridim
