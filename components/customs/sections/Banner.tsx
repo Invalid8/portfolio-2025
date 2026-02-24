@@ -51,7 +51,7 @@ export default function Banner() {
         .b-tick { animation: _ticker 55s linear infinite; }
       `}</style>
 
-      <div className="relative min-h-svh w-full flex flex-col overflow-hidden">
+      <div className="relative md:min-h-[svh] min-h-[90svh] w-full flex flex-col overflow-hidden">
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
           <div
             className="absolute inset-0"
@@ -74,6 +74,9 @@ export default function Banner() {
         <div className="relative z-10 flex flex-col justify-center flex-1 px-4 sm:px-6 md:px-12 lg:px-20 xl:px-28 pt-32 pb-14 2xl:px-[10%] 2xl:pr-[15%] mx-auto w-full">
           <div className="flex items-center gap-10 xl:gap-16">
             <div className="flex-1 min-w-0">
+              <div className="flex justify-end">
+                <ScribbleNote mobileOnly />
+              </div>
               <div className="b-tag mb-9" />
 
               <div className="b-h1 mb-8">
@@ -98,7 +101,7 @@ export default function Banner() {
                 </ContentSpan>
               </div>
 
-              <div className="b-cta mt-8 flex flex-col gap-4">
+              <div className="b-cta mt-8 flex flex-col gap-10">
                 <ContentSpan
                   sectionKey="banner"
                   fieldKey="resume"
@@ -107,9 +110,6 @@ export default function Banner() {
                 >
                   {`^^__**[My Resume](https://drive.google.com/file/d/1ixmuBYgzXQdXrTn1n9aoz4SWYRU715h-/view)**__^^`}
                 </ContentSpan>
-                <br />
-
-                <ScribbleNote mobileOnly />
               </div>
             </div>
 
