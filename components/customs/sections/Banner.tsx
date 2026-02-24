@@ -51,7 +51,7 @@ export default function Banner() {
         .b-tick { animation: _ticker 55s linear infinite; }
       `}</style>
 
-      <div className="relative md:min-h-[svh] min-h-[90svh] w-full flex flex-col overflow-hidden">
+      <div className="relative md:min-h-svh min-h-[95svh] w-full flex flex-col overflow-hidden">
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
           <div
             className="absolute inset-0"

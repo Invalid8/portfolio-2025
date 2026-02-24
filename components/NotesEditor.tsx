@@ -8,8 +8,9 @@ import {
   ensureFontLoaded,
   drawNoteCanvas,
 } from "@/lib/notes-canvas";
-import { useNotes } from "@/lib/notes-context";
+import { useNotes } from "@/lib/context/notes-context";
 import NoteToolbar from "@/components/customs/notes/NoteToolbar";
+import NotesSharePanel from "@/components/customs/notes/NotesSharePanel";
 
 export default function NotesEditor() {
   const {
@@ -32,6 +33,7 @@ export default function NotesEditor() {
   const [capturing, setCapturing] = useState(false);
   const [editingTabId, setEditingTabId] = useState<string | null>(null);
   const [tabDraft, setTabDraft] = useState("");
+  const [showShare, setShowShare] = useState(false);
   const tabInputRef = useRef<HTMLInputElement>(null);
   const noteWrapperRef = useRef<HTMLDivElement>(null);
 
@@ -97,10 +99,33 @@ export default function NotesEditor() {
     [handleInput, contentRef],
   );
 
+  const applyHighlight = useCallback(
+    (color: string) => {
+      contentRef.current?.focus();
+      document.execCommand("hiliteColor", false, color);
+      handleInput();
+    },
+    [handleInput, contentRef],
+  );
+
   const execFormat = useCallback(
     (cmd: string) => {
       contentRef.current?.focus();
       document.execCommand(cmd);
+      handleInput();
+    },
+    [handleInput, contentRef],
+  );
+
+  const applyAlign = useCallback(
+    (alignment: "left" | "center" | "right") => {
+      contentRef.current?.focus();
+      const cmdMap = {
+        left: "justifyLeft",
+        center: "justifyCenter",
+        right: "justifyRight",
+      };
+      document.execCommand(cmdMap[alignment]);
       handleInput();
     },
     [handleInput, contentRef],
@@ -168,6 +193,15 @@ export default function NotesEditor() {
         .note-tab { font-family: var(--font-caveat), cursive; }
       `}</style>
 
+      {showShare && activeNote && activeTab && (
+        <NotesSharePanel
+          noteTitle={activeNote.title}
+          noteHtml={activeTab.html}
+          noteFontSize={fontSize}
+          onClose={() => setShowShare(false)}
+        />
+      )}
+
       <div
         className="flex-1 flex flex-col items-center overflow-hidden h-full"
         style={{
@@ -186,10 +220,13 @@ export default function NotesEditor() {
         >
           <NoteToolbar
             onColor={applyColor}
+            onHighlight={applyHighlight}
             onFormat={execFormat}
+            onAlign={applyAlign}
             fontSize={fontSize}
             onSizeChange={handleSizeChange}
             onScreenshot={handleScreenshot}
+            onShare={() => setShowShare(true)}
             capturing={capturing}
             expanded={expanded}
             onToggleExpand={toggleExpanded}

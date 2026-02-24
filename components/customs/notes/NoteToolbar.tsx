@@ -7,17 +7,23 @@ import {
   CameraIcon,
   Maximize2Icon,
   Minimize2Icon,
-  ArrowUpRightIcon,
+  AlignLeftIcon,
+  AlignCenterIcon,
+  AlignRightIcon,
+  ShareIcon,
 } from "lucide-react";
 import { COLORS } from "@/lib/notes-canvas";
-import Link from "next/link";
+import { useRef } from "react";
 
 type Props = {
   onColor: (color: string) => void;
+  onHighlight: (color: string) => void;
   onFormat: (cmd: string) => void;
+  onAlign: (alignment: "left" | "center" | "right") => void;
   fontSize: number;
   onSizeChange: (size: number) => void;
   onScreenshot: () => void;
+  onShare: () => void;
   capturing: boolean;
   expanded: boolean;
   onToggleExpand: () => void;
@@ -25,7 +31,16 @@ type Props = {
   extra?: React.ReactNode;
 };
 
+const HIGHLIGHT_COLORS = [
+  { label: "Yellow", value: "#fef08a" },
+  { label: "Green", value: "#bbf7d0" },
+  { label: "Pink", value: "#fbcfe8" },
+  { label: "Blue", value: "#bfdbfe" },
+  { label: "None", value: "transparent" },
+];
+
 const tbBtn = "p-2 rounded transition-all cursor-pointer";
+
 const sep = (
   <div
     className="w-px h-4 shrink-0"
@@ -35,16 +50,21 @@ const sep = (
 
 export default function NoteToolbar({
   onColor,
+  onHighlight,
   onFormat,
+  onAlign,
   fontSize,
   onSizeChange,
   onScreenshot,
+  onShare,
   capturing,
   expanded,
   onToggleExpand,
   mobileMenuButton,
   extra,
 }: Props) {
+  const highlightPickerRef = useRef<HTMLInputElement>(null);
+
   return (
     <div
       className="flex items-center gap-1.5 px-3 py-2 rounded-t-xl flex-wrap"
@@ -74,7 +94,29 @@ export default function NoteToolbar({
               background: c.value,
               boxShadow: "0 0 0 1px rgba(255,255,255,0.1)",
             }}
-            title={c.label}
+            title={`Text: ${c.label}`}
+          />
+        ))}
+      </div>
+
+      {sep}
+
+      <div className="flex items-center gap-1 shrink-0" title="Highlight">
+        {HIGHLIGHT_COLORS.map((c) => (
+          <button
+            key={c.value}
+            onClick={() => onHighlight(c.value)}
+            className="rounded-sm shrink-0 transition-all hover:scale-125 cursor-pointer border"
+            style={{
+              width: 13,
+              height: 13,
+              background: c.value === "transparent" ? "#1a1a1a" : c.value,
+              borderColor:
+                c.value === "transparent"
+                  ? "rgba(255,255,255,0.2)"
+                  : "rgba(0,0,0,0.15)",
+            }}
+            title={`Highlight: ${c.label}`}
           />
         ))}
       </div>
@@ -124,6 +166,39 @@ export default function NoteToolbar({
 
       {sep}
 
+      <button
+        onClick={() => onAlign("left")}
+        className={tbBtn}
+        style={{ color: "#666" }}
+        onMouseEnter={(e) => (e.currentTarget.style.color = "#ddd")}
+        onMouseLeave={(e) => (e.currentTarget.style.color = "#666")}
+        title="Align Left"
+      >
+        <AlignLeftIcon className="w-4 h-4" />
+      </button>
+      <button
+        onClick={() => onAlign("center")}
+        className={tbBtn}
+        style={{ color: "#666" }}
+        onMouseEnter={(e) => (e.currentTarget.style.color = "#ddd")}
+        onMouseLeave={(e) => (e.currentTarget.style.color = "#666")}
+        title="Align Center"
+      >
+        <AlignCenterIcon className="w-4 h-4" />
+      </button>
+      <button
+        onClick={() => onAlign("right")}
+        className={tbBtn}
+        style={{ color: "#666" }}
+        onMouseEnter={(e) => (e.currentTarget.style.color = "#ddd")}
+        onMouseLeave={(e) => (e.currentTarget.style.color = "#666")}
+        title="Align Right"
+      >
+        <AlignRightIcon className="w-4 h-4" />
+      </button>
+
+      {sep}
+
       <div className="flex items-center gap-1.5">
         <span
           className="text-[10px] font-mono uppercase tracking-widest hidden sm:block"
@@ -166,6 +241,17 @@ export default function NoteToolbar({
         ) : (
           <CameraIcon className="w-4 h-4" />
         )}
+      </button>
+
+      <button
+        onClick={onShare}
+        className={tbBtn}
+        style={{ color: "#666" }}
+        onMouseEnter={(e) => (e.currentTarget.style.color = "#e85d26")}
+        onMouseLeave={(e) => (e.currentTarget.style.color = "#666")}
+        title="Share note"
+      >
+        <ShareIcon className="w-4 h-4" />
       </button>
 
       {sep}

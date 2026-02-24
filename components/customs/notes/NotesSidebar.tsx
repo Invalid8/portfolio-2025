@@ -10,7 +10,7 @@ import {
   PanelLeftOpen,
   XIcon,
 } from "lucide-react";
-import { useNotes } from "@/lib/notes-context";
+import { useNotes } from "@/lib/context/notes-context";
 
 function timeAgo(ts: number): string {
   const s = Math.floor((Date.now() - ts) / 1000);
@@ -150,12 +150,12 @@ export default function NotesSidebar() {
                     <span className={`text-base font-medium truncate ${isActive ? "text-white" : "text-zinc-300"}`}>
                       {note.title}
                     </span>
-                    <button
+                    <div
                       onClick={(e) => removeNote(note.id, e)}
                       className="opacity-0 group-hover:opacity-100 transition text-zinc-500 hover:text-red-500 shrink-0"
                     >
                       <TrashIcon size={16} />
-                    </button>
+                    </div>
                   </div>
 
                   <p className="text-sm text-zinc-500 truncate mt-2">

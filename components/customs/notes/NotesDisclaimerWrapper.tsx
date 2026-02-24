@@ -1,6 +1,6 @@
 "use client";
 
-import { useNotes } from "@/lib/notes-context";
+import { useNotes } from "@/lib/context/notes-context";
 import NoteDisclaimer from "@/components/customs/notes/NoteDisclaimer";
 
 export default function NotesDisclaimerWrapper() {
