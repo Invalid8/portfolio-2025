@@ -1,5 +1,4 @@
-import NotesApp from "@/components/NotesApp";
-
-export default function NotesPage() {
-  return <NotesApp />;
+import NotesEditor from "@/components/NotesEditor";
+export default function NotePage() {
+  return <NotesEditor />;
 }

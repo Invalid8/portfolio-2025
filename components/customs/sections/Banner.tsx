@@ -3,7 +3,7 @@
 import ContentSpan from "@/components/customs/ContentEditSpan";
 import { usePageContext } from "@/lib/context/PageContent";
 import { Skill } from "@/types";
-import ScribbleNote from "@/components/customs/ScribbleNote";
+import ScribbleNote from "@/components/customs/notes/ScribbleNote";
 
 export default function Banner() {
   const { sections } = usePageContext();
