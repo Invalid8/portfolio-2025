@@ -71,7 +71,7 @@ export default function Banner() {
           />
         </div>
 
-        <div className="relative z-10 flex flex-col justify-center flex-1 px-6 sm:px-12 md:px-20 xl:px-28 pt-32 pb-14 2xl:px-[10%] 2xl:pr-[15%] mx-auto w-full">
+        <div className="relative z-10 flex flex-col justify-center flex-1 sm:px-4 md:px-12 lg:px-20 xl:px-28 pt-32 pb-14 2xl:px-[10%] 2xl:pr-[15%] mx-auto w-full">
           <div className="flex items-center gap-10 xl:gap-16">
             <div className="flex-1 min-w-0">
               <div className="b-tag mb-9" />
