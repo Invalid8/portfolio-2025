@@ -42,10 +42,10 @@ export default function NoteDisclaimer({
     >
       <div className="flex-1 min-w-0">
         <p className="text-base leading-relaxed" style={{ color: "#999" }}>
-          Your notes stays on your device, they are saved in your browser {storage} <br />
+          Your notes stays on your device, they are saved in your browser {storage}.
         </p>
         <p className="text-base mt-2" style={{ color: "#999" }}>
-          <span style={{ color: "#999" }}>You want Evidence?</span> just trust me bro 🙂
+          <span style={{ color: "#999" }}>You want Evidence?</span> just trust me bro 🙂.
         </p>
       </div>
       <button
