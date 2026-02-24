@@ -107,6 +107,7 @@ export default function Banner() {
                 >
                   {`^^__**[My Resume](https://drive.google.com/file/d/1ixmuBYgzXQdXrTn1n9aoz4SWYRU715h-/view)**__^^`}
                 </ContentSpan>
+                <br />
 
                 <ScribbleNote mobileOnly />
               </div>

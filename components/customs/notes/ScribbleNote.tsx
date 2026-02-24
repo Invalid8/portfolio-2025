@@ -210,7 +210,7 @@ export default function ScribbleNote({ mobileOnly = false }: Props) {
               alignItems: "center",
               justifyContent: "center",
               padding: 16,
-              background: "rgba(8,6,4,0.93)",
+              background: "rgba(8, 6, 4, 0.541)",
               backdropFilter: "blur(16px)",
               WebkitBackdropFilter: "blur(16px)",
             }}
