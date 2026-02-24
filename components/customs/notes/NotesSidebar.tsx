@@ -146,7 +146,7 @@ export default function NotesSidebar() {
                     <span className="absolute left-0 top-4 bottom-4 w-1 bg-primary rounded-r" />
                   )}
 
-                  <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-start justify-between gap-1">
                     <span className={`text-base font-medium truncate ${isActive ? "text-white" : "text-zinc-300"}`}>
                       {note.title}
                     </span>

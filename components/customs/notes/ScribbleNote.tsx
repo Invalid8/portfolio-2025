@@ -210,7 +210,7 @@ export default function ScribbleNote({ mobileOnly = false }: Props) {
               alignItems: "center",
               justifyContent: "center",
               padding: 16,
-              background: "rgba(8,6,4,0.93)",
+              background: "rgba(8, 6, 4, 0.26)",
               backdropFilter: "blur(16px)",
               WebkitBackdropFilter: "blur(16px)",
             }}
@@ -254,23 +254,35 @@ export default function ScribbleNote({ mobileOnly = false }: Props) {
                 expanded={false}
                 onToggleExpand={() => {}}
                 extra={
-                  <button
-                    onClick={() => setOpen(false)}
+                  <Link
+                    href="/notes"
                     style={{
-                      color: "#666",
-                      padding: 8,
-                      borderRadius: 4,
-                      cursor: "pointer",
-                      background: "none",
-                      border: "none",
                       display: "flex",
+                      alignItems: "center",
+                      gap: 3,
+                      color: "#b8a88a",
+                      textDecoration: "none",
                     }}
-                    onMouseEnter={(e) => (e.currentTarget.style.color = "#ddd")}
-                    onMouseLeave={(e) => (e.currentTarget.style.color = "#666")}
-                    title="Close (Esc)"
+                    onMouseEnter={(e) =>
+                      (e.currentTarget.style.color = "#8a6d3b")
+                    }
+                    onMouseLeave={(e) =>
+                      (e.currentTarget.style.color = "#b8a88a")
+                    }
+                    title="Open full notes"
                   >
-                    <ShrinkIcon style={{ width: 16, height: 16 }} />
-                  </button>
+                    <span
+                      style={{
+                        fontFamily: "var(--font-caveat), cursive",
+                        fontSize: 14,
+                        textDecoration: "underline",
+                        textUnderlineOffset: 2,
+                      }}
+                    >
+                      full notes
+                    </span>
+                    <ArrowUpRightIcon style={{ width: 12, height: 12 }} />
+                  </Link>
                 }
               />
 
@@ -314,36 +326,6 @@ export default function ScribbleNote({ mobileOnly = false }: Props) {
                   >
                     quick note
                   </span>
-                  <Link
-                    href="/notes"
-                    onClick={() => setOpen(false)}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 3,
-                      color: "#b8a88a",
-                      textDecoration: "none",
-                    }}
-                    onMouseEnter={(e) =>
-                      (e.currentTarget.style.color = "#8a6d3b")
-                    }
-                    onMouseLeave={(e) =>
-                      (e.currentTarget.style.color = "#b8a88a")
-                    }
-                    title="Open full notes"
-                  >
-                    <span
-                      style={{
-                        fontFamily: "var(--font-caveat), cursive",
-                        fontSize: 14,
-                        textDecoration: "underline",
-                        textUnderlineOffset: 2,
-                      }}
-                    >
-                      full notes
-                    </span>
-                    <ArrowUpRightIcon style={{ width: 12, height: 12 }} />
-                  </Link>
                 </div>
 
                 <div

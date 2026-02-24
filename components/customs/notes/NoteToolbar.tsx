@@ -7,8 +7,10 @@ import {
   CameraIcon,
   Maximize2Icon,
   Minimize2Icon,
+  ArrowUpRightIcon,
 } from "lucide-react";
 import { COLORS } from "@/lib/notes-canvas";
+import Link from "next/link";
 
 type Props = {
   onColor: (color: string) => void;
@@ -153,7 +155,9 @@ export default function NoteToolbar({
         disabled={capturing}
         className={tbBtn}
         style={{ color: "#666" }}
-        onMouseEnter={(e) => { if (!capturing) e.currentTarget.style.color = "#ddd"; }}
+        onMouseEnter={(e) => {
+          if (!capturing) e.currentTarget.style.color = "#ddd";
+        }}
         onMouseLeave={(e) => (e.currentTarget.style.color = "#666")}
         title="Save as image"
       >
@@ -170,8 +174,12 @@ export default function NoteToolbar({
         onClick={onToggleExpand}
         className={tbBtn}
         style={{ color: expanded ? "#e85d26" : "#666" }}
-        onMouseEnter={(e) => (e.currentTarget.style.color = expanded ? "#e85d26" : "#ddd")}
-        onMouseLeave={(e) => (e.currentTarget.style.color = expanded ? "#e85d26" : "#666")}
+        onMouseEnter={(e) =>
+          (e.currentTarget.style.color = expanded ? "#e85d26" : "#ddd")
+        }
+        onMouseLeave={(e) =>
+          (e.currentTarget.style.color = expanded ? "#e85d26" : "#666")
+        }
         title={expanded ? "Exit fullscreen" : "Fullscreen"}
       >
         {expanded ? (

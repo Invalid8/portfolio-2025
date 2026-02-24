@@ -12,7 +12,7 @@ export default function NotesLayout({ children }: { children: ReactNode }) {
         <NotesSidebar />
         <main className="flex-1 overflow-hidden flex flex-col relative min-w-0">
           {children}
-          <div className="absolute bottom-4 right-6 font-bold text-lg pointer-events-none">
+          <div className="absolute bottom-4 right-6 font-bold text-sm sm:text-lg pointer-events-none bg-[#0c0a08] p-1.5 px-4 rounded-full">
             <p className="pointer-events-auto">
               built by{" "}
               <Link className="text-primary" href="/">
