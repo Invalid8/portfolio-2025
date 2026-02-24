@@ -441,7 +441,7 @@ export default function ScribbleNote({ mobileOnly = false }: Props) {
       <>
         <button
           onClick={() => setOpen(true)}
-          className="lg:hidden inline-flex items-center gap-2 px-4 py-2.5 rounded-full border border-neutral-700 text-sm font-mono tracking-wider text-neutral-400 hover:border-primary/50 hover:text-primary transition-all active:scale-95"
+          className="lg:hidden inline-flex w-fit items-center gap-2 px-4 py-2.5 rounded-full border border-neutral-700 text-sm font-mono tracking-wider text-neutral-400 hover:border-primary/50 hover:text-primary transition-all active:scale-95"
         >
           <PenLineIcon className="w-4 h-4" />
           Quick Note
