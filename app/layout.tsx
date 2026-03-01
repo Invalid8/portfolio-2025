@@ -59,7 +59,7 @@ export const metadata: Metadata = {
     siteName: "Daniel Fadamitan Portfolio",
     images: [
       {
-        url: "/images/placeholder.png",
+        url: "/images/og-image.png",
         width: 1200,
         height: 630,
         alt: "Daniel Fadamitan - Frontend Developer",
