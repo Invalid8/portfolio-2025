@@ -72,7 +72,7 @@ export const metadata: Metadata = {
     description:
       "Frontend Developer specializing in React, Next.js, and TypeScript",
     creator: "@D_Invalid1",
-    images: ["/og-image.png"],
+    images: ["https://dalgoridim.com/images/og-image.png"],
   },
   robots: {
     index: true,
