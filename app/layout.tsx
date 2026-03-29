@@ -52,14 +52,14 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://dantolu33.vercel.app",
+    url: "https://dalgoridim.com",
     title: "Daniel Fadamitan | Frontend Developer",
     description:
       "Frontend Developer specializing in React, Next.js, and TypeScript. Building accessible and user-friendly web applications.",
     siteName: "Daniel Fadamitan Portfolio",
     images: [
       {
-        url: "/images/og-image.png",
+        url: "https://dalgoridim.com/images/og-image.png",
         width: 1200,
         height: 630,
         alt: "Daniel Fadamitan - Frontend Developer",
