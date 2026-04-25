@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useMemo, useRef } from "react";
 import ContentSpan from "@/components/customs/ContentEditSpan";
 import { usePageContext } from "@/lib/context/PageContent";
 import { useAuth } from "@/lib/context/auth";
@@ -27,16 +27,14 @@ function isProject(section: Section): section is Section & Project {
 export default function Projects() {
   const { sections, setSection } = usePageContext();
   const { isAdmin, isEditing } = useAuth();
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(true);
   const [showAll, setShowAll] = useState(false);
 
   const projectsCollection = useMemo(() => sections["projects"] || {}, [sections]);
 
-  useEffect(() => {
-    setProjects(Object.values(projectsCollection).filter(isProject));
-    setLoading(false);
-  }, [projectsCollection]);
+  const projects = useMemo<Project[]>(
+    () => Object.values(projectsCollection).filter(isProject),
+    [projectsCollection],
+  );
 
   const handleAddProject = async (formData: FormData) => {
     try {
@@ -82,14 +80,6 @@ export default function Projects() {
   };
 
   const displayed = showAll ? projects : projects.slice(0, 6);
-
-  if (loading) {
-    return (
-      <div id="Projects" className="min-h-svh w-full flex justify-center items-center">
-        <div className="animate-pulse text-2xl">Loading projects...</div>
-      </div>
-    );
-  }
 
   return (
     <section id="Projects" className="w-full py-20 px-4 sm:px-8 md:px-12 relative">

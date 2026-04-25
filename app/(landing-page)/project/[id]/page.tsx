@@ -7,6 +7,8 @@ import { Metadata } from "next";
 import { ArrowLeftIcon } from "lucide-react";
 import Link from "next/link";
 
+const SITE_URL = "https://dalgoridim.com";
+
 export async function generateStaticParams() {
   try {
     const projects = await fetchCollectionServer<Project>("projects");
@@ -34,36 +36,44 @@ export async function generateMetadata({
       return {
         title: "Project Not Found",
         description: "The requested project could not be found.",
+        robots: { index: false, follow: false },
       };
     }
 
+    const canonical = `/project/${project.id}`;
+    const ogImage = project.thumbnail || "/images/og-image.png";
+
     return {
-      title: `${project.title} | Portfolio`,
+      title: project.title,
       description: project.description,
+      alternates: { canonical },
       openGraph: {
         title: project.title,
         description: project.description,
+        url: canonical,
+        type: "article",
+        siteName: "Daniel Fadamitan Portfolio",
         images: [
           {
-            url: project.thumbnail,
+            url: ogImage,
             width: 1200,
             height: 630,
             alt: project.title,
           },
         ],
-        type: "website",
       },
       twitter: {
         card: "summary_large_image",
         title: project.title,
         description: project.description,
-        images: [project.thumbnail],
+        images: [ogImage],
+        creator: "@D_Invalid1",
       },
     };
   } catch (error) {
     console.error("Error generating metadata:", error);
     return {
-      title: "Project | Portfolio",
+      title: "Project",
       description: "View project details",
     };
   }
@@ -94,5 +104,31 @@ export default async function ProjectPage({
     );
   }
 
-  return <ProjectFullPage project={project} />;
+  const projectJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "CreativeWork",
+    name: project.title,
+    description: project.description,
+    url: `${SITE_URL}/project/${project.id}`,
+    image: project.thumbnail,
+    dateCreated: project.date,
+    creator: {
+      "@type": "Person",
+      name: "Daniel Fadamitan",
+      url: SITE_URL,
+    },
+    ...(project.link ? { sameAs: project.link } : {}),
+    ...(project.github ? { codeRepository: project.github } : {}),
+    ...(project.type ? { genre: project.type } : {}),
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(projectJsonLd) }}
+      />
+      <ProjectFullPage project={project} />
+    </>
+  );
 }
