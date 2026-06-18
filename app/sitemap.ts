@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { fetchCollectionServer } from "@/lib/firebase/server/services";
+import { fetchCollection } from "@/lib/cms/data";
 import { Project } from "@/types";
 
 const SITE_URL = "https://dalgoridim.com";
@@ -21,7 +21,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let projectEntries: MetadataRoute.Sitemap = [];
 
   try {
-    const projects = await fetchCollectionServer<Project>("projects");
+    const projects = await fetchCollection<Project>("projects");
     projectEntries = projects.map((project) => ({
       url: `${SITE_URL}/project/${project.id}`,
       lastModified: now,

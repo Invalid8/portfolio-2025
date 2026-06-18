@@ -3,11 +3,7 @@ import { SurpriseUIProvider } from "@/lib/context/suprise-props";
 import Navbar from "./_components/Navbar";
 import Footer from "./_components/Footer";
 import Toolkit from "./_components/Toolkit";
-import {
-  fetchCollectionServer,
-  fetchByIdServer,
-} from "@/lib/firebase/server/services";
-import { serializeFirestoreData } from "@/lib/serialize";
+import { fetchCollection, fetchById } from "@/lib/cms/data";
 import { ReactNode } from "react";
 import { Experience, Project, Skill, Section, NestedSections } from "@/types";
 
@@ -36,23 +32,25 @@ export default async function Layout({
   const portfolioSections: Record<string, Partial<Section>> = {};
 
   try {
+    // Reads go through the configured backend (Firebase or Postgres); adapters
+    // return plain, already-serialized objects.
     const [projectsData, experiencesData, skillsData, ...portfolioData] =
       await Promise.all([
-        fetchCollectionServer<Project>("projects"),
-        fetchCollectionServer<Experience>("experiences"),
-        fetchCollectionServer<Skill>("skills"),
+        fetchCollection<Project>("projects"),
+        fetchCollection<Experience>("experiences"),
+        fetchCollection<Skill>("skills"),
         ...PORTFOLIO_SECTIONS.map((section) =>
-          fetchByIdServer("portfolio", section),
+          fetchById("portfolio", section),
         ),
       ]);
 
-    projects = serializeFirestoreData(projectsData);
-    experiences = serializeFirestoreData(experiencesData);
-    skills = serializeFirestoreData(skillsData);
+    projects = projectsData as Project[];
+    experiences = experiencesData as Experience[];
+    skills = skillsData as Skill[];
 
     PORTFOLIO_SECTIONS.forEach((section, index) => {
       portfolioSections[section] =
-        serializeFirestoreData(portfolioData[index]) || {};
+        (portfolioData[index] as Partial<Section>) || {};
     });
   } catch (err) {
     console.error("Failed to load layout data:", err);

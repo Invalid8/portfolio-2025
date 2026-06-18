@@ -384,7 +384,6 @@ export function ProjectModal({
                 <div className="flex justify-end">
                   {isEditing && (
                     <ProjectContentEditor
-                      projectId={project.id as string}
                       content={project.content}
                       onSave={(content) =>
                         onUpdateContent(project.id as string, content)

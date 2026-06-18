@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import ContentSpan from "@/components/customs/ContentEditSpan";
 import { usePageContext } from "@/lib/context/PageContent";
-import { fetchCollectionClient } from "@/lib/firebase/services";
 import type { Experience, Section } from "@/types";
 import { useAuth } from "@/lib/context/auth";
 import { AddExperienceModal } from "@/components/modals";
@@ -42,7 +41,9 @@ export default function ExperienceSection() {
 
   async function loadData() {
     try {
-      const expData = await fetchCollectionClient<Experience>("experiences");
+      const res = await fetch("/api/content/experiences");
+      if (!res.ok) throw new Error("Failed to load experiences");
+      const expData: Experience[] = await res.json();
       expData.forEach((exp) => {
         setSection("experiences", `experience-${exp.id}`, {
           ...exp,

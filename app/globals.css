@@ -2,6 +2,9 @@
 @import "tw-animate-css";
 @plugin "@tailwindcss/typography";
 
+/* Generate utility classes used inside the headless-cms package. */
+@source "../node_modules/@dalgoridim/headless-cms/dist";
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

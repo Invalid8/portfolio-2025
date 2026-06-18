@@ -1,6 +1,5 @@
 import { ProjectFullPage } from "@/components/customs/sections/ProjectFullPage";
-import { getProjectById } from "@/lib/firebase/projects";
-import { fetchCollectionServer } from "@/lib/firebase/server/services";
+import { getProjectById, fetchCollection } from "@/lib/cms/data";
 import { Project } from "@/types";
 import { Metadata } from "next";
 
@@ -11,7 +10,7 @@ const SITE_URL = "https://dalgoridim.com";
 
 export async function generateStaticParams() {
   try {
-    const projects = await fetchCollectionServer<Project>("projects");
+    const projects = await fetchCollection<Project>("projects");
 
     return projects.map((project) => ({
       id: String(project.id),

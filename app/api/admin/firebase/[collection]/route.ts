@@ -1,39 +1,33 @@
-import {
-  createDocument,
-  createDocumentWithId,
-} from "@/lib/firebase/server/services";
-import { requireAdmin } from "@/lib/firebase/server/services/auth";
-import { serializeFirestoreData } from "@/lib/serialize";
+import { UnauthorizedError } from "@dalgoridim/headless-cms/server";
+import { getDataAdapter, requireAdmin } from "@/lib/cms/server";
 import { NextRequest, NextResponse } from "next/server";
 
+// Collection-level create. Data backend follows DATA_BACKEND; auth is the shared
+// Firebase gate. (Per-document GET/PATCH/PUT/DELETE live in [id]/route.ts.)
 export async function POST(
   request: NextRequest,
   context: { params: Promise<{ collection: string }> },
 ) {
   try {
-    await requireAdmin();
+    await requireAdmin(request);
 
     const { collection } = await context.params;
-    const body = await request.json();
-    const { id, ...data } = serializeFirestoreData(body);
+    const { id, ...data } = await request.json();
+    const data_ = getDataAdapter();
 
     const result = id
-      ? await createDocumentWithId(collection, id, data)
-      : await createDocument(collection, data);
+      ? await data_.createWithId(collection, id, data)
+      : await data_.create(collection, data);
 
     return NextResponse.json(result);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
-    if (
-      error.code === "auth/id-token-expired" ||
-      error.code === "auth/argument-error" ||
-      error.message === "Unauthorized"
-    ) {
+  } catch (error) {
+    if (error instanceof UnauthorizedError && error.message === "Unauthorized") {
       return NextResponse.json(
         { error: "Unauthorized", logout: true },
         { status: 401 },
       );
     }
-    return NextResponse.json({ error: error.message }, { status: 403 });
+    const message = error instanceof Error ? error.message : "Request failed";
+    return NextResponse.json({ error: message }, { status: 403 });
   }
 }

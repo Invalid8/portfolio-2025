@@ -219,7 +219,6 @@ export function ProjectFullPage({ project: initialProject }: { project: Project 
               {isEditing && (
                 <div className="flex justify-end">
                   <ProjectContentEditor
-                    projectId={project.id as string}
                     content={project.content}
                     onSave={(content) => updateProjectContent(project.id as string, content)}
                   />
