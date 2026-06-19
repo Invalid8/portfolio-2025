@@ -19,8 +19,8 @@ A fully customizable, CMS-powered portfolio website built with Next.js 16, React
 - **Framework**: Next.js 16 (App Router)
 - **UI**: React 19, TailwindCSS 4
 - **Animations**: GSAP with ScrollTrigger
-- **Backend**: Firebase (Firestore + Storage + Auth)
-- **Editor**: Slate.js for rich text editing
+- **Backend**: Firebase (Firestore) or Postgres, switchable via `DATA_BACKEND`
+- **CMS**: [`@dalgoridim/headless-cms`](#-content-engine--dalgoridimheadless-cms) — inline-edit engine (extracted from this repo)
 - **Images**: Cloudinary for optimization
 - **Type Safety**: TypeScript
 
@@ -143,6 +143,47 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000)
+
+## 🧩 Content Engine — `@dalgoridim/headless-cms`
+
+All inline editing is powered by **[`@dalgoridim/headless-cms`](https://www.npmjs.com/package/@dalgoridim/headless-cms)**,
+a database-agnostic, headless inline-edit engine that was extracted from this
+project into its own standalone package. The package ships **behavior only** — no
+styling, no markup syntax, no icons. This portfolio supplies all of those as thin
+"skin" wrappers, so the package can be reused by any app without inheriting this
+site's look.
+
+### How it's wired
+
+| Concern | This repo | Package piece it skins / uses |
+|---|---|---|
+| Providers | `lib/context/PageContent.tsx` | `PageProvider` (+ Cloudinary storage, `sonner` notifier, `apiBasePath`) |
+| Auth | `lib/context/auth.tsx` | `FirebaseAuthProvider` / `useCmsAuth` |
+| Editable text | `components/customs/ContentEditSpan.tsx` | `ContentEditSpan` — adds the focus ring + the markup syntax via `renderValue` |
+| Editable image | `components/customs/EditableImage.tsx` | `EditableImage` — adds the hover overlay, icons, and URL modal via its render-prop |
+| Markdown editor | `components/customs/MarkdownEditor.tsx` | `useMarkdownEditor` — adds the modal, toolbar, and preview |
+| Admin API route | `app/api/admin/firebase/[collection]/[id]/route.ts` | `createCmsHandlers` |
+| Public reads | `app/api/content/[collection]/route.ts`, `lib/cms/data.ts` | `DataAdapter.fetchCollection` / `fetchById` |
+| Backend selection | `lib/cms/server.ts` | `FirestoreDataAdapter` / `PostgresDataAdapter` (via `DATA_BACKEND`) |
+
+### Editing flow
+
+1. The auth provider resolves the admin identity and toggles `isEditing`.
+2. `ContentEditSpan` / `EditableImage` become editable in place; edits are buffered
+   in `PageProvider`.
+3. On save, `PageProvider` uploads any pending images through the Cloudinary client
+   adapter, then `PATCH`es each changed section to the admin route, which gates the
+   request and writes through the active `DataAdapter`.
+
+### Markup syntax
+
+The inline rich-text syntax below is **defined in this repo** (the `renderValue`
+parser in `components/customs/ContentEditSpan.tsx`), not in the package — see
+[Markdown Support](#markdown-support).
+
+> The package's own API (adapters, the `Query` language, relations, auth, the
+> headless primitives) is documented in its own README under
+> `Projects/Packages/headless-cms`.
 
 ## 📝 Usage Guide
 
