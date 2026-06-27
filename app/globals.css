@@ -147,4 +147,16 @@
   .fij {
     @apply flex items-center justify-center flex-1;
   }
+
+  /* Empty inline-editable fields collapse to zero width and become unclickable
+     in edit mode — give them a placeholder so admins can click in and type. */
+  [data-cms-editing]:empty::before {
+    content: "Click to edit";
+    opacity: 0.4;
+    font-style: italic;
+    font-weight: 400;
+  }
+  [data-cms-focused]:empty::before {
+    content: "";
+  }
 }
