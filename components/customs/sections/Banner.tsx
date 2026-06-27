@@ -6,10 +6,10 @@ import { Skill } from "@/types";
 import ScribbleNote from "@/components/customs/notes/ScribbleNote";
 
 export default function Banner() {
-  const { sections } = usePageContext();
+  const { getItem } = usePageContext();
 
-  const bannerSection = sections["portfolio"]?.["banner"] || {};
-  const skills: Skill[] = bannerSection.skills || [];
+  const bannerSection = getItem("portfolio", "banner");
+  const skills: Skill[] = bannerSection?.skills || [];
 
   const staticList = [
     "React",
@@ -81,7 +81,7 @@ export default function Banner() {
 
               <div className="b-h1 mb-8">
                 <ContentSpan
-                  sectionKey="banner"
+                  itemId="banner"
                   fieldKey="titleLine"
                   as="h1"
                   className="text-[clamp(3.5rem,8vw,7rem)] font-black leading-none tracking-tighter uppercase"
@@ -92,7 +92,7 @@ export default function Banner() {
 
               <div className="b-sub max-w-2xl">
                 <ContentSpan
-                  sectionKey="banner"
+                  itemId="banner"
                   fieldKey="subtitle"
                   as="p"
                   className="text-base md:text-2xl leading-relaxed text-neutral-300"
@@ -103,7 +103,7 @@ export default function Banner() {
 
               <div className="b-cta mt-8 flex flex-col gap-10">
                 <ContentSpan
-                  sectionKey="banner"
+                  itemId="banner"
                   fieldKey="resume"
                   as="span"
                   className="inline-flex text-lg md:text-2xl uppercase tracking-widest underline-offset-8"

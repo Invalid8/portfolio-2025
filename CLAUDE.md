@@ -18,7 +18,7 @@ There is no test runner configured.
 
 ## Stack
 
-Next.js 16 (App Router) · React 19 · TypeScript (strict) · TailwindCSS 4 · Firebase (Firestore + Auth) · Cloudinary · GSAP · Slate.js. Path alias `@/*` maps to the repo root.
+Next.js 16 (App Router) · React 19 · TypeScript (strict) · TailwindCSS 4 · Firebase (Firestore + Auth) · [`@dalgoridim/headless-cms`](https://www.npmjs.com/package/@dalgoridim/headless-cms) (inline-edit CMS engine) · Cloudinary · GSAP · Slate.js. Path alias `@/*` maps to the repo root.
 
 ## Architecture
 
@@ -26,26 +26,26 @@ This is a **CMS-powered portfolio**: all displayed content lives in Firestore an
 
 ### Content / CMS flow
 
-- Page sections are fetched **server-side** at render via `lib/firebase/server/services` (firebase-admin) and passed into `PageProvider` (`lib/context/PageContent.tsx`) as `initialSections`.
-- `NestedSections` is shaped `{ [collection]: { [sectionKey]: Section } }`. A `Section` always carries its own `id` and `collection` so it knows where to persist.
-- Inline edits call `editField(collection, sectionKey, fieldKey, value)`. `fieldKey` supports dot-paths (e.g. `position.title`) for nested updates. Edits mark the section dirty (`dirtySections` set, keyed `collection:sectionKey`).
-- Image edits register a `PendingImage`; the actual Cloudinary upload is deferred until save (`saveSection` / `saveAll`), then the resulting URL is written into the section.
-- Saves `PATCH` to `/api/admin/firebase/{collection}/{id}`. There is no realtime listener — local state is the source of truth after load, re-synced on save.
+The CMS engine is `@dalgoridim/headless-cms` (item model, v0.10). The app wraps it in thin "skin" shims (`lib/context/PageContent.tsx`, `components/customs/ContentEditSpan.tsx`, `components/customs/EditableImage.tsx`) that own all markup/styling and inject Cloudinary storage + the `/api/admin/firebase` base path.
 
-### Two Firebase layers — keep them separate
+- **One model: items.** Every collection is an `Item[]` (`{ [collection]: Item[] }`, the `ItemMap` type). A "section" (banner, about, contact, …) is just a singleton item in the `portfolio` collection addressed by a stable id (e.g. `"banner"`); projects/experiences/skills are addressed by their real `id`.
+- Content is hydrated **server-side** at render: `app/(landing-page)/layout.tsx` calls `loadItemMap(getDataAdapter(), …)` and passes the result to `PageProvider` as `initialItems`.
+- Reads in client components use `usePageContext().items` / `getItem(collection, id)`.
+- **Inline (deferred) edits**: `ContentEditSpan` / `EditableImage` call `editField(collection, id, fieldKey, value)` (dot-paths like `position.title` supported), marking the item dirty. Nothing persists until `saveAll()` / `saveItem()`, which uploads any pending Cloudinary images then `PUT`s (upserts) each dirty item. The Toolkit save bar reads `hasUnsavedChanges` / `saveAll`.
+- **Immediate collection ops**: `createItem` (PUT), `updateItem` (PATCH), `deleteItem` (DELETE), `reorderItems` (PATCH `order` ×N) — optimistic with rollback. Skills/Projects/Experience use these for add/edit/remove.
+- No realtime listener — local item state is the source of truth after load, re-synced on save.
 
-- **Client** (`lib/firebase/config.ts`, `lib/firebase/services/`): browser SDK, used for auth and any client reads. Orders collections by `createdAt desc` by default.
-- **Server** (`lib/firebase/server/admin.ts`, `lib/firebase/server/services/`): firebase-admin SDK, used in Server Components and API routes for privileged reads/writes. `createDocument`/`updateDocument`/`upsertDocument` auto-stamp `createdAt`/`updatedAt`.
+### Data + auth layer (`lib/cms/`)
+
+- `lib/cms/server.ts` (server-only): builds the singleton `FirestoreDataAdapter` (`getDataAdapter()`) over the firebase-admin `db`, the `firebaseAuth` gate (`cmsAuth`), and `requireAdmin` (from `createAdminGate`). Firebase is the only backend.
+- `lib/cms/data.ts`: backend-agnostic server reads (`fetchCollection` / `fetchById`) used by Server Components and content routes.
+- Firebase SDK split: **client** (`lib/firebase/config.ts`) — browser SDK for auth; **admin** (`lib/firebase/server/admin.ts`) — firebase-admin `db`, consumed by the adapter. The adapter returns plain, already-serialized objects.
 
 ### Auth & admin gate (defense in depth)
 
-- Client (`lib/context/auth.tsx`): on sign-in, checks the `admin` custom claim; if absent, signs the user out. On success it writes the ID token to the `adminToken` cookie and exposes `isAdmin` / `isEditing` / `toggleEdit`.
-- Server (`lib/firebase/server/services/auth.ts`): every admin API route calls `requireAdmin()`, which verifies the `adminToken` cookie AND requires the email be present in `ADMIN_EMAILS`. Both the custom claim and the env allowlist must agree.
-- Admin write routes live under `app/api/admin/firebase/[collection]/[id]/`. On auth failure they return `{ logout: true }` with 401 so the client can force sign-out.
-
-### Firestore serialization
-
-Firestore Timestamps cross the server→client boundary as `{ _seconds, _nanoseconds }`. Always run server-fetched data and incoming request bodies through `serializeFirestoreData` (`lib/serialize.ts`), which converts those to ISO strings before JSON.
+- Client (`lib/context/auth.tsx`): wraps the package's `FirebaseAuthProvider`, re-exporting its hook as `useAuth`. On sign-in it checks the `admin` custom claim (signing out if absent), writes the ID token to the `adminToken` cookie, and exposes `isAdmin` / `isEditing` / `toggleEdit`. The edit toggle is available to everyone; saves are admin-gated, so non-admins can edit inline but can't persist.
+- Server: every admin API route calls `requireAdmin()` (`lib/cms/server.ts`), which verifies the `adminToken` cookie AND requires the email be in `ADMIN_EMAILS`. Claim and allowlist must agree.
+- Admin write handlers (`GET`/`PATCH`/`PUT`/`DELETE`) are generated by the package's `createCmsHandlers` at `app/api/admin/firebase/[collection]/[id]/`. On auth failure they return `{ logout: true }` with 401 so the client can force sign-out.
 
 ### Routing (App Router route groups)
 

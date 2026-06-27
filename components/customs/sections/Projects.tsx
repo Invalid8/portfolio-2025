@@ -25,15 +25,13 @@ function isProject(section: Section): section is Section & Project {
 }
 
 export default function Projects() {
-  const { sections, setSection } = usePageContext();
+  const { items, createItem } = usePageContext();
   const { isAdmin, isEditing } = useAuth();
   const [showAll, setShowAll] = useState(false);
 
-  const projectsCollection = useMemo(() => sections["projects"] || {}, [sections]);
-
   const projects = useMemo<Project[]>(
-    () => Object.values(projectsCollection).filter(isProject),
-    [projectsCollection],
+    () => (items["projects"] || []).filter(isProject),
+    [items],
   );
 
   const handleAddProject = async (formData: FormData) => {
@@ -57,20 +55,7 @@ export default function Projects() {
         content: (formData.get("content") as string) || "",
       };
 
-      const response = await fetch("/api/admin/firebase/projects", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(projectData),
-      });
-
-      if (!response.ok) throw new Error("Failed to add project");
-
-      const newProject: Project = await response.json();
-      setSection("projects", `project-${newProject.id}`, {
-        ...newProject,
-        collection: "projects",
-        id: String(newProject.id),
-      });
+      await createItem("projects", projectData);
       toast.success("Project added successfully!");
     } catch (error) {
       console.error("Error adding project:", error);
@@ -88,7 +73,7 @@ export default function Projects() {
         <div className="flex items-end justify-between gap-4 mb-14">
           <div>
             <ContentSpan
-              sectionKey="projects-header"
+              itemId="projects-header"
               fieldKey="title"
               as="h2"
               className="text-4xl lg:text-6xl font-bold"
@@ -96,7 +81,7 @@ export default function Projects() {
               SELECTED WORKS
             </ContentSpan>
             <ContentSpan
-              sectionKey="projects-header"
+              itemId="projects-header"
               fieldKey="subtitle"
               as="p"
               className="text-base text-neutral-400 max-w-2xl mt-3"

@@ -9,7 +9,8 @@ type AsTag = "span" | "h1" | "h2" | "h3" | "p" | "div";
 
 interface ContentSpanProps {
   collection?: string;
-  sectionKey: string;
+  /** Id of the item this field belongs to (a singleton "section" has a stable id). */
+  itemId: string;
   fieldKey: string;
   className?: string;
   children: React.ReactNode;
@@ -126,7 +127,7 @@ function renderMarkup(raw: string): React.ReactNode {
 
 export default function ContentEditSpan({
   collection = "portfolio",
-  sectionKey,
+  itemId,
   fieldKey,
   className,
   children,
@@ -135,7 +136,7 @@ export default function ContentEditSpan({
   return (
     <HeadlessContentEditSpan
       collection={collection}
-      sectionKey={sectionKey}
+      itemId={itemId}
       fieldKey={fieldKey}
       as={as}
       renderValue={renderMarkup}

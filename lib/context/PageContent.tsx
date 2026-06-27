@@ -1,9 +1,7 @@
 "use client";
 
-// Thin shim over @dalgoridim/headless-cms. Keeps the app's import path stable
-// while delegating the engine to the package. Injects the portfolio's storage
-// (Cloudinary, signed by the existing /api/admin/cloudinary/sign route) and the
-// existing admin API base path.
+// Portfolio shim over @dalgoridim/headless-cms: injects Cloudinary storage and
+// the admin API base path, re-exports usePageContext.
 import type { ReactNode } from "react";
 import { toast } from "sonner";
 import {
@@ -12,7 +10,7 @@ import {
   type Notifier,
 } from "@dalgoridim/headless-cms/client";
 import { cloudinaryStorage } from "@dalgoridim/headless-cms/storage/cloudinary";
-import type { NestedSections } from "@/types";
+import type { ItemMap } from "@/types";
 
 const storage = cloudinaryStorage({
   folder: "portfolio",
@@ -26,14 +24,14 @@ const notify: Notifier = {
 
 export function PageProvider({
   children,
-  initialSections = {},
+  initialItems = {},
 }: {
   children: ReactNode;
-  initialSections?: NestedSections;
+  initialItems?: ItemMap;
 }) {
   return (
     <CmsPageProvider
-      initialSections={initialSections}
+      initialItems={initialItems}
       apiBasePath="/api/admin/firebase"
       storage={storage}
       notify={notify}

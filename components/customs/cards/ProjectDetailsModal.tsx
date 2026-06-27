@@ -288,11 +288,10 @@ export function ProjectModal({
           >
             <EditableImage
               key={`${project.id}-thumbnail`}
-              sectionKey={`project-${project.id}`}
+              itemId={String(project.id)}
               fieldKey="thumbnail"
               src={project.thumbnail}
               collection="projects"
-              docId={project.id as string}
               className="max-w-full max-h-full w-auto h-auto object-contain rounded-lg shadow-2xl"
             />
           </div>
@@ -308,7 +307,7 @@ export function ProjectModal({
               <span className="inline-block px-4 py-1.5 bg-primary/10 text-primary rounded-full text-sm font-medium uppercase tracking-wider mb-6">
                 <ContentSpan
                   collection="projects"
-                  sectionKey={`project-${project.id}`}
+                  itemId={String(project.id)}
                   fieldKey="type"
                 >
                   {project.type}
@@ -318,7 +317,7 @@ export function ProjectModal({
 
             <ContentSpan
               collection="projects"
-              sectionKey={`project-${project.id}`}
+              itemId={String(project.id)}
               className="text-4xl lg:text-5xl font-bold"
               fieldKey="title"
               as="h2"
@@ -328,7 +327,7 @@ export function ProjectModal({
 
             <ContentSpan
               collection="projects"
-              sectionKey={`project-${project.id}`}
+              itemId={String(project.id)}
               fieldKey="description"
               className="text-xl text-neutral-300 leading-relaxed"
               as="p"
@@ -341,7 +340,7 @@ export function ProjectModal({
                 <span className="text-neutral-500 text-sm">Role</span>
                 <ContentSpan
                   collection="projects"
-                  sectionKey={`project-${project.id}`}
+                  itemId={String(project.id)}
                   fieldKey="role"
                   className="text-neutral-200 font-medium mt-1"
                   as="p"
@@ -356,7 +355,7 @@ export function ProjectModal({
                     collection="projects"
                     as="p"
                     className="text-neutral-200 font-medium mt-1"
-                    sectionKey={`project-${project.id}`}
+                    itemId={String(project.id)}
                     fieldKey="date"
                   >
                     {project.date}
@@ -415,7 +414,7 @@ export function ProjectModal({
                   <span className="text-sm text-neutral-500">Live Link:</span>
                   <ContentSpan
                     collection="projects"
-                    sectionKey={`project-${project.id}`}
+                    itemId={String(project.id)}
                     fieldKey="link"
                     className="block px-6 py-4 bg-primary/10 text-primary rounded-lg border border-primary/30"
                   >
@@ -438,7 +437,7 @@ export function ProjectModal({
                   <span className="text-sm text-neutral-500">GitHub Link:</span>
                   <ContentSpan
                     collection="projects"
-                    sectionKey={`project-${project.id}`}
+                    itemId={String(project.id)}
                     fieldKey="github"
                     className="block px-6 py-4 bg-neutral-800/50 text-neutral-300 rounded-lg border border-neutral-700"
                   >

@@ -4,22 +4,11 @@ import ContentSpan from "@/components/customs/ContentEditSpan";
 import EditableImage from "@/components/customs/EditableImage";
 import { usePageContext } from "@/lib/context/PageContent";
 
-interface AboutSection {
-  id: string;
-  collection: string;
-  aboutImg?: string;
-  leading1?: string;
-  leading2?: string;
-}
-
 export default function About() {
-  const { sections } = usePageContext();
+  const { getItem } = usePageContext();
 
-  const aboutSection: AboutSection = sections["portfolio"]?.["about"] || {
-    id: "about",
-    collection: "portfolio",
-    aboutImg: "/images/AstronutCat.svg",
-  };
+  const imagesSection = getItem("portfolio", "images");
+  const aboutImg = imagesSection?.aboutImg || "/images/AstronutCat.svg";
 
   return (
     <section
@@ -38,11 +27,10 @@ export default function About() {
 
       <div className="relative flex items-center justify-center lg:min-h-svh">
         <EditableImage
-          sectionKey="images"
+          itemId="images"
           fieldKey="aboutImg"
-          src={aboutSection.aboutImg || "/images/AstronutCat.svg"}
+          src={aboutImg}
           collection="portfolio"
-          docId="images"
           className="relative z-10 max-w-lg w-full xl:ml-10 transition-transform hover:scale-105 duration-500"
         />
       </div>
@@ -59,7 +47,7 @@ export default function About() {
 
         <div className="space-y-6 max-w-xl">
           <ContentSpan
-            sectionKey="about"
+            itemId="about"
             as="p"
             className="text-lg leading-relaxed text-neutral-300"
             fieldKey="leading1"
@@ -68,7 +56,7 @@ export default function About() {
           </ContentSpan>
 
           <ContentSpan
-            sectionKey="about"
+            itemId="about"
             as="p"
             className="text-lg leading-relaxed text-neutral-400"
             fieldKey="leading2"
@@ -85,7 +73,7 @@ export default function About() {
           ].map((stat) => (
             <div key={stat.value}>
               <div className="text-4xl font-bold text-primary tabular-nums">
-                <ContentSpan sectionKey="stats" fieldKey={stat.value} collection="portfolio">
+                <ContentSpan itemId="stats" fieldKey={stat.value} collection="portfolio">
                   {stat.default}
                 </ContentSpan>
               </div>

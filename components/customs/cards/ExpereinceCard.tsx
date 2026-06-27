@@ -15,7 +15,7 @@ export function ExperienceCard({ experience }: { experience: Experience }) {
             <CalendarIcon className="w-4 h-4" />
             <ContentSpan
               collection="experiences"
-              sectionKey={`experience-${experience.id}`}
+              itemId={String(experience.id)}
               fieldKey="position.duration"
             >
               {experience.position.duration}
@@ -24,7 +24,7 @@ export function ExperienceCard({ experience }: { experience: Experience }) {
 
           <ContentSpan
             collection="experiences"
-            sectionKey={`experience-${experience.id}`}
+            itemId={String(experience.id)}
             fieldKey="position.title"
             className="text-xl lg:text-2xl font-bold mb-2"
             as="h3"
@@ -48,7 +48,7 @@ export function ExperienceCard({ experience }: { experience: Experience }) {
                   <span className="text-sm text-neutral-500 min-w-[60px]">Name:</span>
                   <ContentSpan
                     collection="experiences"
-                    sectionKey={`experience-${experience.id}`}
+                    itemId={String(experience.id)}
                     fieldKey="company.name"
                     className="text-primary font-medium"
                   >
@@ -59,7 +59,7 @@ export function ExperienceCard({ experience }: { experience: Experience }) {
                   <span className="text-sm text-neutral-500 min-w-[60px]">Link:</span>
                   <ContentSpan
                     collection="experiences"
-                    sectionKey={`experience-${experience.id}`}
+                    itemId={String(experience.id)}
                     fieldKey="company.link"
                     className="text-primary font-medium flex-1"
                   >
@@ -80,7 +80,7 @@ export function ExperienceCard({ experience }: { experience: Experience }) {
                   <MapPinIcon className="w-4 h-4" />
                   <ContentSpan
                     collection="experiences"
-                    sectionKey={`experience-${experience.id}`}
+                    itemId={String(experience.id)}
                     fieldKey="company.location"
                   >
                     {experience.company.location}
@@ -92,7 +92,7 @@ export function ExperienceCard({ experience }: { experience: Experience }) {
 
           <ContentSpan
             collection="experiences"
-            sectionKey={`experience-${experience.id}`}
+            itemId={String(experience.id)}
             fieldKey="position.role"
             className="text-neutral-300 leading-relaxed"
             as="p"

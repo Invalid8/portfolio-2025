@@ -16,7 +16,7 @@ import { SOCIAL_LINKS } from "@/lib/constants";
 import { toast } from "sonner";
 
 export default function Contact() {
-  const { sections } = usePageContext();
+  const { getItem } = usePageContext();
   const { isEditing } = useAuth();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -25,9 +25,7 @@ export default function Contact() {
     message: "",
   });
 
-  const contactSection = sections["portfolio"]?.["contact"] || {
-    id: "contact",
-    collection: "portfolio",
+  const contactSection = getItem("portfolio", "contact") ?? {
     title: "LET'S WORK TOGETHER",
     subtitle:
       "Have a project in mind? Let's discuss how we can work together to bring your ideas to life.",
@@ -83,14 +81,14 @@ export default function Contact() {
           </div>
           <ContentSpan
             className="text-5xl lg:text-6xl xl:text-7xl font-bold leading-none tracking-tight"
-            sectionKey="contact"
+            itemId="contact"
             fieldKey="title"
             as="h2"
           >
             {contactSection?.title}
           </ContentSpan>
           <ContentSpan
-            sectionKey="contact"
+            itemId="contact"
             fieldKey="subtitle"
             as="p"
             className="text-base text-neutral-400 max-w-xl mt-3"
@@ -107,7 +105,7 @@ export default function Contact() {
                 label="Email"
                 value={contactSection?.email}
                 href={`mailto:${contactSection?.email}`}
-                sectionKey="contact"
+                itemId="contact"
                 fieldKey="email"
                 isEditing={isEditing}
               />
@@ -116,7 +114,7 @@ export default function Contact() {
                 icon={<MapPinIcon className="w-4 h-4" />}
                 label="Location"
                 value={contactSection?.location}
-                sectionKey="contact"
+                itemId="contact"
                 fieldKey="location"
                 isEditing={isEditing}
               />
@@ -231,7 +229,7 @@ function ContactItem({
   label,
   value,
   href,
-  sectionKey,
+  itemId,
   fieldKey,
   isEditing,
 }: {
@@ -239,7 +237,7 @@ function ContactItem({
   label: string;
   value: string;
   href?: string;
-  sectionKey: string;
+  itemId: string;
   fieldKey: string;
   isEditing: boolean;
 }) {
@@ -254,7 +252,7 @@ function ContactItem({
         </p>
         <ContentSpan
           as="p"
-          sectionKey={sectionKey}
+          itemId={itemId}
           fieldKey={fieldKey}
           className="text-sm text-neutral-300 group-hover:text-primary transition-colors truncate"
         >

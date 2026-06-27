@@ -8,11 +8,11 @@ import { EditableImage as HeadlessEditableImage } from "@dalgoridim/headless-cms
 import { cn } from "@/lib/utils";
 
 interface EditableImageProps {
-  sectionKey: string;
+  /** Id of the item this image field belongs to. */
+  itemId: string;
   fieldKey: string;
   src: string;
   collection: string;
-  docId: string;
   className?: string;
 }
 
@@ -42,11 +42,10 @@ function Placeholder() {
 }
 
 export default function EditableImage({
-  sectionKey,
+  itemId,
   fieldKey,
   src,
   collection,
-  docId,
   className,
 }: EditableImageProps) {
   const [showUrlModal, setShowUrlModal] = useState(false);
@@ -68,11 +67,10 @@ export default function EditableImage({
 
   return (
     <HeadlessEditableImage
-      sectionKey={sectionKey}
+      itemId={itemId}
       fieldKey={fieldKey}
       src={src}
       collection={collection}
-      docId={docId}
       className={className}
     >
       {({ isEditing, saving, hasError, openFilePicker, setExternalUrl, imgProps }) => {

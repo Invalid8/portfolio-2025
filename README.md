@@ -19,7 +19,7 @@ A fully customizable, CMS-powered portfolio website built with Next.js 16, React
 - **Framework**: Next.js 16 (App Router)
 - **UI**: React 19, TailwindCSS 4
 - **Animations**: GSAP with ScrollTrigger
-- **Backend**: Firebase (Firestore) or Postgres, switchable via `DATA_BACKEND`
+- **Backend**: Firebase (Firestore)
 - **CMS**: [`@dalgoridim/headless-cms`](#-content-engine--dalgoridimheadless-cms) — inline-edit engine (extracted from this repo)
 - **Images**: Cloudinary for optimization
 - **Type Safety**: TypeScript
@@ -164,16 +164,26 @@ site's look.
 | Markdown editor | `components/customs/MarkdownEditor.tsx` | `useMarkdownEditor` — adds the modal, toolbar, and preview |
 | Admin API route | `app/api/admin/firebase/[collection]/[id]/route.ts` | `createCmsHandlers` |
 | Public reads | `app/api/content/[collection]/route.ts`, `lib/cms/data.ts` | `DataAdapter.fetchCollection` / `fetchById` |
-| Backend selection | `lib/cms/server.ts` | `FirestoreDataAdapter` / `PostgresDataAdapter` (via `DATA_BACKEND`) |
+| Server-side hydration | `app/(landing-page)/layout.tsx` | `loadItemMap` → `PageProvider`'s `initialItems` |
+| Data adapter | `lib/cms/server.ts` | `FirestoreDataAdapter` |
+
+### Content model
+
+Content uses the package's unified **item** model: every collection is an `Item[]`,
+and a "section" (banner, about, contact, …) is a singleton item in the `portfolio`
+collection addressed by a stable id. Components read via `usePageContext().items` /
+`getItem`; addressing in the primitives is by `itemId`.
 
 ### Editing flow
 
 1. The auth provider resolves the admin identity and toggles `isEditing`.
-2. `ContentEditSpan` / `EditableImage` become editable in place; edits are buffered
-   in `PageProvider`.
-3. On save, `PageProvider` uploads any pending images through the Cloudinary client
-   adapter, then `PATCH`es each changed section to the admin route, which gates the
-   request and writes through the active `DataAdapter`.
+2. `ContentEditSpan` / `EditableImage` become editable in place; inline edits are
+   buffered in `PageProvider` (via `editField`).
+3. On save (`saveAll`), `PageProvider` uploads any pending images through the
+   Cloudinary client adapter, then `PUT`s (upserts) each changed item to the admin
+   route, which gates the request and writes through the `FirestoreDataAdapter`.
+4. Add / remove / reorder use the immediate ops `createItem` / `deleteItem` /
+   `reorderItems` (optimistic, with rollback on failure).
 
 ### Markup syntax
 

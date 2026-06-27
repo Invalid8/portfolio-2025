@@ -38,26 +38,11 @@ export type Experience = {
   skills: Skill[];
 };
 
-export interface Section {
-  id: string;
-  collection: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any;
-}
+// A unit of editable content in the headless-cms item model: any record with an id.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type Item = Record<string, any> & { id: string };
 
-export type SectionMap = Record<string, Section>;
+/** Alias kept for the existing type guards (isProject, …). */
+export type Section = Item;
 
-export type NestedSections = {
-  [collection: string]: {
-    [key: string]: Section;
-  };
-};
-
-export interface PendingImage {
-  file: File;
-  localUrl: string;
-  sectionKey: string;
-  fieldKey: string;
-  collection: string;
-  docId: string;
-}
+export type ItemMap = Record<string, Item[]>;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import ContentSpan from "@/components/customs/ContentEditSpan";
 import { usePageContext } from "@/lib/context/PageContent";
 import type { Experience, Section } from "@/types";
@@ -20,61 +20,25 @@ import ContentSpanEdit from "@/components/customs/ContentEditSpan";
 import Link from "next/link";
 
 export default function ExperienceSection() {
-  const { sections, setSection } = usePageContext();
+  const { items, createItem } = usePageContext();
   const { isAdmin, isEditing } = useAuth();
-  const [loading, setLoading] = useState(true);
   const [showAll, setShowAll] = useState(false);
 
-  const experiencesCollection = sections["experiences"] || {};
-  const experiences: Experience[] = Object.values(experiencesCollection)
-    .filter(isExperience)
-    .sort((a, b) => {
-      const dateA = parseDurationStart(a.position.duration);
-      const dateB = parseDurationStart(b.position.duration);
-      return dateB.getTime() - dateA.getTime();
-    });
-
-  useEffect(() => {
-    if (Object.keys(experiencesCollection).length === 0) loadData();
-    else setLoading(false);
-  }, []);
-
-  async function loadData() {
-    try {
-      const res = await fetch("/api/content/experiences");
-      if (!res.ok) throw new Error("Failed to load experiences");
-      const expData: Experience[] = await res.json();
-      expData.forEach((exp) => {
-        setSection("experiences", `experience-${exp.id}`, {
-          ...exp,
-          id: String(exp.id),
-          collection: "experiences",
-        });
-      });
-    } catch (err) {
-      console.error("Failed to load experiences:", err);
-      toast.error("Failed to load experiences");
-    } finally {
-      setLoading(false);
-    }
-  }
+  const experiences: Experience[] = useMemo(
+    () =>
+      (items["experiences"] || []).filter(isExperience).sort((a, b) => {
+        const dateA = parseDurationStart(a.position.duration);
+        const dateB = parseDurationStart(b.position.duration);
+        return dateB.getTime() - dateA.getTime();
+      }),
+    [items],
+  );
 
   const handleAddExperience = async (
     experienceData: Omit<Experience, "id">,
   ) => {
     try {
-      const res = await fetch("/api/admin/firebase/experiences", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(experienceData),
-      });
-      if (!res.ok) throw new Error("Failed to add experience");
-      const newExp: Experience = await res.json();
-      setSection("experiences", `experience-${newExp.id}`, {
-        ...newExp,
-        id: String(newExp.id),
-        collection: "experiences",
-      });
+      await createItem("experiences", experienceData);
       toast.success("Experience added successfully!");
     } catch (err) {
       console.error("Error adding experience:", err);
@@ -84,17 +48,6 @@ export default function ExperienceSection() {
   };
 
   const displayed = showAll ? experiences : experiences.slice(0, 3);
-
-  if (loading) {
-    return (
-      <div
-        id="Experience"
-        className="min-h-svh w-full flex justify-center items-center"
-      >
-        <div className="animate-pulse text-2xl">Loading experience...</div>
-      </div>
-    );
-  }
 
   return (
     <section
@@ -121,7 +74,7 @@ export default function ExperienceSection() {
               </span>
             </div>
             <ContentSpan
-              sectionKey="experience-header"
+              itemId="experience-header"
               fieldKey="title"
               as="h2"
               className="text-5xl lg:text-6xl xl:text-7xl font-bold leading-none tracking-tight"
@@ -129,7 +82,7 @@ export default function ExperienceSection() {
               EXPERIENCE
             </ContentSpan>
             <ContentSpan
-              sectionKey="experience-header"
+              itemId="experience-header"
               fieldKey="subtitle"
               as="p"
               className="text-base text-neutral-400 max-w-xl mt-3"
@@ -214,7 +167,7 @@ function ExperienceRow({
             <CalendarIcon className="w-3.5 h-3.5 text-primary flex-shrink-0" />
             <ContentSpanEdit
               collection="experiences"
-              sectionKey={`experience-${experience.id}`}
+              itemId={String(experience.id)}
               fieldKey="position.duration"
               className="text-xs font-mono text-primary"
             >
@@ -231,7 +184,7 @@ function ExperienceRow({
 
         <ContentSpanEdit
           collection="experiences"
-          sectionKey={`experience-${experience.id}`}
+          itemId={String(experience.id)}
           fieldKey="position.title"
           className="text-xl lg:text-2xl font-bold mb-1 block"
           as="h3"
@@ -248,7 +201,7 @@ function ExperienceRow({
             >
               <ContentSpanEdit
                 collection="experiences"
-                sectionKey={`experience-${experience.id}`}
+                itemId={String(experience.id)}
                 fieldKey="company.name"
               >
                 {experience.company.name}
@@ -263,7 +216,7 @@ function ExperienceRow({
                 </span>
                 <ContentSpanEdit
                   collection="experiences"
-                  sectionKey={`experience-${experience.id}`}
+                  itemId={String(experience.id)}
                   fieldKey="company.name"
                   className="text-primary font-medium text-sm"
                 >
@@ -276,7 +229,7 @@ function ExperienceRow({
                 </span>
                 <ContentSpanEdit
                   collection="experiences"
-                  sectionKey={`experience-${experience.id}`}
+                  itemId={String(experience.id)}
                   fieldKey="company.link"
                   className="text-primary font-medium text-sm flex-1"
                 >
@@ -297,7 +250,7 @@ function ExperienceRow({
                 <MapPinIcon className="w-3.5 h-3.5" />
                 <ContentSpanEdit
                   collection="experiences"
-                  sectionKey={`experience-${experience.id}`}
+                  itemId={String(experience.id)}
                   fieldKey="company.location"
                 >
                   {experience.company.location}
@@ -309,7 +262,7 @@ function ExperienceRow({
 
         <ContentSpanEdit
           collection="experiences"
-          sectionKey={`experience-${experience.id}`}
+          itemId={String(experience.id)}
           fieldKey="position.role"
           className="text-sm text-neutral-400 leading-relaxed block"
           as="p"

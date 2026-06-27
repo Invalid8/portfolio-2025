@@ -90,11 +90,10 @@ export function ProjectFullPage({ project: initialProject }: { project: Project 
             />
             <EditableImage
               key={`${project.id}-thumbnail`}
-              sectionKey={`project-${project.id}`}
+              itemId={String(project.id)}
               fieldKey="thumbnail"
               src={project.thumbnail}
               collection="projects"
-              docId={project.id as string}
               className="relative z-10 max-w-full max-h-[500px] w-auto h-auto object-contain rounded-lg"
             />
           </div>
@@ -102,13 +101,13 @@ export function ProjectFullPage({ project: initialProject }: { project: Project 
           <div className="flex flex-col justify-center space-y-8">
             <div>
               <span className="text-primary text-xs font-mono tracking-[0.35em] uppercase mb-4 block">
-                <ContentSpan collection="projects" sectionKey={`project-${project.id}`} fieldKey="type">
+                <ContentSpan collection="projects" itemId={String(project.id)} fieldKey="type">
                   {project.type}
                 </ContentSpan>
               </span>
               <ContentSpan
                 collection="projects"
-                sectionKey={`project-${project.id}`}
+                itemId={String(project.id)}
                 fieldKey="title"
                 as="h1"
                 className="text-5xl lg:text-6xl xl:text-7xl font-bold leading-none tracking-tight"
@@ -121,7 +120,7 @@ export function ProjectFullPage({ project: initialProject }: { project: Project 
               collection="projects"
               as="p"
               className="text-lg text-neutral-300 leading-relaxed"
-              sectionKey={`project-${project.id}`}
+              itemId={String(project.id)}
               fieldKey="description"
             >
               {project.description}
@@ -136,7 +135,7 @@ export function ProjectFullPage({ project: initialProject }: { project: Project 
                     collection="projects"
                     as="p"
                     className="text-sm text-neutral-300 font-medium"
-                    sectionKey={`project-${project.id}`}
+                    itemId={String(project.id)}
                     fieldKey="role"
                   >
                     {project.role}
@@ -152,7 +151,7 @@ export function ProjectFullPage({ project: initialProject }: { project: Project 
                       collection="projects"
                       as="p"
                       className="text-sm text-neutral-300 font-medium"
-                      sectionKey={`project-${project.id}`}
+                      itemId={String(project.id)}
                       fieldKey="date"
                     >
                       {project.date}
@@ -179,7 +178,7 @@ export function ProjectFullPage({ project: initialProject }: { project: Project 
               ) : isEditing ? (
                 <div className="space-y-1">
                   <span className="text-xs text-neutral-600 font-mono">Live Link:</span>
-                  <ContentSpan collection="projects" sectionKey={`project-${project.id}`} fieldKey="link" className="block px-4 py-2 bg-primary/10 text-primary rounded-full border border-primary/30 text-sm">
+                  <ContentSpan collection="projects" itemId={String(project.id)} fieldKey="link" className="block px-4 py-2 bg-primary/10 text-primary rounded-full border border-primary/30 text-sm">
                     {project.link || "https://"}
                   </ContentSpan>
                 </div>
@@ -197,7 +196,7 @@ export function ProjectFullPage({ project: initialProject }: { project: Project 
               ) : isEditing ? (
                 <div className="space-y-1">
                   <span className="text-xs text-neutral-600 font-mono">GitHub Link:</span>
-                  <ContentSpan collection="projects" sectionKey={`project-${project.id}`} fieldKey="github" className="block px-4 py-2 border border-neutral-700 text-neutral-400 rounded-full text-sm">
+                  <ContentSpan collection="projects" itemId={String(project.id)} fieldKey="github" className="block px-4 py-2 border border-neutral-700 text-neutral-400 rounded-full text-sm">
                     {project.github || "https://"}
                   </ContentSpan>
                 </div>

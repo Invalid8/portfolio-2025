@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import ContentSpan from "@/components/customs/ContentEditSpan";
 import { useAuth } from "@/lib/context/auth";
 import { usePageContext } from "@/lib/context/PageContent";
@@ -22,36 +22,22 @@ function isSkill(section: Section): section is Section & Skill {
 }
 
 export default function SkillsSection() {
-  const { sections, setSection } = usePageContext();
+  const { items, createItem, updateItem, deleteItem } = usePageContext();
   const { isAdmin, isEditing } = useAuth();
-  const [skills, setSkills] = useState<Skill[]>([]);
   const [showAll, setShowAll] = useState(false);
   const [editingSkill, setEditingSkill] = useState<Skill | null>(null);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const skillsCollection = sections["skills"] || {};
-    const skillList = Object.values(skillsCollection)
-      .filter(isSkill)
-      .sort((a, b) => b.skillLevel - a.skillLevel);
-    setSkills(skillList);
-    setLoading(false);
-  }, [sections]);
+  const skills: Skill[] = useMemo(
+    () =>
+      (items["skills"] || [])
+        .filter(isSkill)
+        .sort((a, b) => b.skillLevel - a.skillLevel),
+    [items],
+  );
 
   const handleAddSkill = async (skillData: Partial<Skill>) => {
     try {
-      const res = await fetch("/api/admin/firebase/skills", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(skillData),
-      });
-      if (!res.ok) throw new Error("Failed to add skill");
-      const newSkill: Skill = await res.json();
-      setSection("skills", `skill-${newSkill.id}`, {
-        ...newSkill,
-        collection: "skills",
-        id: String(newSkill.id),
-      });
+      await createItem("skills", skillData);
       toast.success("Skill added!");
     } catch (err) {
       toast.error("Failed to add skill");
@@ -64,17 +50,7 @@ export default function SkillsSection() {
     skillData: Partial<Skill>,
   ) => {
     try {
-      const res = await fetch(`/api/admin/firebase/skills/${skillId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(skillData),
-      });
-      if (!res.ok) throw new Error("Failed to update skill");
-      setSection("skills", `skill-${skillId}`, {
-        ...skillData,
-        collection: "skills",
-        id: String(skillId),
-      });
+      await updateItem("skills", String(skillId), skillData);
       toast.success("Skill updated!");
     } catch (err) {
       toast.error("Failed to update skill");
@@ -85,11 +61,7 @@ export default function SkillsSection() {
   const handleDeleteSkill = async (skillId: string) => {
     if (!confirm("Delete this skill?")) return;
     try {
-      const res = await fetch(`/api/admin/firebase/skills/${skillId}`, {
-        method: "DELETE",
-      });
-      if (!res.ok) throw new Error("Failed to delete skill");
-      setSection("skills", `skill-${skillId}`, {} as Section);
+      await deleteItem("skills", skillId);
       toast.success("Skill deleted!");
     } catch {
       toast.error("Failed to delete skill");
@@ -97,17 +69,6 @@ export default function SkillsSection() {
   };
 
   const displayed = showAll ? skills : skills.slice(0, 12);
-
-  if (loading) {
-    return (
-      <div
-        id="Skills"
-        className="min-h-svh w-full flex justify-center items-center"
-      >
-        <div className="animate-pulse text-2xl">Loading skills...</div>
-      </div>
-    );
-  }
 
   return (
     <section
@@ -136,7 +97,7 @@ export default function SkillsSection() {
             <ContentSpan
               as="h2"
               className="text-5xl lg:text-6xl xl:text-7xl font-bold leading-none tracking-tight"
-              sectionKey="skills-header"
+              itemId="skills-header"
               fieldKey="title"
             >
               SKILLS &<br />
@@ -145,7 +106,7 @@ export default function SkillsSection() {
             <ContentSpan
               as="p"
               className="text-base text-neutral-400 max-w-xl mt-3"
-              sectionKey="skills-header"
+              itemId="skills-header"
               fieldKey="subtitle"
             >
               Technologies and tools I use to build exceptional digital

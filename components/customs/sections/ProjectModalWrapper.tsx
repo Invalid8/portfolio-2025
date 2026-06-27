@@ -31,7 +31,7 @@ export function ProjectModalWrapper({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { sections, setSection } = usePageContext();
+  const { items, updateItem } = usePageContext();
   const { isAdmin, isEditing } = useAuth();
   const [currentProject, setCurrentProject] = useState(initialProject);
   const [isNavigating, setIsNavigating] = useState(false);
@@ -69,14 +69,9 @@ export function ProjectModalWrapper({
     };
   }, []);
 
-  const projectsCollection = useMemo(
-    () => sections["projects"] || {},
-    [sections],
-  );
-
   const projects = useMemo(
-    () => Object.values(projectsCollection).filter(isProject),
-    [projectsCollection],
+    () => (items["projects"] || []).filter(isProject),
+    [items],
   );
 
   useEffect(() => {
@@ -142,15 +137,7 @@ export function ProjectModalWrapper({
 
   const updateProjectContent = useCallback(
     async (projectId: string, content: string) => {
-      const sectionKey = `project-${projectId}`;
-
-      setSection("projects", sectionKey, {
-        ...projectsCollection[sectionKey],
-        content,
-      });
-
       setCurrentProject((prev) => ({ ...prev, content }));
-
       const cached = projectCache.get(projectId);
       if (cached) {
         projectCache.set(projectId, { ...cached, content });
@@ -159,21 +146,13 @@ export function ProjectModalWrapper({
       if (!isAdmin || !isEditing) return;
 
       try {
-        const res = await fetch(`/api/admin/firebase/projects/${projectId}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ content }),
-        });
-
-        if (!res.ok) {
-          throw new Error("Failed to persist project content");
-        }
+        await updateItem("projects", projectId, { content });
       } catch (err) {
         toast.error(String(err));
         console.error("updateProjectContent failed:", err);
       }
     },
-    [projectsCollection, isAdmin, isEditing, setSection],
+    [isAdmin, isEditing, updateItem],
   );
 
   if (!isOpen) {
