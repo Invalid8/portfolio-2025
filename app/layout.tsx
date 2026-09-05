@@ -1,3 +1,4 @@
+import { SITE_URL } from "@/lib/site";
 import type { Metadata } from "next";
 import { Montserrat, Geist_Mono, Inter, Caveat } from "next/font/google";
 
@@ -30,7 +31,6 @@ const geistMono = Geist_Mono({
   display: "swap",
 });
 
-const SITE_URL = "https://dalgoridim.com";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

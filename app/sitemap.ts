@@ -1,8 +1,7 @@
 import type { MetadataRoute } from "next";
 import { fetchCollection } from "@/lib/cms/data";
 import { Project } from "@/types";
-
-const SITE_URL = "https://dalgoridim.com";
+import { SITE_URL } from "@/lib/site";
 
 export const revalidate = 3600;
 

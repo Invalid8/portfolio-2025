@@ -1,12 +1,11 @@
 import { ProjectFullPage } from "@/components/customs/sections/ProjectFullPage";
 import { getProjectById, fetchCollection } from "@/lib/cms/data";
 import { Project } from "@/types";
+import { SITE_URL } from "@/lib/site";
 import { Metadata } from "next";
 
 import { ArrowLeftIcon } from "lucide-react";
 import Link from "next/link";
-
-const SITE_URL = "https://dalgoridim.com";
 
 export async function generateStaticParams() {
   try {
