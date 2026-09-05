@@ -1,10 +1,10 @@
 "use client";
 
-// Portfolio skin over @dalgoridim/headless-cms (see README → "Headless CMS").
+// Portfolio skin over better-content (see README → "Content Engine").
 import React, { useState } from "react";
 import { createPortal } from "react-dom";
 import { CameraIcon, Link2Icon, XIcon, CheckIcon } from "lucide-react";
-import { EditableImage as HeadlessEditableImage } from "@dalgoridim/headless-cms/client";
+import { EditableImage as HeadlessEditableImage } from "better-content/react";
 import { cn } from "@/lib/utils";
 
 interface EditableImageProps {

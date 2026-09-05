@@ -20,7 +20,7 @@ A fully customizable, CMS-powered portfolio website built with Next.js 16, React
 - **UI**: React 19, TailwindCSS 4
 - **Animations**: GSAP with ScrollTrigger
 - **Backend**: Firebase (Firestore)
-- **CMS**: [`@dalgoridim/headless-cms`](#-content-engine--dalgoridimheadless-cms) — inline-edit engine (extracted from this repo)
+- **CMS**: [`better-content`](#-content-engine--better-content) — inline-edit engine (successor to `@dalgoridim/headless-cms`, extracted from this repo)
 - **Images**: Cloudinary for optimization
 - **Type Safety**: TypeScript
 
@@ -144,11 +144,12 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000)
 
-## 🧩 Content Engine — `@dalgoridim/headless-cms`
+## 🧩 Content Engine — `better-content`
 
-All inline editing is powered by **[`@dalgoridim/headless-cms`](https://www.npmjs.com/package/@dalgoridim/headless-cms)**,
-a database-agnostic, headless inline-edit engine that was extracted from this
-project into its own standalone package. The package ships **behavior only** — no
+All inline editing is powered by **[`better-content`](https://www.npmjs.com/package/better-content)**,
+a framework-neutral, database-agnostic, headless inline-edit engine that was
+extracted from this project into its own standalone package. It supersedes
+`@dalgoridim/headless-cms`, which this repo used through v0.10. The package ships **behavior only** — no
 styling, no markup syntax, no icons. This portfolio supplies all of those as thin
 "skin" wrappers, so the package can be reused by any app without inheriting this
 site's look.
@@ -157,7 +158,7 @@ site's look.
 
 | Concern | This repo | Package piece it skins / uses |
 |---|---|---|
-| Providers | `lib/context/PageContent.tsx` | `PageProvider` (+ Cloudinary storage, `sonner` notifier, `apiBasePath`) |
+| Providers | `lib/context/PageContent.tsx` | `PageProvider` (+ Cloudinary storage, `sonner` notifier, `restTransport`) |
 | Auth | `lib/context/auth.tsx` | `FirebaseAuthProvider` / `useCmsAuth` |
 | Editable text | `components/customs/ContentEditSpan.tsx` | `ContentEditSpan` — adds the focus ring + the markup syntax via `renderValue` |
 | Editable image | `components/customs/EditableImage.tsx` | `EditableImage` — adds the hover overlay, icons, and URL modal via its render-prop |

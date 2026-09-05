@@ -18,7 +18,7 @@ There is no test runner configured.
 
 ## Stack
 
-Next.js 16 (App Router) · React 19 · TypeScript (strict) · TailwindCSS 4 · Firebase (Firestore + Auth) · [`@dalgoridim/headless-cms`](https://www.npmjs.com/package/@dalgoridim/headless-cms) (inline-edit CMS engine) · Cloudinary · GSAP · Slate.js. Path alias `@/*` maps to the repo root.
+Next.js 16 (App Router) · React 19 · TypeScript (strict) · TailwindCSS 4 · Firebase (Firestore + Auth) · [`better-content`](https://www.npmjs.com/package/better-content) (inline-edit CMS engine) · Cloudinary · GSAP · Slate.js. Path alias `@/*` maps to the repo root.
 
 ## Architecture
 
@@ -26,7 +26,7 @@ This is a **CMS-powered portfolio**: all displayed content lives in Firestore an
 
 ### Content / CMS flow
 
-The CMS engine is `@dalgoridim/headless-cms` (item model, v0.10). The app wraps it in thin "skin" shims (`lib/context/PageContent.tsx`, `components/customs/ContentEditSpan.tsx`, `components/customs/EditableImage.tsx`) that own all markup/styling and inject Cloudinary storage + the `/api/admin/firebase` base path.
+The CMS engine is `better-content` (item model, v0.4.0). The app wraps it in thin "skin" shims (`lib/context/PageContent.tsx`, `components/customs/ContentEditSpan.tsx`, `components/customs/EditableImage.tsx`) that own all markup/styling and inject Cloudinary storage + a `restTransport` pointed at `/api/admin/firebase`.
 
 - **One model: items.** Every collection is an `Item[]` (`{ [collection]: Item[] }`, the `ItemMap` type). A "section" (banner, about, contact, …) is just a singleton item in the `portfolio` collection addressed by a stable id (e.g. `"banner"`); projects/experiences/skills are addressed by their real `id`.
 - Content is hydrated **server-side** at render: `app/(landing-page)/layout.tsx` calls `loadItemMap(getDataAdapter(), …)` and passes the result to `PageProvider` as `initialItems`.

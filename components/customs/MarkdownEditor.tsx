@@ -1,6 +1,6 @@
 "use client";
 
-// Portfolio skin over @dalgoridim/headless-cms (see README → "Headless CMS").
+// Portfolio skin over better-content (see README → "Content Engine").
 // Editing surface is @uiw/react-md-editor (source + live preview, toolbar,
 // native undo/redo); the headless engine only persists the resulting string.
 import React, { useState } from "react";

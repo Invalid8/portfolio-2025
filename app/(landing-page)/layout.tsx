@@ -4,7 +4,7 @@ import Navbar from "./_components/Navbar";
 import Footer from "./_components/Footer";
 import Toolkit from "./_components/Toolkit";
 import { getDataAdapter } from "@/lib/cms/server";
-import { loadItemMap } from "@dalgoridim/headless-cms/server";
+import { loadItemMap } from "better-content/server";
 import { ReactNode } from "react";
 import type { ItemMap } from "@/types";
 

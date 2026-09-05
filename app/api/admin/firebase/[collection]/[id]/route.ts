@@ -1,4 +1,4 @@
-import { createCmsHandlers } from "@dalgoridim/headless-cms/server";
+import { createCmsHandlers } from "better-content/server";
 import { getDataAdapter, cmsAuth } from "@/lib/cms/server";
 
 // Data backend follows DATA_BACKEND; auth is the shared Firebase gate.

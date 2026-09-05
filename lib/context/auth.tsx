@@ -1,6 +1,6 @@
 "use client";
 
-// Thin shim over @dalgoridim/headless-cms. Supplies the portfolio's Firebase
+// Thin shim over better-content. Supplies the portfolio's Firebase
 // auth instance to the package's FirebaseAuthProvider and re-exports its hook as
 // `useAuth` so existing call sites keep working unchanged.
 import type { ReactNode } from "react";
@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import {
   FirebaseAuthProvider,
   useFirebaseAuth,
-} from "@dalgoridim/headless-cms/auth/firebase/client";
+} from "better-content/auth/firebase/client";
 import { auth, googleProvider } from "@/lib/firebase/config";
 import { ADMIN_LOGIN_ROUTE } from "../constants";
 

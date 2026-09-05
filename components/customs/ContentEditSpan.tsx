@@ -1,8 +1,8 @@
 "use client";
 
-// Portfolio skin over @dalgoridim/headless-cms (see README → "Headless CMS").
+// Portfolio skin over better-content (see README → "Content Engine").
 import React from "react";
-import { ContentEditSpan as HeadlessContentEditSpan } from "@dalgoridim/headless-cms/client";
+import { ContentEditSpan as HeadlessContentEditSpan } from "better-content/react";
 import { cn } from "@/lib/utils";
 
 type AsTag = "span" | "h1" | "h2" | "h3" | "p" | "div";
