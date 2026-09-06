@@ -164,8 +164,8 @@ site's look.
 | Editable image | `components/customs/EditableImage.tsx` | `EditableImage` — adds the hover overlay, icons, and URL modal via its render-prop |
 | Markdown editor | `components/customs/MarkdownEditor.tsx` | `useMarkdownEditor` — adds the modal, toolbar, and preview |
 | Admin API route | `app/api/admin/firebase/[collection]/[id]/route.ts` | `createCmsHandlers` |
-| Public reads | `app/api/content/[collection]/route.ts`, `lib/cms/data.ts` | `DataAdapter.fetchCollection` / `fetchById` |
-| Server-side hydration | `app/(landing-page)/layout.tsx` | `loadItemMap` → `PageProvider`'s `initialItems` |
+| Public reads | `app/api/content/route.ts`, `lib/cms/data.ts` | `createContentHandler` (allowlisted via `lib/cms/collections.ts`) / `DataAdapter.fetchById` |
+| Server-side hydration | `app/(landing-page)/layout.tsx` | `loadItemMap` over the same `lib/cms/collections.ts` config → `PageProvider`'s `initialItems` |
 | Data adapter | `lib/cms/server.ts` | `FirestoreDataAdapter` |
 
 ### Content model

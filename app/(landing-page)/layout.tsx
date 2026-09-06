@@ -7,19 +7,7 @@ import { getDataAdapter } from "@/lib/cms/server";
 import { loadItemMap } from "better-content/server";
 import { ReactNode } from "react";
 import type { ItemMap } from "@/types";
-
-// Portfolio singletons live in the `portfolio` collection, addressed by id.
-const PORTFOLIO_SECTIONS = [
-  "navbar",
-  "banner",
-  "about",
-  "stats",
-  "images",
-  "projects-header",
-  "experience-header",
-  "skills-header",
-  "contact",
-] as const;
+import { CONTENT_COLLECTIONS } from "@/lib/cms/collections";
 
 export default async function Layout({
   children,
@@ -31,16 +19,7 @@ export default async function Layout({
   let initialItems: ItemMap = {};
 
   try {
-    initialItems = await loadItemMap(getDataAdapter(), {
-      portfolio: {
-        defaults: PORTFOLIO_SECTIONS.map((id) => ({ id })),
-        merge: "byId",
-        fallback: PORTFOLIO_SECTIONS.map((id) => ({ id })),
-      },
-      projects: { fallback: [] },
-      experiences: { fallback: [] },
-      skills: { fallback: [] },
-    });
+    initialItems = await loadItemMap(getDataAdapter(), CONTENT_COLLECTIONS);
   } catch (err) {
     console.error("Failed to load layout data:", err);
   }
