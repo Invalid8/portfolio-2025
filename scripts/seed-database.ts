@@ -1,14 +1,44 @@
 /**
- * Database Seeding Script - UPDATED
+ * Database seeding script.
  *
- * Run this ONCE during initial setup:
- * npm run seed
+ * Run once during setup, or whenever the source data in /data changes:
+ *   npm run seed
  *
- * This imports data from your /data folder and populates Firebase.
+ * Writes through better-content's `seedItemMap` rather than talking to
+ * firebase-admin directly, which is what keeps it honest about two things the
+ * hand-rolled version got wrong:
+ *
+ * 1. It wrote the portfolio sections with `updatedAt` but no `createdAt`.
+ *    Firestore reads here order by `createdAt` and Firestore **excludes
+ *    documents that lack the field being ordered by**, so every section was
+ *    invisible to `loadItemMap` and the site silently rendered its hardcoded
+ *    fallbacks instead. `seedItemMap` routes every write through
+ *    `createWithId`, which stamps `createdAt`.
+ * 2. A replace is `delete` then `createWithId`, not `set`. `set` overwrites
+ *    without restoring the ordering field, which is how (1) survived re-runs.
+ *
+ * The two modes match what this seed always meant:
+ *   - `portfolio` is `byId`: sections are singletons addressed by a stable id,
+ *     and nothing else in the collection is touched.
+ *   - the list collections are `replace`: the source arrays become the
+ *     collection, so rows deleted from /data disappear from the database.
+ *
+ * DESTRUCTIVE, and /data is not currently the whole truth. As of 2026-09-06
+ * Firestore held 15 projects while /data/projects.ts has 9, so six were added
+ * through the admin UI and exist nowhere in source. `replace` deletes them.
+ * The previous version of this script did the same, so this is not new, but it
+ * is worth knowing before running: either export those rows into /data first,
+ * or seed only the sections, which is the part that fixes the bug above and
+ * touches nothing else:
+ *
+ *   await seedItemMap(data, { portfolio: sections });
  */
 
 import "dotenv/config";
 import * as admin from "firebase-admin";
+import { FirestoreDataAdapter } from "better-content/adapters/firestore";
+import { seedItemMap } from "better-content/server";
+import type { Item } from "better-content/core";
 import { projects } from "../data/projects";
 import { experiences } from "../data/experiences";
 import { skills } from "../data/skills";
@@ -19,183 +49,102 @@ const serviceAccount = {
   privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
 };
 
-const databaseURL = process.env.FIREBASE_DB_URL;
-
 if (!admin.apps.length) {
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
-    databaseURL,
+    databaseURL: process.env.FIREBASE_DB_URL,
   });
 }
 
-const db = admin.firestore();
+const data = new FirestoreDataAdapter({ db: admin.firestore() });
 
-async function seedProjects() {
-  console.log("🌱 Seeding projects...");
+/** The editable copy for each singleton section, addressed by a stable id. */
+const portfolioSections: Record<string, Record<string, unknown>> = {
+  navbar: {
+    logo: "dalgoridim",
+  },
+  banner: {
+    titleLine: "Frontend~~br~~^^Developer^^",
+    subtitle:
+      "A Nigerian based **^^Frontend Developer^^** passionate about building accessible and user friendly **^^websites^^**.",
+    resume:
+      "^^__**[My Resume](https://drive.google.com/file/d/1ixmuBYgzXQdXrTn1n9aoz4SWYRU715h-/view)**__^^",
+    skills: skills.slice(0, 15),
+  },
+  about: {
+    leading1:
+      "I am a Frontend Developer based in Nigeria with a strong foundation in Computer Science. I specialize in building accessible and user-friendly web applications, with a particular focus on React.js, React Native, Next.js, and TypeScript. Passionate about solving complex problems.",
+    leading2:
+      "When I'm not coding, I enjoy gaming, playing Mobile Legends, and diving into new technologies to stay ahead in my field. Always curious and eager to learn, I aim to create impactful solutions through technology.",
+  },
+  stats: {
+    yearsExperience: "5+",
+    projectsCompleted: "20+",
+    hackathonsWon: "2",
+  },
+  images: {
+    aboutImg: "/images/AstronutCat.svg",
+  },
+  "projects-header": {
+    title: "SELECTED WORKS",
+    subtitle:
+      "A showcase of projects where creativity meets functionality. Each piece tells a story of innovation and problem-solving.",
+  },
+  "experience-header": {
+    title: "EXPERIENCE",
+    subtitle:
+      "My professional journey building exceptional digital experiences.",
+  },
+  "skills-header": {
+    title: "SKILLS & TECHNOLOGIES",
+    subtitle:
+      "Technologies and tools I work with to build exceptional digital experiences.",
+  },
+  contact: {
+    title: "LET'S WORK TOGETHER",
+    subtitle:
+      "Have a project in mind? Let's discuss how we can work together to bring your ideas to life.",
+    email: "b.fadamitan2019@gmail.com",
+    phone: "+234 703 4797 467",
+    location: "Lagos, Nigeria",
+  },
+};
 
-  const batch = db.batch();
-  const existingDocs = await db.collection("projects").get();
+const sections: Item[] = Object.entries(portfolioSections).map(
+  ([id, fields]) => ({ id, ...fields }),
+);
 
-  existingDocs.docs.forEach((doc) => {
-    batch.delete(doc.ref);
-  });
-
-  await batch.commit();
-
-  for (const project of projects) {
-    await db
-      .collection("projects")
-      .doc(String(project.id))
-      .set({
-        ...project,
-        date: new Date(project.date).toISOString(),
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      });
-  }
-
-  console.log(`✅ Seeded ${projects.length} projects`);
-}
-
-async function seedExperiences() {
-  console.log("🌱 Seeding experiences...");
-
-  const batch = db.batch();
-  const existingDocs = await db.collection("experiences").get();
-
-  existingDocs.docs.forEach((doc) => {
-    batch.delete(doc.ref);
-  });
-
-  await batch.commit();
-
-  for (const exp of experiences) {
-    await db
-      .collection("experiences")
-      .doc(String(exp.id))
-      .set({
-        ...exp,
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      });
-  }
-
-  console.log(`✅ Seeded ${experiences.length} experiences`);
-}
-
-async function seedSkills() {
-  console.log("🌱 Seeding skills...");
-
-  const batch = db.batch();
-  const existingDocs = await db.collection("skills").get();
-
-  existingDocs.docs.forEach((doc) => {
-    batch.delete(doc.ref);
-  });
-
-  await batch.commit();
-
-  for (const skill of skills) {
-    await db
-      .collection("skills")
-      .doc(String(skill.id))
-      .set({
-        ...skill,
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      });
-  }
-
-  console.log(`✅ Seeded ${skills.length} skills`);
-}
-
-async function seedPortfolioSections() {
-  console.log("🌱 Seeding portfolio sections...");
-
-  const sections = {
-    navbar: {
-      logo: "dalgoridim",
-    },
-    banner: {
-      titleLine: "Frontend~~br~~^^Developer^^",
-      subtitle:
-        "A Nigerian based **^^Frontend Developer^^** passionate about building accessible and user friendly **^^websites^^**.",
-      resume:
-        "^^__**[My Resume](https://drive.google.com/file/d/1ixmuBYgzXQdXrTn1n9aoz4SWYRU715h-/view)**__^^",
-      skills: skills.slice(0, 15),
-    },
-    about: {
-      leading1:
-        "I am a Frontend Developer based in Nigeria with a strong foundation in Computer Science. I specialize in building accessible and user-friendly web applications, with a particular focus on React.js, React Native, Next.js, and TypeScript. Passionate about solving complex problems.",
-      leading2:
-        "When I'm not coding, I enjoy gaming, playing Mobile Legends, and diving into new technologies to stay ahead in my field. Always curious and eager to learn, I aim to create impactful solutions through technology.",
-    },
-    stats: {
-      yearsExperience: "5+",
-      projectsCompleted: "20+",
-      hackathonsWon: "2",
-    },
-    images: {
-      aboutImg: "/images/AstronutCat.svg",
-    },
-    "projects-header": {
-      title: "SELECTED WORKS",
-      subtitle:
-        "A showcase of projects where creativity meets functionality. Each piece tells a story of innovation and problem-solving.",
-    },
-    "experience-header": {
-      title: "EXPERIENCE",
-      subtitle:
-        "My professional journey building exceptional digital experiences.",
-    },
-    "skills-header": {
-      title: "SKILLS & TECHNOLOGIES",
-      subtitle:
-        "Technologies and tools I work with to build exceptional digital experiences.",
-    },
-    contact: {
-      title: "LET'S WORK TOGETHER",
-      subtitle:
-        "Have a project in mind? Let's discuss how we can work together to bring your ideas to life.",
-      email: "b.fadamitan2019@gmail.com",
-      phone: "+234 703 4797 467",
-      location: "Lagos, Nigeria",
-    },
-  };
-
-  for (const [key, data] of Object.entries(sections)) {
-    await db
-      .collection("portfolio")
-      .doc(key)
-      .set({
-        ...data,
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      });
-  }
-
-  console.log(`✅ Seeded ${Object.keys(sections).length} portfolio sections`);
-}
+// `Item` addresses records by a string id; the source data types theirs as
+// `number | string`.
+const withId = <T extends { id: number | string }>(rows: T[]): Item[] =>
+  rows.map((row) => ({ ...row, id: String(row.id) }));
 
 async function main() {
-  try {
-    console.log("🚀 Starting database seed...\n");
+  console.log("Starting database seed...\n");
 
-    await seedPortfolioSections();
-    await seedProjects();
-    await seedExperiences();
-    await seedSkills();
+  await seedItemMap(data, {
+    portfolio: sections,
+    projects: {
+      items: withId(projects).map((p) => ({
+        ...p,
+        date: new Date(p.date as string).toISOString(),
+      })),
+      mode: "replace",
+    },
+    experiences: { items: withId(experiences), mode: "replace" },
+    skills: { items: withId(skills), mode: "replace" },
+  });
 
-    console.log("\n✨ Database seeded successfully!");
-    console.log("\n📝 Next steps:");
-    console.log("1. Start your dev server: npm run dev");
-    console.log("2. Login to set yourself as admin");
-    console.log("3. Start editing your portfolio!\n");
-
-    process.exit(0);
-  } catch (error) {
-    console.error("❌ Error seeding database:", error);
-    process.exit(1);
-  }
+  console.log(`Seeded ${sections.length} portfolio sections`);
+  console.log(`Seeded ${projects.length} projects`);
+  console.log(`Seeded ${experiences.length} experiences`);
+  console.log(`Seeded ${skills.length} skills`);
+  console.log("\nDatabase seeded successfully.\n");
 }
 
-main();
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error("Error seeding database:", error);
+    process.exit(1);
+  });
