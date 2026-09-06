@@ -25,7 +25,13 @@ export default function Contact() {
     message: "",
   });
 
-  const contactSection = getItem("portfolio", "contact") ?? {
+  const contactSection = getItem<{
+    title: string;
+    subtitle: string;
+    email: string;
+    phone: string;
+    location: string;
+  }>("portfolio", "contact") ?? {
     title: "LET'S WORK TOGETHER",
     subtitle:
       "Have a project in mind? Let's discuss how we can work together to bring your ideas to life.",

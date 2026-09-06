@@ -7,7 +7,7 @@ import { usePageContext } from "@/lib/context/PageContent";
 export default function About() {
   const { getItem } = usePageContext();
 
-  const imagesSection = getItem("portfolio", "images");
+  const imagesSection = getItem<{ aboutImg: string }>("portfolio", "images");
   const aboutImg = imagesSection?.aboutImg || "/images/AstronutCat.svg";
 
   return (

@@ -38,11 +38,10 @@ export type Experience = {
   skills: Skill[];
 };
 
-// A unit of editable content in the headless-cms item model: any record with an id.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type Item = Record<string, any> & { id: string };
+// The CMS item model comes from better-content. It used to be redeclared here
+// as Record<string, any> to work around field reads typing as unknown; reads
+// now take a type argument instead, so the loose copy is gone.
+export type { Item, ItemMap } from "better-content/core";
 
 /** Alias kept for the existing type guards (isProject, …). */
-export type Section = Item;
-
-export type ItemMap = Record<string, Item[]>;
+export type Section = import("better-content/core").Item;

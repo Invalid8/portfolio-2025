@@ -12,7 +12,7 @@ import {
 } from "better-content/react";
 import { restTransport } from "better-content/core";
 import { cloudinaryStorage } from "better-content/storage/cloudinary";
-import type { Item, ItemMap } from "@/types";
+import type { ItemMap } from "@/types";
 
 const storage = cloudinaryStorage({
   folder: "portfolio",
@@ -45,16 +45,8 @@ export function PageProvider({
   );
 }
 
-// better-content types item fields as `unknown`; the portfolio's own `Item`
-// keeps them loose, so call sites can read `section.skills` without narrowing
-// every access. The values are identical at runtime, only the view differs.
-type PortfolioPageContext = Omit<PageContextValue, "items" | "getItem"> & {
-  items: ItemMap;
-  getItem: (collection: string, id: string) => Item | undefined;
-};
-
-export function usePageContext(): PortfolioPageContext {
-  return useCmsPageContext() as unknown as PortfolioPageContext;
+export function usePageContext(): PageContextValue {
+  return useCmsPageContext();
 }
 
 export type { PendingImage } from "better-content/react";

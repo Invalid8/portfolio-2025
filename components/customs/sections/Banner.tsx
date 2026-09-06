@@ -8,7 +8,7 @@ import ScribbleNote from "@/components/customs/notes/ScribbleNote";
 export default function Banner() {
   const { getItem } = usePageContext();
 
-  const bannerSection = getItem("portfolio", "banner");
+  const bannerSection = getItem<{ skills: Skill[] }>("portfolio", "banner");
   const skills: Skill[] = bannerSection?.skills || [];
 
   const staticList = [
