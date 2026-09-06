@@ -119,23 +119,42 @@ const sections: Item[] = Object.entries(portfolioSections).map(
 const withId = <T extends { id: number | string }>(rows: T[]): Item[] =>
   rows.map((row) => ({ ...row, id: String(row.id) }));
 
-async function main() {
-  console.log("Starting database seed...\n");
+// The section half is safe: singletons written by id, nothing else touched.
+// The list half is a replace and deletes rows absent from /data, which is not
+// currently the whole truth. `--sections` runs only the safe half, which is
+// what fixes the invisible-sections bug.
+const sectionsOnly = process.argv.includes("--sections");
 
-  await seedItemMap(data, {
-    portfolio: sections,
-    projects: {
-      items: withId(projects).map((p) => ({
-        ...p,
-        date: new Date(p.date as string).toISOString(),
-      })),
-      mode: "replace",
-    },
-    experiences: { items: withId(experiences), mode: "replace" },
-    skills: { items: withId(skills), mode: "replace" },
-  });
+async function main() {
+  console.log(
+    sectionsOnly
+      ? "Seeding portfolio sections only...\n"
+      : "Starting full database seed...\n",
+  );
+
+  await seedItemMap(
+    data,
+    sectionsOnly
+      ? { portfolio: sections }
+      : {
+          portfolio: sections,
+          projects: {
+            items: withId(projects).map((p) => ({
+              ...p,
+              date: new Date(p.date as string).toISOString(),
+            })),
+            mode: "replace",
+          },
+          experiences: { items: withId(experiences), mode: "replace" },
+          skills: { items: withId(skills), mode: "replace" },
+        },
+  );
 
   console.log(`Seeded ${sections.length} portfolio sections`);
+  if (sectionsOnly) {
+    console.log("Skipped the list collections (--sections).");
+    return;
+  }
   console.log(`Seeded ${projects.length} projects`);
   console.log(`Seeded ${experiences.length} experiences`);
   console.log(`Seeded ${skills.length} skills`);
